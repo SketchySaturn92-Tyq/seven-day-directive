@@ -238,6 +238,33 @@
     </div>
   </section>
 
+  <!-- ============ 剧情（贴着 NPC / 城区节点出现，不做全屏） ============ -->
+  <section id="screen-story" class="screen">
+    <div id="story-pin" class="story-pin" hidden></div>
+
+    <div id="story-panel" class="story-panel">
+      <header class="story-top">
+        <div class="story-badge" id="story-badge">世界观</div>
+        <div class="story-progress" id="story-progress">
+          <span id="story-idx">1</span><i>/</i><span id="story-total">12</span>
+        </div>
+        <div class="story-act" id="story-act">第 1 幕 · 发牌</div>
+        <button id="story-skip" class="story-skip">跳过引导</button>
+      </header>
+
+      <div class="story-body" id="story-body">
+        <img id="story-face" class="story-face" src="" alt="" hidden>
+        <div class="story-main">
+          <h2 id="story-title">——</h2>
+          <div id="story-text" class="story-text"></div>
+        </div>
+      </div>
+
+      <div class="story-choices" id="story-choices"></div>
+      <div class="story-hint" id="story-hint">点选项继续</div>
+    </div>
+  </section>
+
   <!-- ============ 对话 ============ -->
   <section id="screen-talk" class="screen">
     <img class="title-bg" src="assets/map-city.webp" alt="">
@@ -311,18 +338,6 @@
     </div>
   </section>
 
-  <!-- ============ 新手教程 ============ -->
-  <div id="tut" class="tut" hidden>
-    <div id="tut-hole" class="tut-hole"></div>
-    <div id="tut-card" class="tut-card">
-      <div class="tut-step"><span id="tut-idx">1</span>/<span id="tut-total">7</span></div>
-      <h4 id="tut-title">——</h4>
-      <p id="tut-text">——</p>
-      <div class="tut-actions">
-        <button id="tut-skip" class="btn btn-ghost btn-sm">跳过</button>
-        <button id="tut-next" class="btn btn-primary btn-sm">下一步</button>
-      </div>
-    </div>
   </div>
 
 </div>

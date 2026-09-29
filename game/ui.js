@@ -7,7 +7,6 @@
   const D = window.GAME_DATA;
   const E = window.GAME_ENGINE;
   const M = window.GAME_MAP;
-  const T = window.GAME_TUTORIAL;
   const MET = window.GAME_META;
   const B = window.GAME_BRIEFS;
   const RNG = window.GAME_RNG;
@@ -190,7 +189,8 @@
     // 开局先来一条委托，让新系统立刻可见
     if (B && !S.briefs.length) { B.spawn(S); renderAll(); }
     setTimeout(() => hint('种子 ' + S.seedLabel + ' · 遇到新的委托点顶部 ◈', 4200), 1400);
-    if (!T.isDone()) setTimeout(() => T.start(), 900);
+    // 开局走世界观入门剧情，不再弹独立的教程浮层
+    setTimeout(() => startIntro(), 260);
   }
 
   function quitToHome() {
@@ -676,10 +676,218 @@
   }
 
   /* ==========================================================
-     事件 / 故事场景
-     两者共用同一个弹窗：故事场景多一条主线或支线标签。
+     剧情面板
+     剧情贴着 NPC / 城区节点出现，不做全屏：地图始终可见，
+     玩家能看到这段话发生在哪。窄屏时退化为贴底部的长条。
+     ========================================================== */
+  let storyQueue = [];       // 待播的场景
+  let storyDone = null;      // 播完后的回调
+  let storyIsIntro = false;
+  let storyCurrent = null;
+
+  function introScenes() {
+    const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
+    return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  /* 开局：把世界观入门排进队列 */
+  function startIntro() {
+    const list = introScenes();
+    if (!list.length) { show('screen-game'); return; }
+    S.introDone = S.introDone || {};
+    const fresh = list.filter((sc) => !S.introDone[sc.id]);
+    if (!fresh.length) { show('screen-game'); return; }
+    storyIsIntro = true;
+    storyQueue = fresh.map((sc, i) => ({
+      story: true, kind: 'intro', id: sc.id, tag: sc.tag || '世界观',
+      title: sc.title, text: sc.text, portrait: null, npc: null, npcName: '',
+      district: 'tower',                    // 入门剧情挂在引导者所在的城区
+      idx: i + 1, total: fresh.length,
+      options: (sc.choices || []).map((c) => ({ label: c.label, relation: c.relation, run: c.run, flag: c.flag })),
+    }));
+    storyDone = () => { storyIsIntro = false; show('screen-game'); renderAll(); };
+    showStory(storyQueue.shift());
+  }
+
+  /* ---------- 面板落点：优先贴着节点，其次左右侧，最后贴底 ---------- */
+  function placePanel(scene) {
+    const panel = $('story-panel');
+    const pin = $('story-pin');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const M = 10;
+
+    const narrow = vw <= 820;
+    const shortLand = window.matchMedia('(orientation:landscape) and (max-height:560px)').matches;
+
+    // 面板尺寸：先按内容量出来
+    panel.style.left = '0px';
+    panel.style.top = '0px';
+    panel.style.bottom = 'auto';
+    const pw = panel.offsetWidth || 440;
+    const ph = panel.offsetHeight || 320;
+
+    // 找出这段剧情对应的节点位置
+    const distId = scene.district;
+    const rect = (distId && M && M.nodeRect) ? M.nodeRect(distId) : null;
+    const inBand = rect && M.districtVisible ? M.districtVisible(distId) : false;
+
+    if (rect && inBand && !narrow) {
+      pin.hidden = false;
+      pin.style.left = rect.cx + 'px';
+      pin.style.top = rect.cy + 'px';
+    } else {
+      pin.hidden = true;
+    }
+
+    let x, y;
+
+    if (narrow) {
+      // 窄屏：贴底长条，让地图上半部分仍然可见
+      x = M;
+      y = vh - ph - M;
+      if (shortLand) y = vh - ph - 6;
+      x = Math.max(M, Math.min(x, vw - pw - M));
+      y = Math.max(M, Math.min(y, vh - ph - M));
+      pin.hidden = true;
+    } else if (rect && inBand) {
+      // 优先放节点右侧；右侧不够就放左侧；上下夹紧
+      const gap = 26;
+      if (rect.right + gap + pw < vw - M) x = rect.right + gap;
+      else if (rect.left - gap - pw > M) x = rect.left - gap - pw;
+      else x = Math.min(Math.max(rect.cx + gap, M), vw - pw - M);
+      y = rect.cy - ph / 2;
+      y = Math.max(M, Math.min(y, vh - ph - M));
+      x = Math.max(M, Math.min(x, vw - pw - M));
+    } else {
+      // 节点不在可见带里（例如剧情挂在别的区）：放右侧竖向
+      x = vw - pw - M - (shortLand ? 90 : 0);
+      y = (vh - ph) / 2;
+      x = Math.max(M, Math.min(x, vw - pw - M));
+      y = Math.max(M, Math.min(y, vh - ph - M));
+    }
+
+    panel.style.left = Math.round(x) + 'px';
+    panel.style.top = Math.round(y) + 'px';
+    panel.style.bottom = 'auto';
+  }
+
+  function showStory(scene) {
+    if (!scene) { if (storyDone) storyDone(); return; }
+    storyCurrent = scene;
+
+    // 顶部
+    const badge = $('story-badge');
+    if (scene.kind === 'intro') badge.textContent = scene.tag || '世界观';
+    else if (scene.kind === 'main') badge.textContent = '主线';
+    else if (scene.kind === 'meet') badge.textContent = '初见';
+    else badge.textContent = scene.npcName ? scene.npcName + ' 的故事' : '故事';
+
+    $('story-progress').innerHTML =
+      '<span>' + (scene.idx || '·') + '</span><i>/</i><span>' + (scene.total || '·') + '</span>';
+
+    $('story-act').textContent = scene.actName
+      ? '第 ' + (scene.act || 1) + ' 幕 · ' + scene.actName + (scene.stage ? ' · 第 ' + scene.stage + ' 段' : '')
+      : (scene.npcRole || '');
+
+    // 立绘
+    const face = $('story-face');
+    const pid = scene.portrait || null;
+    if (pid) {
+      const fb = FALLBACK[pid] || null;
+      face.onerror = fb ? function () { this.onerror = null; this.src = PORTRAIT(fb); }
+                        : function () { this.hidden = true; };
+      face.hidden = false;
+      face.src = PORTRAIT(pid);
+      face.alt = scene.npcName || '';
+    } else { face.hidden = true; face.removeAttribute('src'); }
+
+    // 正文
+    $('story-title').textContent = scene.title || '';
+    $('story-text').textContent = scene.text || '';
+    $('story-body').scrollTop = 0;
+
+    $('story-skip').hidden = !(storyIsIntro || scene.kind === 'intro');
+
+    // 选项
+    renderChoices(scene.options, (o, i) => onStoryChoice(scene, o, i));
+
+    show('screen-story');
+    // 渲染完再定位，尺寸才准
+    requestAnimationFrame(() => placePanel(scene));
+  }
+
+  function renderChoices(options, onPick) {
+    const wrap = $('story-choices');
+    wrap.innerHTML = '';
+    const opts = (options || []).length ? options : [{ label: '继续' }];
+    opts.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'story-choice';
+      b.type = 'button';
+      b.innerHTML = opts.length > 1
+        ? '<span class="num">' + (i + 1) + '</span>' + esc(o.label)
+        : esc(o.label);
+      b.onclick = () => onPick(o, i);
+      wrap.appendChild(b);
+    });
+    $('story-hint').hidden = opts.length > 1;
+  }
+
+  function onStoryChoice(scene, opt, i) {
+    if (scene.kind === 'intro') {
+      S.introDone = S.introDone || {};
+      S.introDone[scene.id] = 1;
+      S.storyFlags = S.storyFlags || {};
+      if (opt.flag) S.storyFlags[opt.flag] = 1;
+      const lines = [];
+      if (opt.run && E.applyEffectPublic) E.applyEffectPublic(S, opt.run, lines);
+      renderAll();
+      advanceStory();
+      return;
+    }
+
+    // 正式剧情：交给引擎结算
+    const r = E.resolveStory(S, scene, i);
+    renderAll();
+
+    // 结果接在正文后面，读起来是一段事的收尾，而不是一条系统提示
+    if (opt.after) {
+      const cur = $('story-text').textContent;
+      $('story-text').textContent = cur + '\n\n' + opt.after;
+      $('story-body').scrollTop = $('story-body').scrollHeight;
+    } else if (r.ok && r.lines && r.lines.length) {
+      $('story-text').textContent = ($('story-text').textContent) + '\n\n' + r.lines.join('\n');
+      $('story-body').scrollTop = $('story-body').scrollHeight;
+    }
+
+    renderChoices([{ label: storyQueue.length ? '继续' : '回到牌局' }], () => advanceStory());
+    requestAnimationFrame(() => placePanel(scene));
+  }
+
+  function advanceStory() {
+    if (storyQueue.length) { showStory(storyQueue.shift()); return; }
+    show('screen-game');
+    renderAll();
+    if (S.phase === 'end' && S.ending) showEnd();
+    if (storyDone) { const d = storyDone; storyDone = null; d(); }
+  }
+
+  /* 把引擎推来的一条剧情放进队列并播出 */
+  function queueStory(scene) {
+    storyQueue.push(scene);
+    if (!$('screen-story').classList.contains('active')) showStory(storyQueue.shift());
+  }
+
+  /* ==========================================================
+     事件弹窗（非剧情类：每日随机事件）
      ========================================================== */
   function showEvent(ev) {
+    if (ev && ev.story) { queueStory(ev); return; }
+    showEventModal(ev);
+  }
+
+  function showEventModal(ev) {
     const isStory = !!ev.story;
     const d = ev.district ? M.districtById(ev.district) : null;
 
@@ -796,7 +1004,7 @@
   $('nx-refund').onclick = onRefund;
   $('origin-back').onclick = () => show('screen-home');
   $('btn-quit').onclick = quitToHome;
-  $('btn-tutorial').onclick = () => T.reset();
+  $('btn-tutorial').onclick = () => show('screen-howto');
   $('btn-briefs').onclick = () => { if (!S) return; renderBriefs(); show('screen-briefs'); };
   $('briefs-back').onclick = () => { show('screen-game'); renderAll(); };
   $('btn-seed-rand').onclick = () => {
@@ -830,12 +1038,11 @@
   const bg = $('map-bg');
   bg.onerror = () => bg.classList.add('missing');
 
-  T.bind();
   renderOrigins();
   renderHome();
   window.__GAME = {
     get state() { return S; },
-    engine: E, data: D, map: M, tutorial: T, meta: MET, briefs: B, rng: RNG,
+    engine: E, data: D, map: M, meta: MET, briefs: B, rng: RNG,
     get profile() { return P; },
     renderAll: () => renderAll(),
   };

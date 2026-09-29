@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-29T09:11:07Z */
+/* 生成时间: 2026-09-29T09:23:03Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -1387,6 +1387,142 @@ window.GAME_DATA = (function () {
       onRefuse: { vitality: -1, track: { renown: 1 } },
       refuseLabel: '不记录' },
 
+  ];
+})();
+
+/* ===== game/intro.js ===== */
+/* 世界观入门：开局的连续剧情段落。由内容设计生成。 */
+(function () {
+  'use strict';
+
+  window.INTRO_SCENES = [
+    {
+      id: 'intro-1',
+      order: 1,
+      title: '你头顶的六万个接缝',
+      text: '你入职那天抬头看过穹顶内侧。六万三千块板，每块都铸着编号，编号前面写着负责维护的部门。外面是酸雨和永远不散的黑云，雨落在板上是闷响，像有人在很远的地方敲铁皮。集团每年发一次通知，说穹顶的雨是恩赐，是替所有人挡住的东西。通知发到每个人终端上，落款日期写着：穹顶落成第两千零四十六年。没有一行写着穹顶什么时候开。你问过一次，合规部说这个问题不在培训手册里。从那天起你就懂了：所有人都在里面，所有人都不提这件事。',
+      choices: [
+        { label: '再抬头看一次穹顶内侧', relation: 1, run: { intel: 1 }, flag: 'looked_up' },
+        { label: '低头看自己工牌上的编号', relation: 0, run: { intel: 1 }, flag: 'checked_badge' },
+        { label: '不再想了，先去看今天的面板', relation: -1, run: { track: { loyalty: 1 } }, flag: 'skipped_dome' }
+      ],
+      tag: '世界观',
+      when: {}
+    },
+    {
+      id: 'intro-2',
+      order: 2,
+      title: '中层的一天从工牌开始',
+      text: '你在穹顶集团做了九年，工牌编号 B-3312，中层。每天八点四十刷卡进楼，电梯在三十三层停，走廊尽头那间没有窗的会议叫「四号洽谈室」。你的工作是替上面把不愿意出面的事办完：劝退、合并、签一份很难看的补偿协议。大楼里的规矩很简单，不出错就没人记得你。你的工位靠着内墙，那段墙里埋着通风管，冬天有热气，夏天一点用都没有。楼下的人靠集团发的净水过日子，你靠集团的季度考评过日子，区别只是排队的楼层不同。',
+      choices: [],
+      tag: '世界观',
+      when: {}
+    },
+    {
+      id: 'intro-3',
+      order: 3,
+      title: '董事会把事务做成了牌局',
+      text: '董事会在最高层，高塔商业区的顶。他们不缺钱，不缺人，也不缺时间，缺的是能把事情做得有趣的方式。于是几十年前有人提议，把公司事务做成牌局：一副十二张「指令卡」，每张写明要拿下哪个目标，拿下了就折掉，折掉的卡不再回到桌上。监事会起初反对，说这不合规，后来有人在反对文件上签了名，那件事就结束了。你听到的版本是：董事会觉得无聊，需要有人替他们玩。玩得久的人有名字，玩得短的没有。顶层的会议记录里，「折牌」和「处理」从来没被写成同一件事。',
+      choices: [],
+      tag: '世界观',
+      when: {}
+    },
+    {
+      id: 'intro-4',
+      order: 4,
+      title: '你被点名的那个下午',
+      text: '四号洽谈室的灯有一盏在闪，谁都没让人来修，闪得久了，进门的人都不抬头看。下午三点二十，苏纹把一副牌推到你面前，牌面朝上，第一张写着「外包监理」，后面还有十一张。她说这不是征求意见，是通知。她没坐下，站在你对面的桌边。桌角放着一杯已经凉了的茶，没人喝。她报出你的工牌编号，报得比你自己还熟。走廊尽头电梯的楼层灯停在三十三层，一直没动。你听见自己说了一声「好」。出门的时候她补了一句：规矩和上次一样，七天。',
+      choices: [
+        { label: '当场翻看剩下那十一张', relation: 1, run: { intel: 3 }, flag: 'read_deck' },
+        { label: '只问一句：过期了怎么办', relation: 2, run: { intel: 1, track: { loyalty: 1 } }, flag: 'asked_expiry' },
+        { label: '先看苏纹的表情，再决定说什么', relation: 0, run: { intel: 2, track: { power: 1 } }, flag: 'watched_su' }
+      ],
+      tag: '处境',
+      when: {}
+    },
+    {
+      id: 'intro-5',
+      order: 5,
+      title: '十二张牌与七天的期限',
+      text: '苏纹把规则说得很干净，像在念一份排期。十二张牌是一副，每张写明目标、路径、成功率，掷点过了才算折掉。每七天必须折掉至少一张，折不了就换人。她说「换人」的时候语速一点没变，这个词在他们系统里有一个正式写法，叫「回收」。她给你看了上一张桌的记录，最后一行写着「自愿退出」，日期是上周四，签字栏空着。折完十二张，你活下来。她还说，一局牌里最难的不是掷点，是你得亲手把那张牌按下去。',
+      choices: [
+        { label: '问她上周四那个人是谁', relation: 2, run: { intel: 3 }, flag: 'asked_last_week' },
+        { label: '请她把回收的定义说清楚', relation: 1, run: { intel: 2, track: { sin: 1 } }, flag: 'asked_purge_def' },
+        { label: '点头，说知道了', relation: 0, run: { track: { loyalty: 1 } }, flag: 'nodded' }
+      ],
+      tag: '规则',
+      when: {}
+    },
+    {
+      id: 'intro-6',
+      order: 6,
+      title: '四条路径各自的意思',
+      text: '牌只有四种打法。操控是把人笼络过来，让他替你说话，成本低，见效慢；资本是花钱把别人的东西变成你的，签字的时候对方往往还在笑；扩张是带人占地方，占住了就写进你的资产表；清洗是让人消失，流程走完会有一份写着「离职」的证明。四条路都有人走，走得最多的是清洗，因为它最快。走廊上没人管你用什么方法，只管第七天到了牌折没折。苏纹说过一句：在上面，清洗不算违规，算正常工作量。',
+      choices: [],
+      tag: '规则',
+      when: {}
+    },
+    {
+      id: 'intro-7',
+      order: 7,
+      title: '忠诚归零与罪痕满值',
+      text: '名望四条轨道，两条会直接要你的命。忠诚是董事会对你的信任，归零那天不用等通知，清算行会上门；上一个坐在你这位子的人，最后一次出现在系统里是「自愿退出」，日期是上周四，那天早上他还刷了卡。罪痕是你留下的把柄，满值不用别人动手，系统自己会把你反噬回去。你做的事越脏，这条涨得越快，裁一次人涨一点，走一次暗账涨一点。有人专门做善后，花一点力气把它压下去，但压不干净。',
+      choices: [
+        { label: '问那两条轨道现在各是多少', relation: 1, run: { intel: 2 }, flag: 'asked_tracks' },
+        { label: '记住「善后」这个动作', relation: 0, run: { intel: 2, track: { power: 1 } }, flag: 'noted_cleanup' }
+      ],
+      tag: '规则',
+      when: {}
+    },
+    {
+      id: 'intro-8',
+      order: 8,
+      title: '声望和权柄用来做什么',
+      text: '另外两条不会杀你，但决定你最后算哪一种赢。声望是业内和公众给你的口碑，董事会不在乎它，可它是你离开牌桌时唯一能带走的东西：同样活到第十二张，有人被写成「脏手的善人」，有人被写成「忠犬归位」。权柄是你实际握着的人和系统，手底下有多少人肯替你出门，你能调多少条通道的权限。权柄高的时候，判定线自己会往下掉，很多事不用你亲自去。四条轨道都在终端右下角，白天你几乎不会看它们。',
+      choices: [],
+      tag: '规则',
+      when: {}
+    },
+    {
+      id: 'intro-9',
+      order: 9,
+      title: '你的工位在第三十三层',
+      text: '你有工位、有门禁卡、有一份还过得去的年度评级，办公室里没人跟你结仇，也没人给你留过一句真话。信息栏里躺着三十七条未读，全是流程文件。抽屉最里面是一只空的茶叶罐，你一直没扔，标签上的字已经糊了。你知道几件事：后勤班车七点一刻最后一班；加班到十一点以后，走廊的灯会一格一格暗下来；三十三层以上的楼梯门常年锁着。你也知道，你手里能立刻动用的，只有自己这张脸和这个编号。',
+      choices: [
+        { label: '翻一遍那三十七条未读', relation: 0, run: { intel: 2 }, flag: 'read_inbox' },
+        { label: '把那只空茶叶罐扔了', relation: 1, run: { track: { power: 1 } }, flag: 'threw_tin' },
+        { label: '去楼梯口推那扇锁着的门', relation: 2, run: { intel: 3, track: { sin: 1 } }, flag: 'tried_stair' }
+      ],
+      tag: '处境',
+      when: {}
+    },
+    {
+      id: 'intro-10',
+      order: 10,
+      title: '苏纹第一次叫你的名字',
+      text: '苏纹是董事会日程官。她的名字不出现在任何一份对外文件里，但所有人的排期都要从她手上过一遍。她记得整层楼的作息：谁几点喝第一杯咖啡，谁的体检报告迟交了三天，谁上一次出现在监控画面里是几点几分，连电梯停在哪一层她都算得出来。她第一次叫你的名字，就在那杯凉茶旁边，叫的是全名，一个字都没含糊。她说从今天起她负责把你的七天排清楚，出了差错，她的排期表上会多一行字，那行字对谁都不好看，对你也是。',
+      choices: [],
+      tag: '人',
+      when: {}
+    },
+    {
+      id: 'intro-11',
+      order: 11,
+      title: '苏纹说她能帮你什么',
+      text: '苏纹给了你三样东西。一份排期表，上面标出哪些时段可以动手、哪些时段别出事；一个内部号码，每天凌晨两点十七分之后打过去有人接，接的人不一定说话；一句提醒，她只帮你把时间排对，牌得你自己按下去，她不会替你按。她说她见过太多人把力气花在问为什么上，问到最后七天过去了，牌还在手上，人已经不在名单上。说完她就起身，把那杯凉茶留在桌上，没让人收。走到门口她回头看了你一眼，像在看一份还没填完的表。',
+      choices: [],
+      tag: '人',
+      when: {}
+    },
+    {
+      id: 'intro-12',
+      order: 12,
+      title: '现在，翻第一张牌',
+      text: '你坐回工位。终端右下角四条轨道各自亮着，手边一副十二张的牌，第一张的边角有点卷，是被人捏过很多次的那种卷。穹顶的雨还在板上响，闷闷的，一层一层压下来，隔着墙都能听见。楼下的净水照常在发，顶层的灯照常在亮，日程官的表已经排到第七天。你不再需要有人解释这一切，你需要在第七天之前把手上这张牌折掉。牌桌是十二张，期限是七天，名望记在你身上，折不完的后果也记在你身上。现在，翻第一张。',
+      choices: [],
+      tag: '开始',
+      when: {}
+    }
   ];
 })();
 
@@ -3325,6 +3461,335 @@ window.GAME_DATA = (function () {
   };
 })();
 
+/* ===== game/lore.js ===== */
+/* 世界观碎片：每个 NPC 主动讲给你听的事。 */
+(function () {
+  'use strict';
+  window.LORE = {
+
+    /* ==================== 闻铎 · 董事会监事 · 男 ==================== */
+    'wen-duo': [
+      {
+        id: 'wd-l1', topic: '牌局为什么用纸做', minRel: 0,
+        text: '董事会不看文件，看牌。十三个人坐在长桌那头，把要办的事写在卡上，谁抽到谁去办。章程里管这叫议程可视化管理，我抄过那一页，抄完就知道这东西为什么必须用纸做——纸能烧。你手上那十二张，每张后面都压着一个人的名字。有几张的名字，以前也坐过那张桌子。',
+      },
+      {
+        id: 'wd-l2', topic: '上一批玩牌的人', minRel: 0,
+        text: '上一批一共四个人。头一个折到第九张那天早上没来上班，工位收得很干净，干净得像没人坐过。第二个改了名字，调到轨道港做票务核录。第三个我见过一次，在下层，他认出我，却不说话。第四个折完了十二张，现在是董事会里最年轻的那位，也是最不爱提自己怎么上来的那位。',
+      },
+      {
+        id: 'wd-l3', topic: '罪痕是按次算的', minRel: 3,
+        text: '我经手过四十七份人事档案。同一个编号被标红三次的，没有一个还留在系统里。标红不需要案由，只需要三个不同部门的签字。你现在两次了，第二次是上周三下午四点那份会议记录，那天你多问了一句预算谁批的。我没有替你算，是你自己签的字。三次之后他们要动的不是人，是你留下的那一栏。',
+      },
+      {
+        id: 'wd-l4', topic: '回收单上的三个去处', minRel: 6,
+        text: '回收单上只有三个目的地。第一栏写环带，去的人还在，只是工号进了排班表，排到第几百位，等一处漏水的接缝。第二栏写记忆银行，人去，身体不去。第三栏是空的，签收人自己填，填完这一栏的人在系统里查不到来路，也查不到去向。我见过三个拿到第三栏的，都是笑着走出去的。',
+      },
+    ],
+
+    /* ==================== 苏纹 · 董事会日程官 · 女 ==================== */
+    'su-wen': [
+      {
+        id: 'sw-l1', topic: '七天是怎么数的', minRel: 0,
+        text: '期限不是从发卡那天算，是从卡片进入你名下账户的那一秒。系统会在第七天的二十三点五十九分打一次标记，那之前折掉一张，标记就不落。有人以为可以拖到第八天早上补，补不了，标记是自动的。我桌上有一份表，每一格都是七天，从年初排到年底，格与格之间没有缝。',
+      },
+      {
+        id: 'sw-l2', topic: '日程表上的红格', minRel: 0,
+        text: '我排的是董事会今年的日程。一月到十二月，每周两场简报，每场四十分钟，中间休息七分钟。红格是他们自己划的，划红格的那天不排任何事。去年有十一个红格，今年到昨天是十七个。划红格的手从来不抖，划完把笔放回原来的位置，位置一点没偏。',
+      },
+      {
+        id: 'sw-l3', topic: '忠诚不是态度', minRel: 3,
+        text: '忠诚不是你怎么想，是别人怎么记。董事会记忠诚只看两样：签字的时间，和请示的频次。签得早不算好，签得准才算。请示太勤的人会被标成没有主见，请示太少的人会被标成不需要盯着。两种都要处理，方式不一样，一种调岗，一种不调。调完以后，表格上那一栏都会变成好看的颜色。',
+      },
+      {
+        id: 'sw-l4', topic: '上一个日程官去哪了', minRel: 6,
+        text: '我前面那个日程官叫岑，比我小两岁。她做满三年，最后一项工作是替一张卡排期。卡折掉之后，她把自己也排进了下一周的空档，那格本来是留给董事会务虚会的。她走的时候没有交接，只把椅子推回桌子底下，推得很正。第二天有人来擦桌子，擦完问她那一栏要不要填，我说不用填。',
+      },
+    ],
+
+    /* ==================== 郁南枝 · 清算行首席 · 女 ==================== */
+    'yu-nanzhi': [
+      {
+        id: 'yn-l1', topic: '集团靠什么赚钱', minRel: 0,
+        text: '集团不靠生产赚钱。生产在下层，那些厂的利润按季度报上来，占集团总收入的百分之十一。真正的钱在另外三块：水、地和许可。水是穹顶的排水与净化，地是城区的地面权，许可是让一件事合法发生或者合法不发生。最后一块最贵，也最干净，账面上一分钱成本都没有。这三块去年合计占九成一。',
+      },
+      {
+        id: 'yn-l2', topic: '吞并的价格怎么算', minRel: 0,
+        text: '吞并的价格不算资产，算负债。我们买一家公司之前先看它欠谁、欠多久、欠过多少人的命。欠得越乱越便宜，因为没人替它清账。上周一家物流子公司，账面资产三千万，负债折成一千二，我们出九百万拿下，其中一百万是给原来的老板买一张离境票的。票不是给他走的，是给他闭嘴的。',
+      },
+      {
+        id: 'yn-l3', topic: '声望是折算出来的', minRel: 3,
+        text: '声望在清算行有对应汇率。上周的价：一条慈善新闻加三点，收购时不还价加一点，替下层的排水阀签个字加两点，杀人被查到扣八点。声望高的人走得远，但不是走得稳。声望和罪痕是两条不同的线，一条决定你最后算哪种赢，一条决定你什么时候被算账。做我们这行，只盯第二条。',
+      },
+      {
+        id: 'yn-l4', topic: '清算行的清算流程', minRel: 6,
+        text: '清算不是我动手。清算行发一张对账函，对方在四十八小时内把钱、关系、人一并交出来，交不出就交名字。我们只做三件事：定价、算清、归档。人不归我们处理，归回收场。去年经我手的清算一共十九笔，十九笔的签名栏都是我，可我只见过其中四个当事人。另外十五个，我只见过文件。',
+      },
+    ],
+
+    /* ==================== 戴思远 · 合规伦理审查官 · 男 ==================== */
+    'dai-siyuan': [
+      {
+        id: 'ds-l1', topic: '合规部为什么没人', minRel: 0,
+        text: '合规部去年十二个人，今年四个。不是裁的，是主动申请的调岗：一个去了交易所，三个去了下层做现场审核。没人愿意坐在这里，因为这里每一个结论都只能写成建议，建议没有后果，也就没有功劳。我留下来是因为我在做一件事：把每一份建议都编号留底。这不合规，但也没人管。管的人去年调走了。',
+      },
+      {
+        id: 'ds-l2', topic: '清洗在流程里叫什么', minRel: 0,
+        text: '清洗在正式文件里叫人员关系终止。要三样东西：一份岗位空缺说明、一份资产交回清单、一份签字。签字那一栏不写名字，写编号。我审过三十一份终止单，二十九份手续是齐的，另外两份少一页。少的那一页没人补，也没人问。我问过一次，第二天我的调岗申请被系统退回来了。',
+      },
+      {
+        id: 'ds-l3', topic: '罪痕是留给自己看的', minRel: 3,
+        text: '罪痕不是别人记的，是你自己签的。你每做一件越过规程的事，系统就在行为日志里留一行。那行不会自动上报，只在两种时候被调出来：你要升的时候，和你要被处理的时候。前一种给你扣分，后一种给你定价。我见过有人把日志清得很干净，那种人升得最快，也消失得最干净。',
+      },
+      {
+        id: 'ds-l4', topic: '审计记录里的旧玩家', minRel: 6,
+        text: '我翻过五年前那批人的记录。四个人，一共折了三十一张牌，超过通关线很多。但审计结论里没有赢家这一栏，只有三个字：已归档。归档的意思不是他们没事，是这件事不再需要有人对它负责。四份档案我都调过，调阅记录显示，我是三年半以来第一个打开过它们的人。',
+      },
+    ],
+
+    /* ==================== 程砚 · 首席科学家 · 女 ==================== */
+    'cheng-yan': [
+      {
+        id: 'cy-l1', topic: '穹顶的官方解释', minRel: 0,
+        text: '穹顶在官方档案里叫气候灾后保护工程。写得很干净：外侧酸雨，内侧可居，设计寿命一百二十年，现役第八十一年。我做过接缝材料的老化测试，实测数据比设计值快。也就是说，一百二十年这个说法，最多是多写的三十年，而那三十年不在我的名册上。名册上没有的东西，我不会替它签字。',
+      },
+      {
+        id: 'cy-l2', topic: '人格备份是什么', minRel: 0,
+        text: '我们做的备份不是把一个人存起来，是把他能被系统识别的那部分留住：语言习惯、决策倾向、对特定编号的反应。原始数据每季度刷新一次，刷新意味着新的覆盖旧的。备份三份，一份在记忆银行，一份在研究所，第三份在轨道港的一艘船上。前两份我随时能拿到，第三份我从来没拿到过。',
+      },
+      {
+        id: 'cy-l3', topic: '扩张要占的是设施', minRel: 3,
+        text: '扩张在文件里叫节点接管。要占的从来不是地盘，是设施：变电站、泵房、通信塔、冷冻舱。谁能把这些停下来，谁就占了那条街。我们院里报上去的接管清单有四十七个节点，实际有控制权的只有九个。剩下那些写在纸上，属于已规划，已规划的意思是，等有人先占下来，再补手续。',
+      },
+      {
+        id: 'cy-l4', topic: '名册上删掉的一列', minRel: 6,
+        text: '院里的名册有九列，第十列存在过，现在没有。那一列叫来源，记录每一份血样从哪儿来。第八十一年第三季度那次换版，来源被合并进备注，备注不参与统计。我手上留着一份旧版复印件。纸是热的不是冷的，那是我自己抄的，抄的时候还没想好要不要留下它。',
+      },
+    ],
+
+    /* ==================== 彭戬 · 研究所安保总管 · 男 ==================== */
+    'peng-jian': [
+      {
+        id: 'pj-l1', topic: '占地是什么意思', minRel: 0,
+        text: '占地不是打进去，是站在那儿不走。安保手册第一条：任何非授权进入的人，先由外圈处置，外圈处置不了再报我。外圈是我们的承包商，四个队，每队十一人。过去三年外圈一共处置过两百八十一次，其中十九次需要我签字确认。那十九份都还在柜子里，编号从零一四排到零三二。',
+      },
+      {
+        id: 'pj-l2', topic: '园区里的静音走廊', minRel: 0,
+        text: '三号走廊全程静音，地板铺的是吸音料，走路没有回声。静音不是为了保密，是为了让人听得见自己的心跳，进去的人会自然放慢脚步。走廊尽头是伦理审查室，进去过的人出来都会先去洗手。我在门口站了六年，六年里洗手的有两百多个，洗两遍的占一半。洗完第二遍的人，一般不回原来的岗位。',
+      },
+      {
+        id: 'pj-l3', topic: '权柄看你能叫动谁', minRel: 3,
+        text: '权柄不看你的职级，看你能叫动几个人，以及那几个人是谁的人。你现在的数里，有你自己的两名外勤，还有一条保安通道。别人给你面子，是因为不确定你后面站着谁。这种不确定只能撑一段时间。撑不住的那天，第一件事就是有人来问我：你是不是天天走三号走廊。',
+      },
+      {
+        id: 'pj-l4', topic: '人是怎么被带走的', minRel: 6,
+        text: '园区里的人被带走不走大门。走地下二层的货物梯，货梯里常备推车，推车上铺防尘布。带走前会有一张单子给我，单子上写的是设备借出。我把单子归档，归档的盒子编号跟真设备盒一样，放在同一排货架上。谁要查，得先知道自己在查什么。不知道的人翻到那排架子，只会觉得无聊。',
+      },
+    ],
+
+    /* ==================== 老鸦 · 灰市掮客 · 男 ==================== */
+    'lao-ya': [
+      {
+        id: 'ly-l1', topic: '四条路在灰市的价', minRel: 0,
+        text: '四条路我这儿都有价。操控最便宜，一份把柄两百；资本看量，五万起谈；扩张贵，一条街的通道要价一万二，包三天；清洗最贵，我一般不接，接了先付全款，事成退两成。规矩只有一条：钱先到，话后到。你先问话再问价的，我就当你是来打听的，打听的价另算，一般比原价高三成。',
+      },
+      {
+        id: 'ly-l2', topic: '回收的路可以买', minRel: 0,
+        text: '回收单进了环路，也不是全没办法。第一栏我认识两个巡检，能让人在环带多待半年，价钱按接缝算，一米四百。第二栏我没办法，记忆银行不收钱，它只看编号。第三栏最怪，我做过两回，都是家属来买的，要的东西一样：一个不留记录的名字，和一口能烧的东西。做完那两回我就不接了。',
+      },
+      {
+        id: 'ly-l3', topic: '穹顶以前不叫穹顶', minRel: 3,
+        text: '穹顶以前不叫穹顶，叫四号开发区。我小时候跟着家里搬进来，那时候上面还开着，能看到天，天是灰的。后来接缝开始渗，集团说是外面的酸雨过来了，就把它一封，封完改名。我记性好，记得那张施工公告上写的竣工日期，比后来档案里写的晚了三年。公告我撕了一角留着，现在压在摊子的秤底下。',
+      },
+      {
+        id: 'ly-l4', topic: '那个戴银面具的', minRel: 6,
+        text: '那个代理人我不接它的生意。不是不敢，是它不按价签走。它来只做两件事：问一个编号还在不在，留一样东西让人转交。东西不能打开，也不值钱，一封信、一枚扣子、一段录音。有人问我是男是女，我说不出来。我给谁介绍过它，谁半年内都出了一件大事，四回里三回是坏事，剩下一回不好说。',
+      },
+    ],
+
+    /* ==================== 陆晚 · 无证诊所医生 · 女 ==================== */
+    'lu-wan': [
+      {
+        id: 'lw-l1', topic: '雨落进来会变泥', minRel: 0,
+        text: '雨在穹顶外侧是雨，进到下层就变泥。七区那边的管线是老式的，酸性雨一落，管壁积的粉就起来，雨变成灰白色的浆，沾到皮肤上两个钟头就开始烂。我这儿一年治一百多个这样的病人。治不好的是那些第二天才来的，来的时候伤口已经开始结痂，痂下面还是烂的，只能往下挖。',
+      },
+      {
+        id: 'lw-l2', topic: '排水阀在谁手里', minRel: 0,
+        text: '下层有十四个排水阀，七个在集团手里，四个在工会手上，剩下三个没人管，坏了也没人管。下雨天的排队就是等阀门开。开阀的申请单要走到你那个部门才算最后一道。我见过有人抱着单子等三天，三天里雨停了两次，又下了三次。你不用替他们难过，你把单子批了，他们就少等一天。',
+      },
+      {
+        id: 'lw-l3', topic: '罪痕是长在身上的', minRel: 3,
+        text: '罪痕在文件上是一行字，在人身上是一道疤。我这儿来过一个中层，右肩后面有四个针眼，排得很正。他说是体检。我给他缝的时候数了数，四个针眼对应四张回收单。他还年轻，手一直在抖。我没问他做了什么，问了也白问。针眼的排法是人家定的，不是他定的。',
+      },
+      {
+        id: 'lw-l4', topic: '被回收的人还剩什么', minRel: 6,
+        text: '被回收的人，身体大多会回来一部分，装在袋子里送到我这儿，让我判断还能不能算人。多数时候不能，我签字，东西送回收场。有一次送来的是个熟脸，护士出身，教过我打针。她手背上有个旧烫伤，我认出来的时候手抖了一下。她的登记表我留了一份，那一栏我写的是无人认领。',
+      },
+    ],
+
+    /* ==================== 铁贵 · 装卸工会头目 · 男 ==================== */
+    'tie-gui': [
+      {
+        id: 'tg-l1', topic: '港区一天过多少货', minRel: 0,
+        text: '港区一天过七千四百件。注册在册的四千三百件，剩下三千一百件走夜班。夜班那批不写货单，写散件，散件在账上按重量算，一吨三百二。真正值钱的不是重量，是里面夹的东西：义体关节、军用级电池，还有整箱的接缝封条。封条是穹顶的命，谁拿到封条，谁就能决定哪一段先漏。',
+      },
+      {
+        id: 'tg-l2', topic: '潮是水到齐了', minRel: 0,
+        text: '外面那个潮，港区的人说法不一样。有人说它是雨，下够了就成潮。有人说它是人，是这八十年里被冲出去的人。我们装卸工会自己有说法：潮不算东西，算日子。你哪天听说有人从接缝往外走了而且回来了，那天就算潮来了。我干了二十六年，见过两回。两回之后，港区都少了几个人。',
+      },
+      {
+        id: 'tg-l3', topic: '工会怎么守住街口', minRel: 3,
+        text: '扩张到我这儿就是一个字：人。我们工会一千一百二十七个在册会员，管着港区九个街口和两条货道。守街口靠三样：饭、班次、欠账。饭是每天两顿，班次是排谁去挡人，欠账是让想动我们的人先掂量。上个月有承包商想插一条道，我们没动手，把他手下的班次全买空了。人没了，他就开不了工。',
+      },
+      {
+        id: 'tg-l4', topic: '划单的人还会回来', minRel: 6,
+        text: '我手下被划过三个人的单。第一个在环带，还在排队等排班，我每个月给他寄盐和鞋。第二个的义体上了回收场的传送带，我让人把接管截下来了，现在还锁在库里。第三个没消息，档案上写已转出，转到哪儿谁也不说。我留着他们三个的工牌，挂在装卸处门后头。谁问我都说，这是值班牌。',
+      },
+    ],
+
+    /* ==================== 银面 · 女术士的代理人 · 性别不明 ==================== */
+    'yin-mian': [
+      {
+        id: 'ym-l1', topic: '牌桌上有个空位', minRel: 0,
+        text: '牌桌上有个位置一直空着，桌上放着筹码，没人去碰。发牌的人不问，围观的人不提。我为什么知道？因为空位置对面那把椅子我认识。有人坐过一次，坐完第二天就没了。这一局里最要紧的一条不是怎么赢，是不要让空位置边上的人觉得，你会去坐它。坐过的人留下的东西，现在还在我这儿。',
+      },
+      {
+        id: 'ym-l2', topic: '我不替谁说话', minRel: 0,
+        text: '我不替谁说话，也不替谁看事。你要想让我记一句话，说完就走，别回头看。你要想让我替你去见什么人，先说清你需要他记住你的哪一面。人只记得住一面，多了就记岔。我见过太多人想让人记住全部，结果什么都没留下。那个女术士也一样，她只留了名字，剩下的都交出去了。',
+      },
+      {
+        id: 'ym-l3', topic: '权柄是别人欠你的', minRel: 3,
+        text: '权柄不是你有多少，是多少人不敢欠你。你去数一数，现在有多少人因为怕你而按时回话，那就是你的数。你签过的字、放过的人、替谁压下去的报告，都算在这笔账上。账不会自己平。平账的那天，你要在，你的名字也要在。这两样缺一样，账就落到别人头上，落到别人头上就是别人的权柄了。',
+      },
+      {
+        id: 'ym-l4', topic: '上一位坐这把椅子的人', minRel: 6,
+        text: '我位置上一个人折了九张，折到第七张的时候开始改名字，改成他母亲那一族的姓。第九张之后，他把牌都推回去了，说不会玩。三天后他来送一样东西，让我转交。他没说给谁，只说谁先来找就给谁。那东西我留着，到现在只有一个人来问过。他问的不是那东西，是你的名字，问完就走了。',
+      },
+    ],
+
+    /* ==================== 温仕成 · 引航票务掮客 · 男 ==================== */
+    'wen-shicheng': [
+      {
+        id: 'ws-l1', topic: '离境票的真实规则', minRel: 0,
+        text: '离境的票面上写座位号，真正管用的只有两样：一个在册的入港事由，和一个愿意替你签收的人。前者决定你能不能过闸机，后者决定你落地之后有没有名字。票是明码的，二十万起步，砍价扣排队名次，名次比钱难补。我这摊子最贵的一张卖过六十四万，买家是个做账的，他买完就没再出现过。',
+      },
+      {
+        id: 'ws-l2', topic: '穹顶建成前有票根', minRel: 0,
+        text: '我箱底留着穹顶建成前的票根，纸都脆了。那时候进出的船一天四趟，票根上印着日期和工种。后来封穹顶，船停了十一天。第十一天回来的那趟只下来两个人，一个是我师父，一个是军需官。师父下船只说了一句话：外面的天不是黑的，是灰的，灰的也能看。说完他就去办了离职。',
+      },
+      {
+        id: 'ws-l3', topic: '声望能换一张票', minRel: 3,
+        text: '声望在我这儿能折票价。捐过下层排水阀的折两万，在交易所替中小股东出过头被记过档的折三万，被董事会点名表扬过的我反而不收，那种人的票往往过不了闸机。你名声越大，走得越看得见；走得越看得见，就越有人等着看你走。你这半年名声还行，我劝你先别涨了。',
+      },
+      {
+        id: 'ws-l4', topic: '有人买票真的走了', minRel: 6,
+        text: '前年有个客人，买票时报的是真名，还在票根背面写了日期。他是那批玩牌局的人里第四个，折到第六张就停了。他走的第二天，他家里被人翻过一遍，翻得很整齐，只少了一本相册。去年有个小子拿着他的票根来问我是不是真有这么个人，我说有。他就不问了，转身去排下个月的队。',
+      },
+    ],
+
+    /* ==================== 雨客 · 穹顶外「潮」的接触人 · 性别年龄不明 ==================== */
+    'yu-ke': [
+      {
+        id: 'yk-l1', topic: '外面没有楼层', minRel: 0,
+        text: '外面没有楼层，也没有早上。你从接缝出来，站够十分钟衣服就开始发痒，那是酸的。天不黑，是灰的，灰得像一块没洗的布。远处有灯的地方不是城，是几堆烧东西的火。围着火的人不看你，先看你的鞋。你要真出来，第一件要学的不是走，是等。等的时候不能站着，得蹲下来。',
+      },
+      {
+        id: 'yk-l2', topic: '潮不是人也不是水', minRel: 0,
+        text: '里面的人问潮是什么，我每次说法都不一样。潮不是水，水是它路过的东西；潮也不是人，人只是还没被它冲散的。它更像是一种腾出来的空——哪里死的人太多，哪里就腾出空，空够大了，潮就来了。你问我要不要怕。我怕的不是潮，是有一天潮认出我，把我当成已经空掉的那部分。',
+      },
+      {
+        id: 'yk-l3', topic: '穹顶是后罩上的', minRel: 3,
+        text: '他们说穹顶是保护，是先有灾难再有罩子。我听到的是反的。先有的城，先有的四号开发区，罩子是在某一年突然封上的，封的时候外面还有人。我认识一个人，他的姐姐就是封罩那天没进来的。他说那天没有公告，只有风。你那边的档案里，这一年大概率写着四个字：接缝检修。',
+      },
+      {
+        id: 'yk-l4', topic: '接缝外面有灯', minRel: 6,
+        text: '你问外面有没有人活着。有，但不算活得好。他们会用轨道港丢下来的东西搭棚子，把接缝渗下来的水接起来，沉两天再喝。他们有名字，只是不写在任何系统里。你要想知道有多少人，别去数，去听。晚上贴着接缝能听见敲打的声音，一下一下的。那个频率是有人在修东西，不是风。',
+      },
+    ],
+
+    /* ==================== 荀戒 · 环带巡检员 · 男 ==================== */
+    'xun-jie': [
+      {
+        id: 'xj-l1', topic: '环带是烂尾的开发区', minRel: 0,
+        text: '环带不是为维修建的，是先建的开发区，后来没钱了。档案里叫它四号开发区配套层，预算超了三倍，第三年停工，工地上的人没撤，住下了，就成了环带居民。我念了十一年规程，第一条写环带用途是设施维护，没写住人。可我这四百米里有六百多户。我每天打着手电走一圈，其实是在替他们数门牌。',
+      },
+      {
+        id: 'xj-l2', topic: '规程里没有回收两字', minRel: 0,
+        text: '规程里没有回收这两个字。人被转出时，转出单上写的是编制撤销。送过来的人先进排班表，排班表后面是房间号，房间号后面是接缝编号。我核过的转出单有九十多张，其中三分之一的人在半年内改了工号，改了工号就等于换了一个人。规程最后一条写着：环带不承担人员去向的记录义务。',
+      },
+      {
+        id: 'xj-l3', topic: '排班表上的工号', minRel: 3,
+        text: '排班表贴在管廊尽头，纸是潮的，字会花。第一列工号，第二列区段，第三列班次，第四列空着，留给巡检签。你问我这里有没有认识的人，有过。前年有个人来的第三天，工号被划了，划掉的那格第二天被人补上一模一样的字，只是末尾一位从七变成一。我照着签了，规程没写不许签。',
+      },
+      {
+        id: 'xj-l4', topic: '第四十一号接缝', minRel: 6,
+        text: '第四十一号接缝在我这四百米的末端，是全环带渗水最厉害的一处。上面给我的定额是每天擦一次，我实际每天擦两次，冬天三次。为什么是它？因为它外侧正好对着轨道港的下风口，谁把东西从港区丢下去，都从这儿落。我捡过鞋子、工牌、一封没拆的信。信我没拆，交上去了，登记编号是零四一七杠十一。',
+      },
+    ],
+
+    /* ==================== 萨尔 · 潮的拾荒者 · 女 ==================== */
+    'sa-er': [
+      {
+        id: 'se-l1', topic: '潮里怎么分东西', minRel: 0,
+        text: '潮里分东西不按人分，按先来后到。谁先看见谁拿，抢的人以后没人带他。你拿了一样，得留一样，留的不能挑轻的，挑轻的下次没人接你。我们那儿有句话：拿走的是别人的，留下的是自己的。你听不听得懂不重要，做得对不对才重要。我刚来的时候不懂规矩，被罚过两次，第三次就记住了。',
+      },
+      {
+        id: 'se-l2', topic: '外面的人怎么活', minRel: 0,
+        text: '外面的人怎么活？捡、换、等。捡接缝漏下来的，换彼此有的，等雨停。雨停的日子不多，一年到头大概四十来天。那些天最热闹，有人晒衣服，有人修棚子，有人往城里方向走，走到接缝外看一眼就回来。我们不叫那边城里，叫干的那边。干的那边的人过来，第一句总问：你们吃什么。',
+      },
+      {
+        id: 'se-l3', topic: '回收料流到外面', minRel: 3,
+        text: '回收场的东西有一部分会漏到外面。路线是从港区夜班出来的，装散件，一吨三百二，过接缝的时候穿的是运输船的名。漏下来的东西我捡过：一只义体手、一块没烧完的芯片，还有一个完整的工牌。工牌上的照片是个年轻姑娘。我把它挂在棚子口，挂了半年，后来被水冲走了。那天我找了一整天。',
+      },
+      {
+        id: 'se-l4', topic: '穹顶里才是笼子', minRel: 6,
+        text: '你们说我们在外面，你们在里面。我走过一次接缝，去过干的那边。那边什么都亮，什么都有人管，连你走路的步频都有人记。你们怕外面的雨，我怕里面的管。在里面待了两天我就出来了，出来那天正好下雨，我淋了一身，高兴得要命。你们管这叫牺牲，我们那儿管这叫被放出来。你想出来吗，我带你走。',
+      },
+    ],
+
+    /* ==================== 班头 · 回收场领班 · 男 ==================== */
+    'ban-tou': [
+      {
+        id: 'bt-l1', topic: '回收场怎么结账', minRel: 0,
+        text: '我这儿结账按件，不按人。一件上肢四块，下肢六块，带编号的加两块，编号磨掉的不收。集团的单子写拆干净，意思是取出可用件，剩下的按废料走。我一天过手两百斤，月底报的数跟实际差三到五个点。差的那些我留着，给工伤的人换件。这事上层知道，但上层也算在我的人头费里，所以没人开口。',
+      },
+      {
+        id: 'bt-l2', topic: '义体接管还是温的', minRel: 0,
+        text: '判断一条义体是拆的还是收的，看接管。收的接管凉，拆的接管温。我干这行八年，手上过了大概四万条，温的只见过十九条，其中十一条是这半年到的。这半年集团的单子格外多，单子上写设备报废。可温的东西不叫报废，叫还没停下。我这双手套就是那时候换的，之前那副沾了点东西，洗不掉。',
+      },
+      {
+        id: 'bt-l3', topic: '我拆过五个玩家', minRel: 3,
+        text: '我拆过五个玩家，都是折不出来的那种。第一个是女的，手上还戴着年会的表。第二个送来时穿着制服，扣子都在。第三个只有一条腿。第四个和第五个是一起送来的，装在两个袋子里，袋子上的编号连着。当时头儿站在传送带那头看着我拆，一句话没说，抽完手里的烟才走。我现在看谁都像那五个。',
+      },
+      {
+        id: 'bt-l4', topic: '下层人怎么攒钱', minRel: 6,
+        text: '下层的钱藏在三样地方：饭票、鞋、孩子的学费。没人存账户，账户里的钱是会被扣的。我这条线上的人，攒够一个学期的钱要八个月，中途要是下场雨，就变十个月。上月有个小伙子来卖义体，说卖了要给妹妹买名额。义体是他自己的，卖了就剩一条腿。我按最高的价收的，还是不够，这事我没告诉他。',
+      },
+    ],
+
+    /* ==================== 无面 · 记忆银行柜员 · 性别年龄不明 ==================== */
+    'wu-mian': [
+      {
+        id: 'wm-l1', topic: '这里存取的是什么', minRel: 0,
+        text: '这里存两种东西。一种是不想记得的事，删除费用一次付清，付清之后原主的调用权限作废。另一种是不能忘的事，存进来按编号封存，封存期一百年。前者多，后者少。一百年是个说法，不是承诺——柜子在地下第八层，那一层常年零下。也没有哪一条规定写着，柜子到期那天由谁来开。',
+      },
+      {
+        id: 'wm-l2', topic: '人格备份是备份给谁', minRel: 0,
+        text: '人格备份不是备份给你自己，是备份给需要调用它的部门。调用的时候不通知原主，原主也不知道自己被调用过几次。有人不带身体来存取，站在柜台前面，无面看不出年龄，也看不出是不是那个人。它只核对编号，编号对就办。无面不判断谁是人，这不是它这一栏的工作。这一栏的表格上只有两格：收，或者拒。',
+      },
+      {
+        id: 'wm-l3', topic: '编号被标红三次', minRel: 3,
+        text: '你的编号在系统里有三栏：登记栏、调用栏、封存栏。登记栏写来路，调用栏写次数，封存栏一般空着。无面见过的编号里，调用栏超过二十次的只有十一个，那十一个人的封存栏都填了同一个日期。日期是可以提前写的。你的调用栏现在是四次。四次不算多，多和不多之间，隔的不是数，是有人开始念你的号。',
+      },
+      {
+        id: 'wm-l4', topic: '被回收的人的记忆', minRel: 6,
+        text: '被回收的人，记忆不一定跟着消失。转出单上有一栏叫资料处置，三个选项：随主体销毁、移交调用、暂存待定。选暂存的要送到我这里，柜子在地下第八层。无面见过一份暂存记录，编号末位是七。来送的人用银色的东西遮住脸，放下一只盒子就走了，没说这是什么，也没说什么时候来取。盒子到现在还在。',
+      },
+    ],
+
+  };
+})();
+
 /* ===== game/rng.js ===== */
 /* ==========================================================
    《七日指令》随机数层
@@ -5089,18 +5554,47 @@ window.GAME_DATA = (function () {
   let onNode = null;
   let dragBound = false;
 
+  /* ---------------- 节点坐标自适应 ----------------
+     地图数据里的 x/y 是按 16:9 构图定的。可见带变扁（横屏手机）
+     或变窄（竖屏）时，直接按百分比放会让边缘节点掉出可视区。
+     这里把数据坐标线性重映射到安全带里，保证任何画幅下
+     十个城区都在可视范围内。
+  ------------------------------------------------ */
+  function computeRemap() {
+    const list = D.DISTRICTS || [];
+    if (!list.length) return { x0: 0, x1: 1, y0: 0, y1: 1 };
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    list.forEach((d) => {
+      xmin = Math.min(xmin, d.x); xmax = Math.max(xmax, d.x);
+      ymin = Math.min(ymin, d.y); ymax = Math.max(ymax, d.y);
+    });
+    return { x0: xmin, x1: xmax, y0: ymin, y1: ymax };
+  }
+
+  function placeOf(d, r) {
+    const spanX = (r.x1 - r.x0) || 1;
+    const spanY = (r.y1 - r.y0) || 1;
+    // 左右各留 7%，上下各留 15%（节点标签在下方，下部要留多些）
+    const px = 0.07 + ((d.x - r.x0) / spanX) * 0.86;
+    const py = 0.15 + ((d.y - r.y0) / spanY) * 0.68;
+    return { x: px, y: py };
+  }
+
   /* ---------------- 建立节点 ---------------- */
   function buildNodes(container, nodeClick) {
     host = container;
     onNode = nodeClick;
     host.innerHTML = '';
 
+    const remap = computeRemap();
+
     D.DISTRICTS.forEach((d) => {
+      const pos = placeOf(d, remap);
       const el = document.createElement('button');
       el.className = 'node';
       el.dataset.district = d.id;
-      el.style.left = (d.x * 100).toFixed(2) + '%';
-      el.style.top = (d.y * 100).toFixed(2) + '%';
+      el.style.left = (pos.x * 100).toFixed(2) + '%';
+      el.style.top = (pos.y * 100).toFixed(2) + '%';
       el.style.setProperty('--nc', d.color);
       el.type = 'button';
       el.innerHTML =
@@ -5279,271 +5773,29 @@ window.GAME_DATA = (function () {
     };
   }
 
-  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, summary };
-})();
-
-/* ===== game/tutorial.js ===== */
-/* ==========================================================
-   《七日指令》新手教程 —— 聚光灯分步引导
-   定位策略：每步实测目标矩形，再在若干候选位里挑一个
-   既不出屏、也不压住高亮目标的落点
-   ========================================================== */
-(function () {
-  'use strict';
-
-  const STEPS = [
-    {
-      target: null,
-      title: '十二张牌，一条命',
-      text: '你是穹顶集团的中层，被董事会点名替他们玩这场牌局。手里这十二张「指令卡」，每折掉一张，期限就重置一次；折完全部十二张，你活下来。本局的种子显示在顶部，同一种子会生成同一局。',
-    },
-    {
-      target: '#hud .hud-deadline',
-      title: '七天，一条命',
-      text: '每七天必须折掉至少一张牌。这个数字归零，你会在没有窗的会客室里等来「自愿退出」。',
-      place: 'below',
-    },
-    {
-      target: '#hand',
-      title: '手牌在底部',
-      text: '每张卡写明路径、目标、成功率与判定线。把卡拖到地图上对应的城区即可投放；也可以先点卡选中，再点城区执行。',
-      place: 'above',
-    },
-    {
-      target: '#map-grid .node[data-district="exchange"]',
-      title: '十个城区，十个战场',
-      text: '目标属于哪个城区，牌就得送到哪个城区。节点亮绿点代表此处有牌可折，金色感叹号是正在发生的事件，带有颜色的圆点代表这里有人给你派了活。',
-      place: 'auto',
-    },
-    {
-      target: '#btn-briefs',
-      title: '别人也会给你派活',
-      text: '除了自己的牌，每天还有人给你派委托：传唤、事务、人情，甚至要你今天处理掉一个人。委托有硬期限，同时最多三条，超期要付代价。这个按钮上是未处理的数量。',
-      place: 'below',
-    },
-    {
-      target: '#dock .dock-tools',
-      title: '两条压低判定线的路',
-      text: '判定线由卡级别、目标抗性、你的属性、装备与权柄共同决定。勾「加注」花信用点换 +3，或拉动芯片滑块，都能把线压下去。',
-      place: 'above',
-    },
-    {
-      target: '#map-hint',
-      title: '行动是另一半玩法',
-      text: '折牌是掷点，行动是不掷点的那一半：进修涨属性、家业赚钱、情报网显形、善后降罪痕。折一张牌吃掉 2 点行动，所以「今天折牌」和「今天攒资源」是互斥的。',
-      place: 'above',
-    },
-    {
-      target: '#rail',
-      title: '四个抽屉',
-      text: '行动花行动点换资源；名望四轨决定你的死法（忠诚归零被清算、罪痕满值被回收）；「认识」里是你遇见过的所有名字——每天结束都可能有人第一次出现在你面前。命运商店在主页。',
-      place: 'right',
-    },
-    {
-      target: '#btn-endday',
-      title: '一天结束，一堆账要结',
-      text: '结束这一天会推进日期、扣一次期限、给委托倒计时，并触发一个事件。现在开始吧。',
-      place: 'above',
-    },
-  ];
-
-  let idx = 0;
-  let onDone = null;
-  let bound = false;
-  let raf = 0;
-
-  const $ = (id) => document.getElementById(id);
-
-  function start(done) {
-    onDone = done || null;
-    idx = 0;
-    const root = $('tut');
-    root.hidden = false;
-    $('tut-total').textContent = String(STEPS.length);
-    if (!bound) {
-      window.addEventListener('resize', schedule);
-      window.addEventListener('orientationchange', schedule);
-      document.addEventListener('scroll', schedule, true);
-      bound = true;
-    }
-    render();
-    // 布局稳定后再校一次，避免字体或图片加载把位置带偏
-    setTimeout(place, 60);
-    setTimeout(place, 320);
+  /* ---------------- 取某个城区节点在屏幕上的位置 ----------------
+     剧情面板要贴着对应节点出现，所以这里给出节点的视口矩形。
+  ------------------------------------------------ */
+  function nodeRect(distId) {
+    const el = document.querySelector('.node[data-district="' + distId + '"]');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) return null;
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height,
+             cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
   }
 
-  function schedule() {
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(place);
+  /** 城区是否在当前可见的地图带里 */
+  function districtVisible(distId) {
+    const layer = document.getElementById('map-layer');
+    if (!layer) return false;
+    const lr = layer.getBoundingClientRect();
+    const nr = nodeRect(distId);
+    if (!nr) return false;
+    return nr.cx >= lr.left && nr.cx <= lr.right && nr.cy >= lr.top && nr.cy <= lr.bottom;
   }
 
-  function render() {
-    const s = STEPS[idx];
-    $('tut-idx').textContent = String(idx + 1);
-    $('tut-title').textContent = s.title;
-    $('tut-text').textContent = s.text;
-    $('tut-next').textContent = idx === STEPS.length - 1 ? '开始游戏' : '下一步';
-    place();
-  }
-
-  /* ---------- 目标矩形 ---------- */
-  function targetRect(sel) {
-    if (!sel) return null;
-    const els = document.querySelectorAll(sel);
-    if (!els.length) return null;
-    let l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
-    els.forEach((el) => {
-      if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return;
-      const cs = getComputedStyle(el);
-      if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) === 0) return;
-      const q = el.getBoundingClientRect();
-      if (q.width < 1 || q.height < 1) return;
-      l = Math.min(l, q.left); t = Math.min(t, q.top);
-      r = Math.max(r, q.right); b = Math.max(b, q.bottom);
-    });
-    if (l === Infinity) return null;
-    // 目标超出视口的部分裁掉，避免框到看不见的地方
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const nl = Math.max(0, Math.min(l, vw));
-    const nt = Math.max(0, Math.min(t, vh));
-    const nr = Math.max(0, Math.min(r, vw));
-    const nb = Math.max(0, Math.min(b, vh));
-    if (nr - nl < 2 || nb - nt < 2) return null;
-    return { left: nl, top: nt, right: nr, bottom: nb, width: nr - nl, height: nb - nt };
-  }
-
-  /* ---------- 矩形相交面积 ---------- */
-  function overlap(a, b) {
-    const w = Math.min(a.right, b.right) - Math.max(a.left, b.left);
-    const h = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
-    return (w > 0 && h > 0) ? w * h : 0;
-  }
-
-  /* ---------- 放置 ---------- */
-  function place() {
-    const s = STEPS[idx];
-    const hole = $('tut-hole');
-    const card = $('tut-card');
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const M = 12;
-    const PAD = 6;
-
-    const rect = targetRect(s.target);
-
-    // 没有目标：居中，并把框收掉
-    if (!rect) {
-      hole.style.left = '-9999px';
-      hole.style.top = '-9999px';
-      hole.style.width = '0px';
-      hole.style.height = '0px';
-      card.className = 'tut-card center';
-      card.style.left = '';
-      card.style.top = '';
-      return;
-    }
-
-    // 高亮框
-    hole.style.left = (rect.left - PAD) + 'px';
-    hole.style.top = (rect.top - PAD) + 'px';
-    hole.style.width = (rect.width + PAD * 2) + 'px';
-    hole.style.height = (rect.height + PAD * 2) + 'px';
-
-    // 先让卡片按内容撑开，再量真实尺寸
-    card.className = 'tut-card';
-    card.style.left = '0px';
-    card.style.top = '0px';
-    const cw = Math.min(card.offsetWidth || 330, vw - M * 2);
-    const chh = card.offsetHeight || 200;
-    const cardBox = (x, y) => ({ left: x, top: y, right: x + cw, bottom: y + chh });
-
-    // 底栏与 HUD 也算障碍，避免卡片盖住关键 UI
-    const dock = document.getElementById('dock');
-    const dockRect = dock ? dock.getBoundingClientRect() : null;
-    const hudRect = document.getElementById('hud')
-      ? document.getElementById('hud').getBoundingClientRect() : null;
-
-    const cands = [];
-    const cx = (l) => Math.max(M, Math.min(l, vw - cw - M));
-    const cy = (t) => Math.max(M, Math.min(t, vh - chh - M));
-
-    // 依据每步声明的偏好排优先级
-    const prefer = s.place || 'auto';
-    const g = 14;
-    const below = { x: cx(rect.left), y: cy(rect.bottom + g) };
-    const above = { x: cx(rect.left), y: cy(rect.top - chh - g) };
-    const right = { x: cx(rect.right + g), y: cy(rect.top) };
-    const left = { x: cx(rect.left - cw - g), y: cy(rect.top) };
-    const bc = { x: cx((vw - cw) / 2), y: cy(rect.bottom + g) };
-    const ac = { x: cx((vw - cw) / 2), y: cy(rect.top - chh - g) };
-
-    const order = {
-      below: [below, above, right, left, bc, ac],
-      above: [above, below, right, left, ac, bc],
-      right: [right, left, below, above, bc, ac],
-      left: [left, right, below, above, ac, bc],
-      auto: [below, right, above, left, bc, ac],
-    }[prefer] || [below, above, right, left, bc, ac];
-
-    order.forEach((c) => cands.push(c));
-    // 兜底：四角
-    [[M, M], [vw - cw - M, M], [M, vh - chh - M], [vw - cw - M, vh - chh - M]]
-      .forEach(([x, y]) => cands.push({ x, y }));
-
-    let best = null, bestScore = -Infinity;
-    cands.forEach((c) => {
-      const box = cardBox(c.x, c.y);
-      let score = 0;
-      // 出屏重罚
-      if (box.left < 0 || box.top < 0 || box.right > vw || box.bottom > vh) score -= 5000;
-      // 压住高亮目标重罚
-      score -= overlap(box, rect) / 40;
-      // 压住底栏 / HUD 扣分
-      if (dockRect) score -= overlap(box, dockRect) / 60;
-      if (hudRect) score -= overlap(box, hudRect) / 60;
-      // 同向优先（按 order 顺序给递减权重）
-      score -= cands.indexOf(c) * 0.5;
-      // 稍微偏好落在上半屏，视线更顺
-      score -= Math.abs(box.top) / 100;
-      if (score > bestScore) { bestScore = score; best = c; }
-    });
-
-    card.style.left = Math.round(best.x) + 'px';
-    card.style.top = Math.round(best.y) + 'px';
-  }
-
-  function next() {
-    if (idx >= STEPS.length - 1) return finish();
-    idx += 1;
-    render();
-  }
-
-  function finish() {
-    $('tut').hidden = true;
-    try { localStorage.setItem('sdd.tutorialDone', '1'); } catch (e) { /* 隐私模式 */ }
-    if (onDone) onDone();
-  }
-
-  function isDone() {
-    try { return localStorage.getItem('sdd.tutorialDone') === '1'; } catch (e) { return false; }
-  }
-
-  function reset() {
-    try { localStorage.removeItem('sdd.tutorialDone'); } catch (e) { /* 忽略 */ }
-    start();
-  }
-
-  function bind() {
-    $('tut-next').onclick = next;
-    $('tut-skip').onclick = finish;
-    document.addEventListener('keydown', (e) => {
-      if ($('tut').hidden) return;
-      if (e.key === 'Enter' || e.key === 'ArrowRight') next();
-      if (e.key === 'Escape') finish();
-    });
-  }
-
-  window.GAME_TUTORIAL = { start, isDone, reset, bind, place, STEPS };
+  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, summary, nodeRect, districtVisible };
 })();
 
 /* ===== game/ui.js ===== */
@@ -5556,7 +5808,6 @@ window.GAME_DATA = (function () {
   const D = window.GAME_DATA;
   const E = window.GAME_ENGINE;
   const M = window.GAME_MAP;
-  const T = window.GAME_TUTORIAL;
   const MET = window.GAME_META;
   const B = window.GAME_BRIEFS;
   const RNG = window.GAME_RNG;
@@ -5739,7 +5990,8 @@ window.GAME_DATA = (function () {
     // 开局先来一条委托，让新系统立刻可见
     if (B && !S.briefs.length) { B.spawn(S); renderAll(); }
     setTimeout(() => hint('种子 ' + S.seedLabel + ' · 遇到新的委托点顶部 ◈', 4200), 1400);
-    if (!T.isDone()) setTimeout(() => T.start(), 900);
+    // 开局走世界观入门剧情，不再弹独立的教程浮层
+    setTimeout(() => startIntro(), 260);
   }
 
   function quitToHome() {
@@ -6225,10 +6477,218 @@ window.GAME_DATA = (function () {
   }
 
   /* ==========================================================
-     事件 / 故事场景
-     两者共用同一个弹窗：故事场景多一条主线或支线标签。
+     剧情面板
+     剧情贴着 NPC / 城区节点出现，不做全屏：地图始终可见，
+     玩家能看到这段话发生在哪。窄屏时退化为贴底部的长条。
+     ========================================================== */
+  let storyQueue = [];       // 待播的场景
+  let storyDone = null;      // 播完后的回调
+  let storyIsIntro = false;
+  let storyCurrent = null;
+
+  function introScenes() {
+    const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
+    return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+  }
+
+  /* 开局：把世界观入门排进队列 */
+  function startIntro() {
+    const list = introScenes();
+    if (!list.length) { show('screen-game'); return; }
+    S.introDone = S.introDone || {};
+    const fresh = list.filter((sc) => !S.introDone[sc.id]);
+    if (!fresh.length) { show('screen-game'); return; }
+    storyIsIntro = true;
+    storyQueue = fresh.map((sc, i) => ({
+      story: true, kind: 'intro', id: sc.id, tag: sc.tag || '世界观',
+      title: sc.title, text: sc.text, portrait: null, npc: null, npcName: '',
+      district: 'tower',                    // 入门剧情挂在引导者所在的城区
+      idx: i + 1, total: fresh.length,
+      options: (sc.choices || []).map((c) => ({ label: c.label, relation: c.relation, run: c.run, flag: c.flag })),
+    }));
+    storyDone = () => { storyIsIntro = false; show('screen-game'); renderAll(); };
+    showStory(storyQueue.shift());
+  }
+
+  /* ---------- 面板落点：优先贴着节点，其次左右侧，最后贴底 ---------- */
+  function placePanel(scene) {
+    const panel = $('story-panel');
+    const pin = $('story-pin');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const M = 10;
+
+    const narrow = vw <= 820;
+    const shortLand = window.matchMedia('(orientation:landscape) and (max-height:560px)').matches;
+
+    // 面板尺寸：先按内容量出来
+    panel.style.left = '0px';
+    panel.style.top = '0px';
+    panel.style.bottom = 'auto';
+    const pw = panel.offsetWidth || 440;
+    const ph = panel.offsetHeight || 320;
+
+    // 找出这段剧情对应的节点位置
+    const distId = scene.district;
+    const rect = (distId && M && M.nodeRect) ? M.nodeRect(distId) : null;
+    const inBand = rect && M.districtVisible ? M.districtVisible(distId) : false;
+
+    if (rect && inBand && !narrow) {
+      pin.hidden = false;
+      pin.style.left = rect.cx + 'px';
+      pin.style.top = rect.cy + 'px';
+    } else {
+      pin.hidden = true;
+    }
+
+    let x, y;
+
+    if (narrow) {
+      // 窄屏：贴底长条，让地图上半部分仍然可见
+      x = M;
+      y = vh - ph - M;
+      if (shortLand) y = vh - ph - 6;
+      x = Math.max(M, Math.min(x, vw - pw - M));
+      y = Math.max(M, Math.min(y, vh - ph - M));
+      pin.hidden = true;
+    } else if (rect && inBand) {
+      // 优先放节点右侧；右侧不够就放左侧；上下夹紧
+      const gap = 26;
+      if (rect.right + gap + pw < vw - M) x = rect.right + gap;
+      else if (rect.left - gap - pw > M) x = rect.left - gap - pw;
+      else x = Math.min(Math.max(rect.cx + gap, M), vw - pw - M);
+      y = rect.cy - ph / 2;
+      y = Math.max(M, Math.min(y, vh - ph - M));
+      x = Math.max(M, Math.min(x, vw - pw - M));
+    } else {
+      // 节点不在可见带里（例如剧情挂在别的区）：放右侧竖向
+      x = vw - pw - M - (shortLand ? 90 : 0);
+      y = (vh - ph) / 2;
+      x = Math.max(M, Math.min(x, vw - pw - M));
+      y = Math.max(M, Math.min(y, vh - ph - M));
+    }
+
+    panel.style.left = Math.round(x) + 'px';
+    panel.style.top = Math.round(y) + 'px';
+    panel.style.bottom = 'auto';
+  }
+
+  function showStory(scene) {
+    if (!scene) { if (storyDone) storyDone(); return; }
+    storyCurrent = scene;
+
+    // 顶部
+    const badge = $('story-badge');
+    if (scene.kind === 'intro') badge.textContent = scene.tag || '世界观';
+    else if (scene.kind === 'main') badge.textContent = '主线';
+    else if (scene.kind === 'meet') badge.textContent = '初见';
+    else badge.textContent = scene.npcName ? scene.npcName + ' 的故事' : '故事';
+
+    $('story-progress').innerHTML =
+      '<span>' + (scene.idx || '·') + '</span><i>/</i><span>' + (scene.total || '·') + '</span>';
+
+    $('story-act').textContent = scene.actName
+      ? '第 ' + (scene.act || 1) + ' 幕 · ' + scene.actName + (scene.stage ? ' · 第 ' + scene.stage + ' 段' : '')
+      : (scene.npcRole || '');
+
+    // 立绘
+    const face = $('story-face');
+    const pid = scene.portrait || null;
+    if (pid) {
+      const fb = FALLBACK[pid] || null;
+      face.onerror = fb ? function () { this.onerror = null; this.src = PORTRAIT(fb); }
+                        : function () { this.hidden = true; };
+      face.hidden = false;
+      face.src = PORTRAIT(pid);
+      face.alt = scene.npcName || '';
+    } else { face.hidden = true; face.removeAttribute('src'); }
+
+    // 正文
+    $('story-title').textContent = scene.title || '';
+    $('story-text').textContent = scene.text || '';
+    $('story-body').scrollTop = 0;
+
+    $('story-skip').hidden = !(storyIsIntro || scene.kind === 'intro');
+
+    // 选项
+    renderChoices(scene.options, (o, i) => onStoryChoice(scene, o, i));
+
+    show('screen-story');
+    // 渲染完再定位，尺寸才准
+    requestAnimationFrame(() => placePanel(scene));
+  }
+
+  function renderChoices(options, onPick) {
+    const wrap = $('story-choices');
+    wrap.innerHTML = '';
+    const opts = (options || []).length ? options : [{ label: '继续' }];
+    opts.forEach((o, i) => {
+      const b = document.createElement('button');
+      b.className = 'story-choice';
+      b.type = 'button';
+      b.innerHTML = opts.length > 1
+        ? '<span class="num">' + (i + 1) + '</span>' + esc(o.label)
+        : esc(o.label);
+      b.onclick = () => onPick(o, i);
+      wrap.appendChild(b);
+    });
+    $('story-hint').hidden = opts.length > 1;
+  }
+
+  function onStoryChoice(scene, opt, i) {
+    if (scene.kind === 'intro') {
+      S.introDone = S.introDone || {};
+      S.introDone[scene.id] = 1;
+      S.storyFlags = S.storyFlags || {};
+      if (opt.flag) S.storyFlags[opt.flag] = 1;
+      const lines = [];
+      if (opt.run && E.applyEffectPublic) E.applyEffectPublic(S, opt.run, lines);
+      renderAll();
+      advanceStory();
+      return;
+    }
+
+    // 正式剧情：交给引擎结算
+    const r = E.resolveStory(S, scene, i);
+    renderAll();
+
+    // 结果接在正文后面，读起来是一段事的收尾，而不是一条系统提示
+    if (opt.after) {
+      const cur = $('story-text').textContent;
+      $('story-text').textContent = cur + '\n\n' + opt.after;
+      $('story-body').scrollTop = $('story-body').scrollHeight;
+    } else if (r.ok && r.lines && r.lines.length) {
+      $('story-text').textContent = ($('story-text').textContent) + '\n\n' + r.lines.join('\n');
+      $('story-body').scrollTop = $('story-body').scrollHeight;
+    }
+
+    renderChoices([{ label: storyQueue.length ? '继续' : '回到牌局' }], () => advanceStory());
+    requestAnimationFrame(() => placePanel(scene));
+  }
+
+  function advanceStory() {
+    if (storyQueue.length) { showStory(storyQueue.shift()); return; }
+    show('screen-game');
+    renderAll();
+    if (S.phase === 'end' && S.ending) showEnd();
+    if (storyDone) { const d = storyDone; storyDone = null; d(); }
+  }
+
+  /* 把引擎推来的一条剧情放进队列并播出 */
+  function queueStory(scene) {
+    storyQueue.push(scene);
+    if (!$('screen-story').classList.contains('active')) showStory(storyQueue.shift());
+  }
+
+  /* ==========================================================
+     事件弹窗（非剧情类：每日随机事件）
      ========================================================== */
   function showEvent(ev) {
+    if (ev && ev.story) { queueStory(ev); return; }
+    showEventModal(ev);
+  }
+
+  function showEventModal(ev) {
     const isStory = !!ev.story;
     const d = ev.district ? M.districtById(ev.district) : null;
 
@@ -6345,7 +6805,7 @@ window.GAME_DATA = (function () {
   $('nx-refund').onclick = onRefund;
   $('origin-back').onclick = () => show('screen-home');
   $('btn-quit').onclick = quitToHome;
-  $('btn-tutorial').onclick = () => T.reset();
+  $('btn-tutorial').onclick = () => show('screen-howto');
   $('btn-briefs').onclick = () => { if (!S) return; renderBriefs(); show('screen-briefs'); };
   $('briefs-back').onclick = () => { show('screen-game'); renderAll(); };
   $('btn-seed-rand').onclick = () => {
@@ -6379,12 +6839,11 @@ window.GAME_DATA = (function () {
   const bg = $('map-bg');
   bg.onerror = () => bg.classList.add('missing');
 
-  T.bind();
   renderOrigins();
   renderHome();
   window.__GAME = {
     get state() { return S; },
-    engine: E, data: D, map: M, tutorial: T, meta: MET, briefs: B, rng: RNG,
+    engine: E, data: D, map: M, meta: MET, briefs: B, rng: RNG,
     get profile() { return P; },
     renderAll: () => renderAll(),
   };

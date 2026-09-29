@@ -19,18 +19,47 @@
   let onNode = null;
   let dragBound = false;
 
+  /* ---------------- 节点坐标自适应 ----------------
+     地图数据里的 x/y 是按 16:9 构图定的。可见带变扁（横屏手机）
+     或变窄（竖屏）时，直接按百分比放会让边缘节点掉出可视区。
+     这里把数据坐标线性重映射到安全带里，保证任何画幅下
+     十个城区都在可视范围内。
+  ------------------------------------------------ */
+  function computeRemap() {
+    const list = D.DISTRICTS || [];
+    if (!list.length) return { x0: 0, x1: 1, y0: 0, y1: 1 };
+    let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+    list.forEach((d) => {
+      xmin = Math.min(xmin, d.x); xmax = Math.max(xmax, d.x);
+      ymin = Math.min(ymin, d.y); ymax = Math.max(ymax, d.y);
+    });
+    return { x0: xmin, x1: xmax, y0: ymin, y1: ymax };
+  }
+
+  function placeOf(d, r) {
+    const spanX = (r.x1 - r.x0) || 1;
+    const spanY = (r.y1 - r.y0) || 1;
+    // 左右各留 7%，上下各留 15%（节点标签在下方，下部要留多些）
+    const px = 0.07 + ((d.x - r.x0) / spanX) * 0.86;
+    const py = 0.15 + ((d.y - r.y0) / spanY) * 0.68;
+    return { x: px, y: py };
+  }
+
   /* ---------------- 建立节点 ---------------- */
   function buildNodes(container, nodeClick) {
     host = container;
     onNode = nodeClick;
     host.innerHTML = '';
 
+    const remap = computeRemap();
+
     D.DISTRICTS.forEach((d) => {
+      const pos = placeOf(d, remap);
       const el = document.createElement('button');
       el.className = 'node';
       el.dataset.district = d.id;
-      el.style.left = (d.x * 100).toFixed(2) + '%';
-      el.style.top = (d.y * 100).toFixed(2) + '%';
+      el.style.left = (pos.x * 100).toFixed(2) + '%';
+      el.style.top = (pos.y * 100).toFixed(2) + '%';
       el.style.setProperty('--nc', d.color);
       el.type = 'button';
       el.innerHTML =
@@ -209,5 +238,27 @@
     };
   }
 
-  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, summary };
+  /* ---------------- 取某个城区节点在屏幕上的位置 ----------------
+     剧情面板要贴着对应节点出现，所以这里给出节点的视口矩形。
+  ------------------------------------------------ */
+  function nodeRect(distId) {
+    const el = document.querySelector('.node[data-district="' + distId + '"]');
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    if (r.width < 1 || r.height < 1) return null;
+    return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height,
+             cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+  }
+
+  /** 城区是否在当前可见的地图带里 */
+  function districtVisible(distId) {
+    const layer = document.getElementById('map-layer');
+    if (!layer) return false;
+    const lr = layer.getBoundingClientRect();
+    const nr = nodeRect(distId);
+    if (!nr) return false;
+    return nr.cx >= lr.left && nr.cx <= lr.right && nr.cy >= lr.top && nr.cy <= lr.bottom;
+  }
+
+  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, summary, nodeRect, districtVisible };
 })();

@@ -13,11 +13,13 @@ ORDER=(
   game/content-map2.js
   game/content-briefs.js
   # 2) 剧情与语音：同样是纯数据
+  game/intro.js
   game/story-main.js
   game/story-npc-a.js
   game/story-npc-b.js
   game/voice-a.js
   game/voice-b.js
+  game/lore.js
   # 3) 随机数层
   game/rng.js
   # 4) 引擎（会合并上面的数据）
@@ -28,7 +30,6 @@ ORDER=(
   # 5) 外围
   game/meta.js
   game/map.js
-  game/tutorial.js
   # 6) 界面层：必须最后
   game/ui.js
 )
@@ -38,7 +39,10 @@ OUT=game/bundle.js
   echo "/* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */"
   echo "/* 生成时间: $(date -u +%Y-%m-%dT%H:%M:%SZ) */"
   for f in "${ORDER[@]}"; do
-    [ -f "$f" ] || { echo "缺少 $f" >&2; exit 1; }
+    if [ ! -f "$f" ]; then
+      echo "/* 跳过（文件不存在）: $f */"
+      continue
+    fi
     echo ""
     echo "/* ===== $f ===== */"
     cat "$f"
