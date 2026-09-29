@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-29T09:23:03Z */
+/* 生成时间: 2026-09-29T09:23:54Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -6486,6 +6486,13 @@ window.GAME_DATA = (function () {
   let storyIsIntro = false;
   let storyCurrent = null;
 
+
+  function storyLayer(on) {
+    const el = $('story-layer');
+    if (!el) return;
+    el.hidden = !on;
+  }
+
   function introScenes() {
     const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
     return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -6494,10 +6501,10 @@ window.GAME_DATA = (function () {
   /* 开局：把世界观入门排进队列 */
   function startIntro() {
     const list = introScenes();
-    if (!list.length) { show('screen-game'); return; }
+    if (!list.length) { storyLayer(false); return; }
     S.introDone = S.introDone || {};
     const fresh = list.filter((sc) => !S.introDone[sc.id]);
-    if (!fresh.length) { show('screen-game'); return; }
+    if (!fresh.length) { storyLayer(false); return; }
     storyIsIntro = true;
     storyQueue = fresh.map((sc, i) => ({
       story: true, kind: 'intro', id: sc.id, tag: sc.tag || '世界观',
@@ -6506,7 +6513,7 @@ window.GAME_DATA = (function () {
       idx: i + 1, total: fresh.length,
       options: (sc.choices || []).map((c) => ({ label: c.label, relation: c.relation, run: c.run, flag: c.flag })),
     }));
-    storyDone = () => { storyIsIntro = false; show('screen-game'); renderAll(); };
+    storyDone = () => { storyIsIntro = false; storyLayer(false); renderAll(); };
     showStory(storyQueue.shift());
   }
 
@@ -6613,7 +6620,7 @@ window.GAME_DATA = (function () {
     // 选项
     renderChoices(scene.options, (o, i) => onStoryChoice(scene, o, i));
 
-    show('screen-story');
+    storyLayer(true);
     // 渲染完再定位，尺寸才准
     requestAnimationFrame(() => placePanel(scene));
   }
@@ -6668,7 +6675,7 @@ window.GAME_DATA = (function () {
 
   function advanceStory() {
     if (storyQueue.length) { showStory(storyQueue.shift()); return; }
-    show('screen-game');
+    storyLayer(false);
     renderAll();
     if (S.phase === 'end' && S.ending) showEnd();
     if (storyDone) { const d = storyDone; storyDone = null; d(); }
@@ -6677,7 +6684,8 @@ window.GAME_DATA = (function () {
   /* 把引擎推来的一条剧情放进队列并播出 */
   function queueStory(scene) {
     storyQueue.push(scene);
-    if (!$('screen-story').classList.contains('active')) showStory(storyQueue.shift());
+    const el = $('story-layer');
+    if (!el || el.hidden) showStory(storyQueue.shift());
   }
 
   /* ==========================================================

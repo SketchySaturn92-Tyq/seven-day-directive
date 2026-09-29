@@ -1234,3 +1234,15 @@ body{
   .story-badge{font-size:9px;padding:1px 6px}
   .story-progress,.story-act{font-size:9.5px}
 }
+
+/* ==========================================================
+   v6·修正：剧情层是「盖在游戏界面上的浮层」，不是独立屏
+   这样地图与手牌始终可见，玩家知道这段剧情发生在哪。
+   ========================================================== */
+.story-layer{
+  position:fixed;inset:0;z-index:60;
+  pointer-events:none;            /* 面板之外仍可看见、可操作地图 */
+}
+.story-layer[hidden]{display:none !important}
+.story-layer .story-panel{pointer-events:auto}
+.story-layer .story-pin{pointer-events:none}
