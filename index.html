@@ -6,11 +6,12 @@
 <meta name="theme-color" content="#080b10">
 <title>七日指令 · THE SEVEN-DAY DIRECTIVE</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style-v3.css">
 </head>
 <body>
 <div id="app">
 
-  <!-- ============ 主页（含命运商店） ============ -->
+  <!-- ============ 主页 ============ -->
   <section id="screen-home" class="screen active">
     <img class="title-bg" src="assets/map-city.webp" alt="">
     <div class="title-scrim"></div>
@@ -21,7 +22,6 @@
         <p class="game-sub">THE SEVEN-DAY DIRECTIVE</p>
       </header>
 
-      <!-- 目标说明 -->
       <div class="goal-card">
         <div class="goal-line">你的目标</div>
         <p class="goal-text">
@@ -29,38 +29,49 @@
           <b>每七天必须折掉至少一张</b>——在行动地图上找到对应城区的目标并完成它。<br>
           <b>折完全部十二张，你活下来。</b>期限归零，你被回收。
         </p>
+        <p class="goal-sub">
+          牌是明面上的。暗面上，每天还有别人派来的委托：传唤、事务、人情、甚至要你处理掉一个人。
+          委托有硬期限，超期就付代价。
+        </p>
         <div class="goal-rules">
           <span>手牌 12 张，折完通关</span>
           <span>每张期限 7 天</span>
           <span>忠诚归零＝被清算</span>
           <span>罪痕满值＝被回收</span>
+          <span>委托同时最多 3 条</span>
         </div>
       </div>
 
-      <!-- 主要动作 -->
       <div class="home-actions">
         <button id="btn-play" class="btn btn-primary btn-lg">开始新的牌局</button>
         <button id="btn-howto" class="btn">怎么玩</button>
         <button id="btn-nexus" class="btn btn-gold">命运商店<i id="nexus-dot" class="dot" hidden></i></button>
       </div>
 
-      <!-- 档案 -->
+      <div class="seed-row">
+        <label class="seed-label" for="seed-input">种子</label>
+        <input id="seed-input" class="seed-input" type="text" placeholder="留空则随机" maxlength="40" autocomplete="off" spellcheck="false">
+        <button id="btn-seed-rand" class="btn btn-ghost btn-sm" title="换一个随机种子">随机</button>
+      </div>
+      <p class="seed-hint">同一种子会生成同一局：相同的牌堆、目标分布、事件与委托。可以分享给别人重跑。</p>
+
       <div class="profile-bar">
         <span class="pf"><i>✦</i>命运点 <b id="pf-fortune">0</b></span>
         <span class="pf">已进行 <b id="pf-runs">0</b> 局</span>
         <span class="pf">通关 <b id="pf-wins">0</b> 次</span>
-        <span class="pf">结局收集 <b id="pf-endings">0</b>/14</span>
+        <span class="pf">结局收集 <b id="pf-endings">0</b>/17</span>
+        <span class="pf">已认识 <b id="pf-met">0</b> 人</span>
       </div>
       <p id="pf-last" class="pf-last"></p>
 
       <footer class="home-foot">
-        <span>七日指令</span><span class="dot-sep">·</span><span id="build-ver">v2.0</span>
+        <span>七日指令</span><span class="dot-sep">·</span><span id="build-ver">v3.0</span>
         <span class="dot-sep">·</span><a id="link-changelog" href="CHANGELOG.md" target="_blank" rel="noopener">更新日志</a>
       </footer>
     </div>
   </section>
 
-  <!-- ============ 命运商店（主页内的独立屏） ============ -->
+  <!-- ============ 命运商店 ============ -->
   <section id="screen-nexus" class="screen">
     <img class="title-bg" src="assets/map-city.webp" alt="">
     <div class="title-scrim"></div>
@@ -83,14 +94,14 @@
     </div>
   </section>
 
-  <!-- ============ 出身选择 ============ -->
+  <!-- ============ 出身 ============ -->
   <section id="screen-origin" class="screen">
     <img class="title-bg" src="assets/map-city.webp" alt="">
     <div class="title-scrim"></div>
     <div class="origin-scroll">
       <header class="scr-head">
         <h2>选择出身</h2>
-        <p>起点不同，牌局一样。开局目标：折掉第一张指令卡。</p>
+        <p id="origin-seed" class="scr-seed">本局种子 ——</p>
       </header>
       <div id="origin-list" class="origin-list"></div>
       <div class="row"><button id="origin-back" class="btn btn-ghost">返回主页</button></div>
@@ -116,12 +127,14 @@
         <span class="res" title="信用点"><i class="i-money">¥</i><b id="hud-money">0</b></span>
         <span class="res" title="情报"><i class="i-intel">◉</i><b id="hud-intel">0</b></span>
         <span class="res" title="指令芯片"><i class="i-chips">▣</i><b id="hud-chips">0</b></span>
+        <span class="res" title="装备战力"><i class="i-gear">◤</i><b id="hud-gear">0</b></span>
       </div>
       <div class="hud-deadline" title="每七天内必须折掉一张牌">
         <span class="dl-t">期限</span>
         <span id="hud-deadline" class="dl-n">7</span>
       </div>
       <div class="hud-tools">
+        <button id="btn-briefs" class="icon-btn" title="委托">◈<i id="brief-badge" class="badge" hidden>0</i></button>
         <button id="btn-tutorial" class="icon-btn" title="怎么玩">?</button>
         <button id="btn-quit" class="icon-btn" title="回到主页">⌂</button>
       </div>
@@ -130,6 +143,7 @@
     <nav id="rail">
       <button class="rail-btn" data-panel="actions"><i>◆</i><span>行动</span></button>
       <button class="rail-btn" data-panel="tracks"><i>◈</i><span>名望</span></button>
+      <button class="rail-btn" data-panel="people"><i>♡</i><span>认识</span></button>
       <button class="rail-btn" data-panel="log"><i>≡</i><span>记录</span></button>
     </nav>
 
@@ -141,12 +155,17 @@
       <div class="drawer-body">
         <div id="pane-actions" class="pane">
           <div class="ap-line">行动点 <b id="hud-ap">4</b> / <span id="hud-apmax">4</span></div>
+          <p class="pane-hint">牌是掷点，行动是不掷点的那一半：它们稳定产出资源与属性，用来把判定线压下去。</p>
           <div id="actions" class="actions"></div>
         </div>
         <div id="pane-tracks" class="pane">
           <div id="tracks" class="tracks"></div>
           <h4 class="sub-t">属性</h4>
           <div id="stats" class="stats"></div>
+        </div>
+        <div id="pane-people" class="pane">
+          <p class="pane-hint">遇见过的名字。你在穹顶里的全部社会关系。</p>
+          <div id="people" class="people"></div>
         </div>
         <div id="pane-log" class="pane">
           <div id="log" class="log"></div>
@@ -156,7 +175,7 @@
 
     <div id="dock">
       <div class="dock-tools">
-        <label class="tool-check" title="花信用点，本次判定 +3"><input type="checkbox" id="chk-boost"><span>加注</span></label>
+        <label class="tool-check" title="花信用点，本次判定 +3"><input type="checkbox" id="chk-boost"><span>加注 <b id="boost-cost">20</b></span></label>
         <label class="tool-chip" title="每 2 枚芯片换 +1 判定，最多 +5">
           <span>芯片 <b id="chip-show">0</b></span>
           <input type="range" id="chip-range" min="0" max="0" value="0" step="1">
@@ -179,6 +198,8 @@
       <div class="modal-tag" id="dt-tag">城区</div>
       <h2 id="dt-title">——</h2>
       <p id="dt-desc" class="muted">——</p>
+      <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
+      <div id="dt-briefs" class="dt-briefs"></div>
       <div class="dt-cols">
         <div>
           <h4 class="sub-t">可投放的指令</h4>
@@ -192,6 +213,25 @@
         </div>
       </div>
       <div class="row"><button id="dt-close" class="btn btn-ghost">关闭</button></div>
+    </div>
+  </section>
+
+  <!-- ============ 委托面板 ============ -->
+  <section id="screen-briefs" class="screen">
+    <img class="title-bg" src="assets/map-city.webp" alt="">
+    <div class="title-scrim"></div>
+    <div class="briefs-scroll">
+      <header class="nexus-head">
+        <div>
+          <h2>委托与通牒</h2>
+          <p class="muted">别人派给你的活。有硬期限，超期就付代价。同时最多三条。</p>
+        </div>
+        <div class="nexus-fortune brief-stat">
+          <b id="bf-count">0</b><span>进行中</span>
+        </div>
+      </header>
+      <div id="briefs-list" class="briefs-list"></div>
+      <div class="row"><button id="briefs-back" class="btn btn-ghost">返回牌局</button></div>
     </div>
   </section>
 
@@ -240,16 +280,19 @@
 
   <!-- ============ 怎么玩 ============ -->
   <section id="screen-howto" class="screen overlay">
-    <div class="modal">
+    <div class="modal modal-wide">
       <div class="modal-tag">怎么玩</div>
       <h2>一局的目标</h2>
       <ol class="howto-list">
         <li><b>折掉十二张指令卡。</b>手牌里有操控、资本、扩张、清洗四类指令，每张都写明要拿下的目标。</li>
         <li><b>把卡送到目标所在的城区。</b>拖动卡牌到地图上对应的城区节点，或先点卡选中、再点城区。</li>
         <li><b>七天之内至少折一张。</b>折掉一张，期限重置为七天。倒计时归零就出局。</li>
-        <li><b>掷点判定成败。</b>能力值、装备、权柄都会压低判定线。加注和芯片可以再拉一把。</li>
+        <li><b>掷点判定成败。</b>能力值、装备、权柄都会压低判定线。加注与芯片可以再拉一把。</li>
+        <li><b>行动是不掷点的那一半。</b>进修涨属性、家业赚钱、情报网显形、善后降罪痕——它们的作用就是让下一次掷点更容易。折一张牌吃掉 2 点行动，所以「今天折牌」和「今天攒资源」是互斥的。</li>
         <li><b>盯住名望四轨。</b>忠诚归零＝被清算，罪痕满值＝被回收，声望与权柄决定你最后是哪种赢法。</li>
+        <li><b>应付派来的委托。</b>每天可能有人给你派活：传唤、事务、人情，甚至要你处理掉一个人。委托有硬期限，最多同时三条，超期要付代价。</li>
         <li><b>每天结束会出事件。</b>选项会写进名望。行动点花完就可以结束这一天。</li>
+        <li><b>遇见人。</b>开局你会陆续遇到十二个名字，每次初见都交代他是谁、你们怎么认识的。他们在「认识」抽屉里。</li>
         <li><b>通关后带走命运点。</b>回到命运商店买永久强化，下一局开局就生效。</li>
       </ol>
       <div class="row"><button id="howto-close" class="btn btn-primary">明白了</button></div>
@@ -275,7 +318,11 @@
 <script src="game/data.js"></script>
 <script src="game/content-extra.js"></script>
 <script src="game/content-v2.js"></script>
+<script src="game/content-map2.js"></script>
+<script src="game/content-briefs.js"></script>
+<script src="game/rng.js"></script>
 <script src="game/engine.js"></script>
+<script src="game/briefs.js"></script>
 <script src="game/meta.js"></script>
 <script src="game/map.js"></script>
 <script src="game/tutorial.js"></script>

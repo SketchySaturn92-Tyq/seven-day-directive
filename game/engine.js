@@ -1,23 +1,16 @@
 /* ==========================================================
    《七日指令》核心引擎 —— 状态机 + 结算
-   平衡版：判定线贴合属性区间，失败不致死，罪痕软性施压
+   随机化版：牌堆、目标、事件、委托全部由本局种子驱动
    ========================================================== */
 (function () {
   'use strict';
   const D = window.GAME_DATA;
   const C = D.CONFIG;
 
-  const rnd = (n) => Math.floor(Math.random() * n);
-  const pick = (arr) => arr[rnd(arr.length)];
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-
-  /* ---------------- 合并扩展内容（design/WORLD.md → content-extra.js） ---------------- */
-  (function mergeExtra() {
-    if (Array.isArray(window.EVENTS_EXTRA) && window.EVENTS_EXTRA.length) {
-      const seen = {};
-      D.EVENTS.forEach((e) => { seen[e.id] = 1; });
-      window.EVENTS_EXTRA.forEach((e) => { if (!seen[e.id]) D.EVENTS.push(e); });
-    }
+  /* ==========================================================
+     一、合并扩展内容（在数据加载后立即执行一次）
+     ========================================================== */
+  (function mergeAll() {
     const seen = {};
     D.ENDINGS.forEach((e) => { seen[e.id] = 1; });
     const take = (pool) => {
@@ -26,12 +19,32 @@
       return out;
     };
 
-    // 三类定调结局（假好 / 真好 / 坏）条件最具体，插到最前面，
-    // 否则会被「脏手的善人」「第十二名」这类中段条件抢先命中。
+    // 城区：按 id 去重追加
+    if (Array.isArray(window.DISTRICTS_EXTRA)) {
+      const have = {};
+      D.DISTRICTS.forEach((d) => { have[d.id] = 1; });
+      window.DISTRICTS_EXTRA.forEach((d) => { if (!have[d.id]) { have[d.id] = 1; D.DISTRICTS.push(d); } });
+    }
+
+    // 目标资产：按 id 去重追加
+    if (Array.isArray(window.ASSETS_EXTRA)) {
+      const have = {};
+      D.ASSETS.forEach((a) => { have[a.id] = 1; });
+      window.ASSETS_EXTRA.forEach((a) => { if (!have[a.id]) { have[a.id] = 1; D.ASSETS.push(a); } });
+    }
+
+    // 事件：普通扩展 + 初见事件
+    const evSeen = {};
+    D.EVENTS.forEach((e) => { evSeen[e.id] = 1; });
+    const pushEv = (pool) => (pool || []).forEach((e) => {
+      if (!evSeen[e.id]) { evSeen[e.id] = 1; D.EVENTS.push(e); }
+    });
+    pushEv(window.EVENTS_EXTRA);
+    pushEv(window.EVENTS_MEET);
+
+    // 结局：三类定调结局条件最具体，排最前；其余扩展插在兜底之前
     const tiered = take(window.ENDINGS_EXTRA2);
     if (tiered.length) D.ENDINGS.unshift(...tiered);
-
-    // 其余扩展结局插在兜底结局之前（即「穹顶之上的名字」这类之后）
     const extra = take(window.ENDINGS_EXTRA);
     if (extra.length) {
       let at = D.ENDINGS.findIndex((e) => e.id === 'survivor');
@@ -40,22 +53,84 @@
     }
   })();
 
-  function shuffle(a) {
-    const r = a.slice();
-    for (let i = r.length - 1; i > 0; i--) {
-      const j = rnd(i + 1);
-      [r[i], r[j]] = [r[j], r[i]];
+  /* ==========================================================
+     二、基础工具
+     ========================================================== */
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  /* ==========================================================
+     二·五、NPC 名录
+     初见事件里只有名字（写在标题里），没有稳定 id。
+     这里建立 名字 / 立绘 → id 的索引，供「认识」面板与委托面板共用。
+     ========================================================== */
+  const NPCS = {
+    'wen-duo': { name: '闻铎', role: '董事会监事', district: 'tower', portrait: 'portrait-monitor' },
+    'su-wen': { name: '苏纹', role: '董事会日程官', district: 'tower', portrait: 'portrait-su' },
+    'yu-nanzhi': { name: '郁南枝', role: '清算行首席', district: 'exchange', portrait: 'portrait-yu' },
+    'dai-siyuan': { name: '戴思远', role: '合规伦理审查官', district: 'exchange', portrait: 'portrait-dai' },
+    'cheng-yan': { name: '程砚', role: '首席科学家', district: 'lab', portrait: 'portrait-scientist' },
+    'peng-jian': { name: '彭戬', role: '研究所安保总管', district: 'lab', portrait: 'portrait-peng' },
+    'lao-ya': { name: '老鸦', role: '灰市掮客', district: 'slum', portrait: 'portrait-fixer' },
+    'lu-wan': { name: '陆晚', role: '无证诊所医生', district: 'slum', portrait: 'portrait-lu' },
+    'tie-gui': { name: '铁贵', role: '装卸工会头目', district: 'docks', portrait: 'portrait-tie' },
+    'yin-mian': { name: '银面', role: '女术士的代理人', district: 'docks', portrait: 'portrait-witch' },
+    'wen-shicheng': { name: '温仕成', role: '引航票务掮客', district: 'orbit', portrait: 'portrait-wen' },
+    'yu-ke': { name: '雨客', role: '穹顶外「潮」的接触人', district: 'orbit', portrait: 'portrait-yuke' },
+    /* 四个新城区新增的常驻角色 */
+    'xun-jie': { name: '荀戒', role: '环带巡检员', district: 'ring', portrait: 'portrait-ring' },
+    'sa-er': { name: '萨尔', role: '潮的拾荒者', district: 'outside', portrait: 'portrait-out' },
+    'ban-tou': { name: '班头', role: '回收场领班', district: 'salvage', portrait: 'portrait-sal' },
+    'wu-mian': { name: '无面', role: '记忆银行柜员', district: 'memory', portrait: 'portrait-mem' },
+  };
+
+  const NAME_TO_ID = {};
+  const PORTRAIT_TO_ID = {};
+  Object.keys(NPCS).forEach((id) => {
+    NAME_TO_ID[NPCS[id].name] = id;
+    PORTRAIT_TO_ID[NPCS[id].portrait] = id;
+  });
+
+  /**
+   * 从事件推出发布者 id。三条路依次尝试：
+   *   1. 事件自带 npc 字段
+   *   2. 标题里的「初见 · 名字」，去掉括号补充
+   *   3. 立绘文件名反查
+   */
+  function npcIdOf(ev) {
+    if (!ev) return null;
+    if (ev.npc && NPCS[ev.npc]) return ev.npc;
+    if (ev.portrait && PORTRAIT_TO_ID[ev.portrait]) return PORTRAIT_TO_ID[ev.portrait];
+    const t = String(ev.title || '');
+    const m = t.match(/初见\s*[·・:：]\s*([^\s（(]+)/);
+    if (m && NAME_TO_ID[m[1]]) return NAME_TO_ID[m[1]];
+    // 兜底：标题里直接出现名字
+    const keys = Object.keys(NAME_TO_ID);
+    for (let i = 0; i < keys.length; i++) {
+      if (t.indexOf(keys[i]) >= 0) return NAME_TO_ID[keys[i]];
     }
-    return r;
+    return null;
   }
 
-  /* ---------------- 牌堆 ---------------- */
+  const npcOf = (id) => NPCS[id] || null;
+
+  // 本局随机流。newGame 之前调用时退回系统随机，避免报错。
+  let R = null;
+  const fallback = window.GAME_RNG.create('bootstrap');
+  const rngOf = () => R || fallback;
+
+  const rnd = (n) => rngOf().int(n);
+  const pick = (arr) => rngOf().pick(arr);
+  const shuffle = (a) => rngOf().shuffle(a.slice());
+
+  /* ==========================================================
+     三、牌堆
+     ========================================================== */
   function newDeck() {
     const deck = [];
     let uid = 0;
     D.PATHS.forEach((p) => {
       D.TIERS.forEach((t) => {
-        const count = t.id === 3 ? 1 : 2;   // 3 路径 × (2+2+1) × 4 = 需 12 张
+        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张，抽 12 张入场
         for (let i = 0; i < count; i++) {
           deck.push({ uid: 'c' + (uid++), pathId: p.id, tier: t.id, need: t.need, target: null });
         }
@@ -64,12 +139,19 @@
     return shuffle(deck);
   }
 
-  /* ---------------- 开局 ---------------- */
-  function newGame(originId) {
+  /* ==========================================================
+     四、开局
+     ========================================================== */
+  function newGame(originId, seedText) {
+    R = window.GAME_RNG.create(seedText);
+
     const o = D.ORIGINS.find((x) => x.id === originId) || D.ORIGINS[0];
     const all = newDeck();
+
     const s = {
       version: C.version,
+      seed: R.seedText,
+      seedLabel: R.label,
       phase: 'play',
       day: 1,
       deadline: C.deadlineDays,
@@ -82,39 +164,72 @@
       intel: o.intel,
       chips: 0,
       gear: 0,
+      boostDiscount: 0,
+      foresight: false,
       hand: all.slice(0, 5),
       deck: all.slice(5),
       folded: 0,
       fortune: 0,
       log: [],
-      revealed: false,
       pendingEvent: null,
       ending: null,
       lastRoll: null,
       lastResult: null,
+      dailyUsed: {},
+      rng: R,
+      /* --- 委托系统 --- */
+      briefs: [],
+      briefSeen: [],
+      briefCounter: 0,
+      briefDone: 0,
+      briefExpired: 0,
+      briefRefused: 0,
+      /* --- 用于委托条件的计数器 --- */
+      pathFoldCount: {},
+      briefDistrictHits: {},
+      /* --- 认识过的 NPC --- */
+      metNpcs: {},
+      dayLog: [],
     };
-    s.hand.forEach((c) => { c.target = pickTarget(s, c); });
-    pushLog(s, 'day', '第一天。董事会把一副牌推到你面前，女术士在旁边鼓掌。');
+
+    seedHand(s);
+    pushLog(s, 'day', '第一天。董事会把一副牌推到你面前。本局种子 ' + R.label + '。');
     return s;
   }
 
-  /* ---------------- 查询 ---------------- */
+  // 补牌：带地区权重，让目标分布随本局随机
+  function seedHand(s) {
+    s.hand.forEach((c) => { if (!c.target) c.target = pickTarget(s, c); });
+  }
+
+  /* ==========================================================
+     五、查询
+     ========================================================== */
   const pathOf = (id) => D.PATHS.find((p) => p.id === id);
   const tierOf = (id) => D.TIERS.find((t) => t.id === id);
   const assetOf = (id) => D.ASSETS.find((a) => a.id === id);
-  const statName = (k) => { const x = D.STATS.find((v) => v.id === k); return x ? x.name : k; };
+  const districtOf = (id) => (D.DISTRICTS || []).find((d) => d.id === id);
+  const statName = (k) => {
+    const x = D.STATS.find((v) => v.id === k);
+    return x ? x.name : k;
+  };
+  const trackName = (k) => {
+    const x = D.TRACKS.find((v) => v.id === k);
+    return x ? x.name : k;
+  };
 
   function pickTarget(s, card) {
     const path = pathOf(card.pathId);
-    const pool = D.ASSETS.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
+    let pool = D.ASSETS.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
+    if (!pool.length) pool = D.ASSETS.filter((a) => a.level === card.tier);
     if (!pool.length) return null;
     return pick(pool).id;
   }
 
-  /* ---------------- 判定线 ----------------
-     dc = 8 + 级别*2 + 抗性*2 - 主属性*0.8 - 装备 - 权柄/4
-     设计目标：铁牌 ~70-80%，银牌 ~50-60%，金牌 ~30-40%
-  ------------------------------------------ */
+  /* ==========================================================
+     六、判定
+     dc 由 级别 / 目标抗性 / 主属性 / 装备 / 权柄 / 加注 共同决定
+     ========================================================== */
   function checkDC(s, card, boost) {
     const path = pathOf(card.pathId);
     const target = assetOf(card.target);
@@ -128,21 +243,20 @@
   }
 
   function successRate(s, card, boost) {
-    const dc = checkDC(s, card, boost);
-    return clamp((21 - dc) / 20, 0.05, 0.95);
+    return clamp((21 - checkDC(s, card, boost)) / 20, 0.05, 0.95);
   }
 
   function roll(s, card, boost) {
     const dc = checkDC(s, card, boost);
     const r = 1 + rnd(20);
     const pass = r >= dc || r === 20;
-    const crit = r === 20;
-    const fumble = r === 1;
-    s.lastRoll = { r: r, dc: dc, pass: pass, crit: crit, fumble: fumble };
+    s.lastRoll = { r: r, dc: dc, pass: pass, crit: r === 20, fumble: r === 1 };
     return s.lastRoll;
   }
 
-  /* ---------------- 折卡 ---------------- */
+  /* ==========================================================
+     七、折卡
+     ========================================================== */
   function canFold(s, card) {
     if (!card) return { ok: false, why: '牌不在手里。' };
     const target = assetOf(card.target);
@@ -153,7 +267,11 @@
   }
 
   const BOOST_COST = 20, BOOST_VAL = 3;
-  const CHIP_PER = 2, CHIP_CAP = 5;      // 每 2 枚芯片换 +1 判定，最多 +5
+  const CHIP_PER = 2, CHIP_CAP = 5;
+
+  function boostCost(s) {
+    return Math.max(10, BOOST_COST - (s.boostDiscount || 0));
+  }
 
   function fold(s, uid, useBoost, chipSpend) {
     const card = s.hand.find((c) => c.uid === uid);
@@ -163,8 +281,9 @@
 
     let boost = 0;
     if (useBoost) {
-      if (s.money < BOOST_COST) return { ok: false, why: '加注需要 ' + BOOST_COST + ' 信用点。' };
-      s.money -= BOOST_COST;
+      const cost = boostCost(s);
+      if (s.money < cost) return { ok: false, why: '加注需要 ' + cost + ' 信用点。' };
+      s.money -= cost;
       boost = BOOST_VAL;
     }
     let chipsUsed = 0;
@@ -179,15 +298,15 @@
     s.ap -= 2;
 
     const res = { ok: true, pass: out.pass, crit: out.crit, fumble: out.fumble, r: out.r, dc: out.dc, lines: [], fold: false };
-    const boostDesc = [];
-    if (useBoost) boostDesc.push('现金加注 +' + BOOST_VAL);
-    if (chipsUsed) boostDesc.push('投入 ' + (chipsUsed * CHIP_PER) + ' 芯片 +' + chipsUsed);
-    res.lines.push('掷出 ' + out.r + '，判定线 ' + out.dc + '（成功率 ' + Math.round(successRate(s, card, boost) * 100) + '%）' + (boostDesc.length ? '，' + boostDesc.join('、') : '') + '。');
+    const extra = [];
+    if (useBoost) extra.push('现金加注 +' + BOOST_VAL);
+    if (chipsUsed) extra.push('投入 ' + (chipsUsed * CHIP_PER) + ' 芯片 +' + chipsUsed);
+    res.lines.push('掷出 ' + out.r + '，判定线 ' + out.dc + '（成功率 ' + Math.round(successRate(s, card, boost) * 100) + '%）' + (extra.length ? '，' + extra.join('、') : '') + '。');
 
     if (out.pass) {
       res.lines.push(path.verb + '「' + target.name + '」成功。');
       const rw = path.reward;
-      const mul = out.crit ? 1.8 : (0.85 + Math.random() * 0.3);
+      const mul = out.crit ? 1.8 : (0.85 + rngOf().next() * 0.3);
       const gain = Math.round(rw.money * mul);
       s.money += gain;
       s.intel += rw.intel;
@@ -198,12 +317,17 @@
       if (s.origin.id === 'enforcer' && (path.id === 'purge' || path.id === 'expand')) {
         s.chips += 2; res.lines.push('外勤本能：+2 芯片。');
       }
+
       s.hand = s.hand.filter((c) => c.uid !== card.uid);
       s.folded += 1;
       s.fortune += 1 + card.tier;
       s.deadline = C.deadlineDays;
       res.fold = true;
       res.lines.push('牌已折断，期限重置为 7 天。');
+
+      // 给委托系统记账
+      s.pathFoldCount[path.id] = (s.pathFoldCount[path.id] || 0) + 1;
+      if (target.district) s.briefDistrictHits[target.district] = (s.briefDistrictHits[target.district] || 0) + 1;
 
       if (s.deck.length && s.hand.length < 5) {
         const nc = s.deck.shift();
@@ -222,12 +346,12 @@
       if (card.tier >= 2) s.tracks.sin = clamp(s.tracks.sin + 1, 0, C.trackCap);
       const loss = Math.min(s.money, 8 + card.tier * 4);
       s.money -= loss;
-      res.lines.push('体魄 -1，罪痕 +1，善后花掉 ' + loss + ' 信用点。');
+      res.lines.push('体魄 -1，善后花掉 ' + loss + ' 信用点。');
       if (out.fumble) {
         s.tracks.loyalty = clamp(s.tracks.loyalty - 1, 0, C.trackCap);
         res.lines.push('崩盘：现场留证，忠诚 -1。');
       }
-      if (s.origin.id === 'ghost' && Math.random() < 0.6) {
+      if (s.origin.id === 'ghost' && rngOf().chance(0.6)) {
         s.tracks.sin = Math.max(0, s.tracks.sin - 1);
         res.lines.push('幽灵协议：痕迹被抹掉一部分，罪痕 -1。');
       }
@@ -246,32 +370,43 @@
 
   function trackLine(t) {
     const parts = [];
-    D.TRACKS.forEach((k) => {
-      if (t[k.id]) parts.push(k.name + (t[k.id] > 0 ? ' +' : ' ') + t[k.id]);
-    });
+    D.TRACKS.forEach((k) => { if (t[k.id]) parts.push(k.name + (t[k.id] > 0 ? ' +' : ' ') + t[k.id]); });
     return parts.join('，');
   }
 
   function label(c) {
-    const p = pathOf(c.pathId), t = tierOf(c.tier);
-    return t.name + '·' + p.name;
+    return tierOf(c.tier).name + '·' + pathOf(c.pathId).name;
   }
 
-  /* ---------------- 每日行动 ---------------- */
+  /* ==========================================================
+     八、日常行动
+     设计说明见 design/ACTIONS.md：
+     行动不是附加的小游戏，它是「不用掷点就能把局面推回安全区」的唯一手段。
+     折牌有失败风险，行动则稳定产出资源与属性，用来把判定线压下去。
+     牌堆与行动的关系：行动 → 资源/属性 → 更高的成功率 → 更少失败损失。
+     ========================================================== */
   function doAction(s, actionId) {
     const a = D.ACTIONS.find((x) => x.id === actionId);
     if (!a) return { ok: false, why: '没有这个行动。' };
+
     let cost = a.cost;
     if (s.origin.id === 'ghost' && actionId === 'intel') cost = 1;
     if (s.ap < cost) return { ok: false, why: '行动点不够。' };
-    s.ap -= cost;
 
+    if (actionId === 'clean') {
+      const c = 45;
+      s.dailyUsed = s.dailyUsed || {};
+      if (s.dailyUsed.clean) return { ok: false, why: '一天只能善后一次，监事会盯得紧。' };
+      if (s.money < c) return { ok: false, why: '善后需要 ' + c + ' 信用点，你拿不出来。' };
+    }
+
+    s.ap -= cost;
     const mult = s.origin.id === 'fixer' && (actionId === 'intel' || actionId === 'social') ? 2 : 1;
     const lines = [];
     const r = a.run;
 
     if (r.money) {
-      let g = Array.isArray(r.money) ? r.money[0] + rnd(r.money[1] - r.money[0] + 1) : r.money;
+      let g = Array.isArray(r.money) ? rngOf().range(r.money[0], r.money[1]) : r.money;
       g *= mult; s.money += g;
       lines.push('家业进账 ' + g + ' 信用点。');
     }
@@ -292,20 +427,10 @@
       else lines.push('你手上既没有情报也没有现金，黑市的人礼貌地请你出去。');
     }
     if (actionId === 'clean') {
-      const c = 45;
-      s.dailyUsed = s.dailyUsed || {};
-      if (s.dailyUsed.clean) {
-        s.ap += cost;   // 退还行动点
-        return { ok: false, why: '一天只能善后一次，监事会盯得紧。' };
-      }
-      if (s.money < c) {
-        s.ap += cost;
-        return { ok: false, why: '善后需要 ' + c + ' 信用点，你拿不出来。' };
-      }
-      s.money -= c;
+      s.money -= 45;
       s.dailyUsed.clean = true;
       s.tracks.sin = Math.max(0, s.tracks.sin - 1);
-      lines.push('花掉 ' + c + ' 信用点买通关系，罪痕 -1。这一天不能再做第二次。');
+      lines.push('花掉 45 信用点买通关系，罪痕 -1。这一天不能再做第二次。');
     }
     if (actionId === 'brief' && s.origin.id === 'clerk') {
       addTracks(s, { loyalty: 1 });
@@ -316,7 +441,7 @@
   }
 
   function fieldOp(s) {
-    const r = rnd(100);
+    const r = rngOf().int(100);
     if (r < 45) { const m = 15 + rnd(35); s.money += m; return '你在城南收了一笔外账，+' + m + ' 信用点。'; }
     if (r < 70) { const g = 1 + rnd(3); s.intel += g; return '你顺着一条货运线摸到名录，+' + g + ' 情报。'; }
     if (r < 88) { const c = 1 + rnd(3); s.chips += c; return '你在废弃仓里拆到还能用的部件，+' + c + ' 芯片。'; }
@@ -325,7 +450,9 @@
     return '出门遇到伏击，你带着伤和 ' + m + ' 信用点回来。体魄 -1。';
   }
 
-  /* ---------------- 换牌 ---------------- */
+  /* ==========================================================
+     九、换牌
+     ========================================================== */
   function swapCard(s, uid) {
     const idx = s.hand.findIndex((c) => c.uid === uid);
     if (idx < 0) return { ok: false, why: '牌不在手里。' };
@@ -342,7 +469,9 @@
     return { ok: true, card: nc };
   }
 
-  /* ---------------- 回合推进 ---------------- */
+  /* ==========================================================
+     十、回合推进
+     ========================================================== */
   function endDay(s) {
     s.day += 1;
     s.deadline -= 1;
@@ -351,47 +480,67 @@
 
     if (s.money > 0) s.money -= Math.min(s.money, 4 + s.folded * 2);
 
-    if (s.tracks.sin >= 4 && Math.random() < 0.65) {
-      s.tracks.sin -= 1;
-    }
-    if (s.tracks.sin >= 8 && Math.random() < 0.4) {
+    // 罪痕自然消散
+    if (s.tracks.sin >= 4 && rngOf().chance(0.65)) s.tracks.sin -= 1;
+    // 监事会追查
+    if (s.tracks.sin >= 8 && rngOf().chance(0.4)) {
       s.tracks.loyalty = clamp(s.tracks.loyalty - 1, 0, C.trackCap);
       s.intel = Math.max(0, s.intel - 2);
       pushLog(s, 'bad', '监事会开始查你。忠诚 -1，情报 -2。');
     }
+    // 忠诚自然回流
     if (s.tracks.loyalty > 0 && s.tracks.loyalty < C.trackCap) {
       s.tracks.loyalty = clamp(s.tracks.loyalty + 1, 0, C.trackCap);
     }
+
     s.hand.forEach((c) => { c.target = pickTarget(s, c); });
+    if (!s.briefDistrictHits) s.briefDistrictHits = {};
+    if (!s.pathFoldCount) s.pathFoldCount = {};
+
+    /* --- 委托：先结算超期，再看是否来新的 --- */
+    const expired = window.GAME_BRIEFS ? window.GAME_BRIEFS.tick(s) : [];
+    const incoming = window.GAME_BRIEFS ? window.GAME_BRIEFS.maybeSpawn(s) : null;
 
     if (s.deadline <= 0) {
       pushLog(s, 'bad', '期限归零。会客室的门在你身后关上了。');
       s.ending = endingById('broken');
       s.phase = 'end';
-      return { ok: true, dead: true };
+      return { ok: true, dead: true, expired: expired, incoming: incoming };
     }
 
-    const ev = pickEvent();
+    const ev = pickEvent(s);
     s.pendingEvent = ev;
     s.phase = 'event';
     pushLog(s, 'day', '第 ' + s.day + ' 天。剩余期限 ' + s.deadline + ' 天。');
-    return { ok: true, event: ev };
+    return { ok: true, event: ev, expired: expired, incoming: incoming };
   }
 
   let eventBag = [];
-  function pickEvent() {
-    if (eventBag.length === 0) eventBag = shuffle(D.EVENTS.map((e, i) => i));
-    const e = D.EVENTS[eventBag.pop()];
-    return {
+  function pickEvent(s) {
+    const all = D.EVENTS;
+    if (!all.length) return null;
+    if (eventBag.length === 0) eventBag = shuffle(all.map((e, i) => i));
+    const e = all[eventBag.pop()];
+    const npcId = npcIdOf(e);
+    const out = {
       id: e.id, title: e.title, text: e.text, options: e.options,
-      portrait: e.portrait || null, district: e.district || null,
+      portrait: e.portrait || null,
+      district: e.district || null,
+      npc: npcId,
     };
+    if (npcId && String(e.title || '').indexOf('初见') >= 0) {
+      out.isMeet = true;
+      s.metNpcs = s.metNpcs || {};
+      s.metNpcs[npcId] = (s.metNpcs[npcId] || 0) + 1;
+    }
+    return out;
   }
 
   function resolveEvent(s, optIdx) {
     const ev = s.pendingEvent;
     if (!ev) return { ok: false };
     const opt = ev.options[optIdx];
+    if (!opt) return { ok: false };
     const lines = [];
     const r = opt.run;
 
@@ -413,14 +562,11 @@
 
   function applyEffect(s, eff, lines) {
     if (!eff) return;
-    // 顶层直接写名望键（如 sin / loyalty）也统一并入 track
+    // 顶层直接写名望键时并入 track
     const bare = {};
-    Object.keys(eff).forEach((k) => {
-      if (D.TRACKS.some((t) => t.id === k)) { bare[k] = eff[k]; }
-    });
+    Object.keys(eff).forEach((k) => { if (D.TRACKS.some((t) => t.id === k)) bare[k] = eff[k]; });
     if (Object.keys(bare).length) {
-      const merged = Object.assign({}, bare, eff.track || {});
-      eff = Object.assign({}, eff, { track: merged });
+      eff = Object.assign({}, eff, { track: Object.assign({}, bare, eff.track || {}) });
     }
     if (eff.money) { s.money = Math.max(0, s.money + eff.money); lines.push('信用点 ' + (eff.money > 0 ? '+' : '') + eff.money + '。'); }
     if (eff.intel) { s.intel = Math.max(0, s.intel + eff.intel); lines.push('情报 ' + (eff.intel > 0 ? '+' : '') + eff.intel + '。'); }
@@ -433,10 +579,16 @@
       s.stats[k] = clamp(s.stats[k] + eff.statRandom, 0, C.statCap);
       lines.push(statName(k) + ' +' + eff.statRandom + '。');
     }
-    if (eff.track) { addTracks(s, eff.track); if (trackLine(eff.track)) lines.push(trackLine(eff.track) + '。'); }
+    if (eff.track) {
+      addTracks(s, eff.track);
+      const tl = trackLine(eff.track);
+      if (tl) lines.push(tl + '。');
+    }
   }
 
-  /* ---------------- 终局 ---------------- */
+  /* ==========================================================
+     十一、终局
+     ========================================================== */
   function checkEnd(s) {
     if (s.tracks.loyalty <= 0) { s.ending = endingById('broken'); s.phase = 'end'; return; }
     if (s.tracks.sin >= C.trackCap) { s.ending = endingById('purged'); s.phase = 'end'; return; }
@@ -447,8 +599,13 @@
     for (let i = 0; i < D.ENDINGS.length; i++) if (D.ENDINGS[i].cond(s)) return D.ENDINGS[i];
     return D.ENDINGS[D.ENDINGS.length - 1];
   }
-  function endingById(id) { return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1]; }
+  function endingById(id) {
+    return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1];
+  }
 
+  /* ==========================================================
+     十二、命运商店（局内直接购买，主页另有一套永久升级）
+     ========================================================== */
   function buyShop(s, id) {
     const it = D.SHOP.find((x) => x.id === id);
     if (!it) return { ok: false, why: '没有这件东西。' };
@@ -462,12 +619,18 @@
 
   function pushLog(s, kind, text) {
     s.log.unshift({ kind: kind, text: text, day: s.day });
-    if (s.log.length > 60) s.log.pop();
+    if (s.log.length > 80) s.log.pop();
   }
 
+  /* ==========================================================
+     十三、导出
+     ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    pathOf, tierOf, assetOf, label, checkDC, successRate, canFold, trackLine, checkEnd,
+    pathOf, tierOf, assetOf, districtOf, label,
+    checkDC, successRate, canFold, trackLine, checkEnd,
+    boostCost, statName, trackName,
     BOOST_COST, BOOST_VAL, CHIP_PER, CHIP_CAP,
+    get rng() { return R; },
   };
 })();
