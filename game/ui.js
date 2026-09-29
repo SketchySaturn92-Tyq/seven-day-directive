@@ -35,9 +35,13 @@
     'portrait-sal': 'portrait-fixer',
     'portrait-mem': 'portrait-dai',
   };
+  /* 已生成的立绘，避免再走 onerror */
+  const HAS = {
+    'portrait-ring': 1, 'portrait-out': 1, 'portrait-sal': 1, 'portrait-mem': 1,
+  };
   function imgTag(cls, id, extra) {
     if (!id) return '';
-    const fb = FALLBACK[id] || null;
+    const fb = HAS[id] ? null : (FALLBACK[id] || null);
     const onerr = fb
       ? ' onerror="this.onerror=null;this.src=\'' + ART + fb + '.webp\';"'
       : ' onerror="this.style.visibility=\'hidden\';"';
