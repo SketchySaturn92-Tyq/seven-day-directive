@@ -233,6 +233,11 @@
       return;
     }
     el.classList.remove('urgent');
+    // 有主线等着就说主线，否则说牌
+    if (window.GAME_STORY) {
+      const p = window.GAME_STORY.progress(S);
+      if (p.nextTitle) { el.textContent = '第 ' + p.act + ' 幕 · ' + p.name + '：' + p.nextTitle; return; }
+    }
     if (foldable.length) el.textContent = '还能折 ' + foldable.length + ' 张，还差 ' + need + ' 张通关';
     else el.textContent = '暂时没有可折的牌，换牌或用行动攒资源';
   }
@@ -272,6 +277,15 @@
     $('chip-show').textContent = range.value + '/' + maxChip;
     $('boost-cost').textContent = E.boostCost(S);
     $('chk-boost').disabled = S.money < E.boostCost(S);
+
+    // 主线幕进度
+    if (window.GAME_STORY) {
+      const p = window.GAME_STORY.progress(S);
+      $('hud-act-n').textContent = p.act;
+      $('hud-act-name').textContent = p.name;
+      const el = $('hud-act');
+      el.title = '第 ' + p.act + ' 幕 · ' + p.name + '\n' + p.hook + (p.nextTitle ? '\n下一步：' + p.nextTitle : '');
+    }
   }
 
   function renderHand() {
@@ -364,29 +378,44 @@
     }
   }
 
-  /* 认识的人 */
+  /* 认识的人：交给对话层渲染，可以点进去反复搭话 */
   function renderPeople() {
-    const wrap = $('people');
-    const met = S.metNpcs || {};
-    const ids = Object.keys(met);
-    if (!ids.length) {
-      wrap.innerHTML = '<p class="pane-hint">你还没遇到任何人。每天结束时都可能出现一次初识事件。</p>';
-      return;
+    const host = $('people');
+    if (!host) return;
+    if (window.GAME_VOICE) {
+      window.GAME_VOICE.renderPeople(S, host, openTalk);
+    } else {
+      host.innerHTML = '<p class="pane-hint">对话系统尚未加载。</p>';
     }
-    wrap.innerHTML = '';
-    ids.forEach((id) => {
-      const n = npcOf(id);
-      const d = n.district ? M.districtById(n.district) : null;
-      const el = document.createElement('div');
-      el.className = 'person';
-      el.innerHTML =
-        imgTag('person-face', n.portrait) +
-        '<div class="person-info">' +
-          '<div class="person-name">' + esc(n.name) + '</div>' +
-          '<div class="person-role">' + esc(n.role) + (d ? ' · ' + esc(d.name) : '') + '</div>' +
-          '<div class="person-count">已见面 ' + met[id] + ' 次</div>' +
-        '</div>';
-      wrap.appendChild(el);
+  }
+
+  /* ---------- 对话屏 ---------- */
+  let talkNpc = null;
+
+  function openTalk(npcId) {
+    talkNpc = npcId;
+    show('screen-talk');
+    renderTalk();
+  }
+
+  function renderTalk() {
+    const host = $('talk-body');
+    if (!host || !talkNpc) return;
+    window.GAME_VOICE.renderTalk(S, talkNpc, host, {
+      onBack: () => { talkNpc = null; show('screen-game'); renderAll(); openDrawer('people'); },
+      onTopic: (tid) => {
+        const r = window.GAME_VOICE.talk(S, talkNpc, tid);
+        if (!r.ok) { toast('聊不下去', r.why); return; }
+        window.GAME_VOICE.showReply(host, r);
+        // 刷新关系值与话题锁定状态
+        const back = host.querySelector('[data-back]');
+        if (back) {
+          renderTalk();
+          const fresh = $('talk-body').querySelector('#talk-reply');
+          if (fresh) window.GAME_VOICE.showReply($('talk-body'), r);
+        }
+        renderAll();
+      },
     });
   }
 
@@ -626,16 +655,17 @@
     renderAll();
     renderBriefs();
     if (r.dead && S.ending) { showEnd(); return; }
-    // 先播报超期与新委托，再出当日事件
+    // 先播报超期与新委托，再出当日的故事或事件
     const notes = [];
     (r.expired || []).forEach((x) => { notes.push('「' + x.brief.title + '」超期。' + x.lines.join(' ')); });
     if (r.incoming) notes.push('新委托：「' + r.incoming.title + '」（' + r.incoming.left + ' 天内）。');
+    const next = r.story || r.event || null;
     if (notes.length) {
       showResult('这一天的账', notes, false);
-      pendingEvent = r.event || null;
+      pendingEvent = next;
       return;
     }
-    if (r.event) showEvent(r.event);
+    if (next) showEvent(next);
   }
 
   let pendingEvent = null;
@@ -646,13 +676,29 @@
   }
 
   /* ==========================================================
-     事件
+     事件 / 故事场景
+     两者共用同一个弹窗：故事场景多一条主线或支线标签。
      ========================================================== */
   function showEvent(ev) {
+    const isStory = !!ev.story;
     const d = ev.district ? M.districtById(ev.district) : null;
-    $('ev-dist').textContent = (ev.isMeet ? '初见 · ' : '') + (d ? d.name : '事件');
+
+    // 标签行：区分主线、初见、个人支线、普通事件
+    const tag = $('ev-dist');
+    if (isStory && ev.kind === 'main') {
+      tag.innerHTML = '<span class="tag-main">主线 · 第 ' + ev.act + ' 幕 ' + esc(ev.actName || '') + '</span>';
+    } else if (isStory && ev.kind === 'meet') {
+      tag.innerHTML = '<span class="tag-meet">初见 · ' + esc(ev.npcName || '') +
+        (ev.npcRole ? ' · ' + esc(ev.npcRole) : '') + '</span>';
+    } else if (isStory) {
+      tag.innerHTML = '<span class="tag-line">' + esc(ev.npcName || '') + ' 的故事 · 第 ' + (ev.stage || 1) + ' 段</span>';
+    } else {
+      tag.textContent = d ? d.name : '事件';
+    }
+
     $('ev-title').textContent = ev.title;
     $('ev-text').textContent = ev.text;
+
     const img = $('ev-portrait');
     const fb = ev.portrait ? (FALLBACK[ev.portrait] || null) : null;
     img.onerror = fb ? function () { this.onerror = null; this.src = PORTRAIT(fb); }
@@ -669,10 +715,14 @@
       b.className = 'ev-opt';
       b.textContent = o.label;
       b.onclick = () => {
-        const r = E.resolveEvent(S, i);
+        const r = isStory ? E.resolveStory(S, ev, i) : E.resolveEvent(S, i);
+        // 初见事件要登记认识的人
+        if (!isStory && ev.isMeet && ev.npc && window.GAME_STORY) {
+          window.GAME_STORY.markMet(S, ev.npc);
+        }
         show('screen-game');
         renderAll();
-        if (r.ok) showResult('结果', r.lines, null);
+        if (r.ok) showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null);
         if (S.phase === 'end' && S.ending) showEnd();
       };
       wrap.appendChild(b);

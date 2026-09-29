@@ -5,8 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#080b10">
 <title>七日指令 · THE SEVEN-DAY DIRECTIVE</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="style-v3.css">
+<link rel="stylesheet" href="bundle.css">
 </head>
 <body>
 <div id="app">
@@ -129,6 +128,10 @@
         <span class="res" title="指令芯片"><i class="i-chips">▣</i><b id="hud-chips">0</b></span>
         <span class="res" title="装备战力"><i class="i-gear">◤</i><b id="hud-gear">0</b></span>
       </div>
+      <div class="hud-act" id="hud-act" title="主线推进">
+        <span class="act-n">第 <b id="hud-act-n">1</b> 幕</span>
+        <span class="act-name" id="hud-act-name">发牌</span>
+      </div>
       <div class="hud-deadline" title="每七天内必须折掉一张牌">
         <span class="dl-t">期限</span>
         <span id="hud-deadline" class="dl-n">7</span>
@@ -235,6 +238,15 @@
     </div>
   </section>
 
+  <!-- ============ 对话 ============ -->
+  <section id="screen-talk" class="screen">
+    <img class="title-bg" src="assets/map-city.webp" alt="">
+    <div class="title-scrim"></div>
+    <div class="talk-scroll">
+      <div id="talk-body" class="talk-body"></div>
+    </div>
+  </section>
+
   <!-- ============ 事件 ============ -->
   <section id="screen-event" class="screen overlay">
     <div class="modal">
@@ -315,17 +327,8 @@
 
 </div>
 
-<script src="game/data.js"></script>
-<script src="game/content-extra.js"></script>
-<script src="game/content-v2.js"></script>
-<script src="game/content-map2.js"></script>
-<script src="game/content-briefs.js"></script>
-<script src="game/rng.js"></script>
-<script src="game/engine.js"></script>
-<script src="game/briefs.js"></script>
-<script src="game/meta.js"></script>
-<script src="game/map.js"></script>
-<script src="game/tutorial.js"></script>
-<script src="game/ui.js"></script>
+<!-- 源码在 game/ 下，按 ./build.sh 合并为单个 bundle.js。
+     合并的原因：隧道层对同源并发请求有限制，19 个脚本同时拉会 503。 -->
+<script src="game/bundle.js"></script>
 </body>
 </html>

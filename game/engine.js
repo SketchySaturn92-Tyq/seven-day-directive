@@ -508,6 +508,16 @@
       return { ok: true, dead: true, expired: expired, incoming: incoming };
     }
 
+    // 故事优先：主线或 NPC 支线占用今天的日程，没有才出随机事件
+    const story = pickStory(s);
+    if (story) {
+      s.pendingStory = story;
+      s.pendingEvent = null;
+      s.phase = 'event';
+      pushLog(s, 'day', '第 ' + s.day + ' 天。剩余期限 ' + s.deadline + ' 天。');
+      return { ok: true, story: story, expired: expired, incoming: incoming };
+    }
+
     const ev = pickEvent(s);
     s.pendingEvent = ev;
     s.phase = 'event';
@@ -587,6 +597,29 @@
   }
 
   /* ==========================================================
+     十·五、故事系统挂点
+     每天结束时先看有没有故事场景（主线优先），没有才走随机事件。
+     ========================================================== */
+  function pickStory(S) {
+    const ST = window.GAME_STORY;
+    if (!ST) return null;
+    return ST.nextScene(S);
+  }
+
+  function resolveStory(S, scene, optIdx) {
+    const ST = window.GAME_STORY;
+    if (!ST) return { ok: false };
+    const r = ST.resolve(S, scene, optIdx);
+    S.pendingEvent = null;
+    S.phase = 'play';
+    checkEnd(S);
+    return r;
+  }
+
+  /* 供 story.js 调用，避免两处重复实现 */
+  function applyEffectPublic(S, eff, lines) { applyEffect(S, eff, lines || []); }
+
+  /* ==========================================================
      十一、终局
      ========================================================== */
   function checkEnd(s) {
@@ -627,7 +660,8 @@
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    pathOf, tierOf, assetOf, districtOf, label,
+    resolveStory, pickStory, applyEffectPublic,
+    pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,
     BOOST_COST, BOOST_VAL, CHIP_PER, CHIP_CAP,

@@ -38,7 +38,10 @@
     }
   }
 
-  /* ---------------- 生成一条新委托 ---------------- */
+  /* ---------------- 生成一条新委托 ----------------
+     规则：只有你认识的人才会给你派活。
+     没见过的 NPC 不进候选池 —— 不会一上来就是个陌生人派任务。
+  ------------------------------------------------ */
   function spawn(S, forceKind) {
     const all = pool();
     if (!all.length) return null;
@@ -49,8 +52,14 @@
     active.forEach((b) => { usedIds[b.briefId] = 1; });
     (S.briefSeen || []).forEach((id) => { usedIds[id] = 1; });
 
-    let cands = all.filter((b) => !usedIds[b.id]);
-    if (!cands.length) { S.briefSeen = []; cands = all.slice(); }   // 用完了就重新洗一轮
+    // 只保留认识的人发来的委托
+    const met = S.metNpcs || {};
+    const known = all.filter((b) => met[b.npc]);
+    // 开局前三天如果熟人还不够，先由已有的熟人补齐
+    if (!known.length) return null;
+
+    let cands = known.filter((b) => !usedIds[b.id]);
+    if (!cands.length) { S.briefSeen = []; cands = known.slice(); }   // 用完了就重新洗一轮
     if (forceKind) {
       const f = cands.filter((b) => b.kind === forceKind);
       if (f.length) cands = f;
