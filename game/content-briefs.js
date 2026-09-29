@@ -293,8 +293,8 @@
       title: '一个要跳船的人，别让他上船',
       text: '温仕成说今晚有一班船，票已经开出去了，持票人准备把同组三个人一起带走，连带一份不该出港的清单。他要你让这个人今天之内上不了任何一班船。',
       days: 1,
-      solve: { type: 'resource', need: { money: 60 } },
-      onSolve: { money: 20, track: { sin: 1, power: 1 } },
+      solve: { type: 'district', district: 'orbit' },
+      onSolve: { money: 25, track: { sin: 1, power: 1 } },
       onExpire: { track: { loyalty: -2, sin: 1 } } },
 
     { id: 'b35', kind: 'blood', npc: 'su-wen', district: 'tower',
@@ -418,8 +418,8 @@
       title: '帮她那天下午空出两个小时',
       text: '苏纹说她母亲那天要从穹顶外侧进来，手续都齐了，只差高塔的一趟电梯权限和一次访客确认。她要你把她下午的两个小时从日程里空出来，别人问起就说是会议。',
       days: 2,
-      solve: { type: 'stat', stat: 'vitality', dc: 11 },
-      onSolve: { track: { renown: 1, loyalty: 1 } },
+      solve: { type: 'stat', stat: 'charm', dc: 12 },
+      onSolve: { intel: 1, track: { renown: 2, loyalty: 1 } },
       onExpire: { track: { renown: -1, loyalty: -1 } } },
 
     /* ================= trap 陷阱与试探 ================= */
