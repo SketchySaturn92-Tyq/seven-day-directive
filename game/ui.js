@@ -74,7 +74,7 @@
           Array.from({ length: it.max }).map((_, i) =>
             '<span class="pip' + (i < lv ? ' on' : '') + '"></span>').join('') +
         '</div>' +
-        '<button class="btn nx-buy">' + (maxed ? '已满级' : '✦ ' + it.cost) + '</button>';
+        '<button class="btn btn-gold nx-buy">' + (maxed ? '已满级' : '升级 ' + it.cost + ' 点') + '</button>';
       const b = el.querySelector('.nx-buy');
       if (maxed) b.setAttribute('disabled', 'disabled');
       else if (!gate.ok) { b.setAttribute('disabled', 'disabled'); b.title = gate.why; }

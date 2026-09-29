@@ -18,22 +18,24 @@
       D.EVENTS.forEach((e) => { seen[e.id] = 1; });
       window.EVENTS_EXTRA.forEach((e) => { if (!seen[e.id]) D.EVENTS.push(e); });
     }
-    const pools = [];
-    if (Array.isArray(window.ENDINGS_EXTRA)) pools.push(window.ENDINGS_EXTRA);
-    if (Array.isArray(window.ENDINGS_EXTRA2)) pools.push(window.ENDINGS_EXTRA2);
-    if (pools.length) {
-      const seen = {};
-      D.ENDINGS.forEach((e) => { seen[e.id] = 1; });
-      const extra = [];
-      pools.forEach((pool) => pool.forEach((e) => {
-        if (!seen[e.id]) { seen[e.id] = 1; extra.push(e); }
-      }));
-      // 条件具体的先判，兜底结局始终留在最后
-      let at = D.ENDINGS.findIndex((e) => e.id === 'emperor');
-      if (at < 0) {
-        const lastIdx = D.ENDINGS.length - 1;
-        at = D.ENDINGS[lastIdx] && D.ENDINGS[lastIdx].id === 'survivor' ? lastIdx : D.ENDINGS.length;
-      }
+    const seen = {};
+    D.ENDINGS.forEach((e) => { seen[e.id] = 1; });
+    const take = (pool) => {
+      const out = [];
+      (pool || []).forEach((e) => { if (!seen[e.id]) { seen[e.id] = 1; out.push(e); } });
+      return out;
+    };
+
+    // 三类定调结局（假好 / 真好 / 坏）条件最具体，插到最前面，
+    // 否则会被「脏手的善人」「第十二名」这类中段条件抢先命中。
+    const tiered = take(window.ENDINGS_EXTRA2);
+    if (tiered.length) D.ENDINGS.unshift(...tiered);
+
+    // 其余扩展结局插在兜底结局之前（即「穹顶之上的名字」这类之后）
+    const extra = take(window.ENDINGS_EXTRA);
+    if (extra.length) {
+      let at = D.ENDINGS.findIndex((e) => e.id === 'survivor');
+      if (at < 0) at = D.ENDINGS.length;
       D.ENDINGS.splice(at, 0, ...extra);
     }
   })();
