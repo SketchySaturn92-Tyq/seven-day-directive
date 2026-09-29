@@ -205,6 +205,20 @@
         '</button>';
     }).join('');
 
+    // 他会主动讲的这个世界的事
+    const lore = loreOf(npcId);
+    const loreHtml = lore.length ? lore.map((it) => {
+      const st = loreState(S, npcId, it);
+      const locked = !st.ok;
+      return '<button class="topic topic-lore' + (locked ? ' locked' : '') + '" data-lore="' + it.id + '"' +
+        (locked ? ' disabled' : '') + '>' +
+        '<span class="topic-label">' + esc(it.topic) + '</span>' +
+        '<span class="topic-note">' + (locked ? esc(st.why) : '听他讲') + '</span>' +
+        '</button>';
+    }).join('') : '';
+
+    const lp = loreProgress(S);
+
     host.innerHTML =
       '<div class="talk-head">' + faceTag('talk-face', info.portrait) +
         '<div class="talk-id">' +
@@ -219,12 +233,18 @@
       '<div class="talk-said">' + esc(shown) + '</div>' +
       '<h4 class="sub-t">可以聊的</h4>' +
       '<div class="topic-list">' + topicHtml + '</div>' +
+      (loreHtml ? '<h4 class="sub-t">他想让你知道的事' +
+        '<span class="lore-count">已听 ' + lp.got + '/' + lp.total + '</span></h4>' +
+        '<div class="topic-list lore-list">' + loreHtml + '</div>' : '') +
       '<div id="talk-reply" class="talk-reply" hidden></div>' +
       '<div class="row"><button class="btn btn-ghost" data-back="1">返回名单</button></div>';
 
     host.querySelector('[data-back]').onclick = handlers.onBack;
     host.querySelectorAll('[data-topic]').forEach((b) => {
       b.onclick = () => handlers.onTopic(b.getAttribute('data-topic'));
+    });
+    host.querySelectorAll('[data-lore]').forEach((b) => {
+      b.onclick = () => handlers.onLore(b.getAttribute('data-lore'));
     });
   }
 
@@ -242,5 +262,50 @@
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent };
+  /* ---------------- 世界观碎片 ----------------
+     NPC 会主动跟你讲这个世界的事：穹顶怎么来的、回收是怎么回事、
+     名望四轨在生活里意味着什么。不同人讲同一个主题会有出入，
+     玩家自己拼。
+  ------------------------------------------------ */
+  function loreOf(npcId) {
+    const L = window.LORE || {};
+    return Array.isArray(L[npcId]) ? L[npcId] : [];
+  }
+
+  function loreState(S, npcId, item) {
+    if (!S.loreHeard) S.loreHeard = {};
+    if (S.loreHeard[item.id]) return { ok: false, why: '已经听过了' };
+    if (ST.rel(S, npcId) < (item.minRel || 0)) {
+      return { ok: false, why: '关系不够（需 ' + item.minRel + '）' };
+    }
+    return { ok: true };
+  }
+
+  /* 聊一条世界观：不给数值，只把世界讲清楚 */
+  function hearLore(S, npcId, loreId) {
+    const v = voiceOf(npcId);
+    const item = loreOf(npcId).find((x) => x.id === loreId);
+    if (!item) return { ok: false, why: '没有这条。' };
+    const st = loreState(S, npcId, item);
+    if (!st.ok) return { ok: false, why: st.why };
+    S.loreHeard[item.id] = 1;
+    S.loreCount = (S.loreCount || 0) + 1;
+    // 听人讲事本身就拉近关系
+    const before = ST.rel(S, npcId);
+    const after = ST.addRel(S, npcId, 1);
+    const lines = [];
+    if (after !== before) lines.push((v ? v.name : '他') + ' 对你的看法变了（关系 ' + before + ' → ' + after + '）。');
+    S.log.unshift({ kind: 'story', day: S.day, text: '听' + (v ? v.name : '') + '讲 · ' + item.topic });
+    if (S.log.length > 80) S.log.pop();
+    return { ok: true, topic: item, reply: item.text, lines: lines, name: v ? v.name : '' };
+  }
+
+  function loreProgress(S) {
+    const all = [];
+    Object.keys(window.LORE || {}).forEach((k) => loreOf(k).forEach((x) => all.push(x)));
+    const got = all.filter((x) => S.loreHeard && S.loreHeard[x.id]).length;
+    return { got: got, total: all.length };
+  }
+
+  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
 })();

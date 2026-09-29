@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-29T09:23:54Z */
+/* 生成时间: 2026-09-29T09:25:24Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -1545,11 +1545,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：这副牌本来不是给你的',
       when: { minDay: 1 },
-      text: '早会散得比平时快。苏纹在走廊拐角等你，手里抱着一叠日程表，最上面那张的收件人不是你。她把那张抽出来，换上另一张，动作快得像早就练过。「十二张，七天一张，折不出来就换人。」她说话的时候没看你，「上一副发出去的时候，也是这样交代的。」电梯到了，她先进去，按住门等你。',
+      text: '上周四的早会散得比平时快，长桌上还留着没人收的纸杯，窗外下了半宿的雨刚停，玻璃上全是水痕。三十七层的走廊刚拖过，地上一串湿脚印一直排到电梯口，不知道是谁的。苏纹在拐角等你，怀里抱着一叠日程表，最上面那张的收件人不是你，是另一个部门的编号。她把那张抽出来，随手换上另一张，纸边卷着，页脚印着「内部流转·勿带离」，换下来的那张她没扔，夹进自己表册的最里面。「十二张，七天一张，折不出来就换人。」说这话时她盯着电梯上行的指示灯，没看你，「上一副发出去的时候，我也是这么交代的。」电梯到了，她先进去，用手按住门等你。她袖口有一小片湿痕，是刚洗过手还是淋过雨，你分不清。她的工牌翻过来了，照片朝里。',
       options: [
-        { label: '问上一副牌是谁在用', relation: 2, run: { intel: 3 }, flag: 'ask_prev' },
-        { label: '什么也不问，跟上电梯', relation: 1, run: { track: { loyalty: 1 } } },
-        { label: '把日程表还给她，说这不归我管', relation: -1, run: { track: { power: 1, loyalty: -1 } } },
+        { label: '问上一副牌是谁在用', relation: 2, run: { intel: 3 }, flag: 'ask_prev',
+          after: '你把问题问出口。她按下楼层键才回答：「上一副用到第九张，人就换了。」电梯上升的那几秒里，她翻了翻抱着的表，把其中一页折角又抹平，像是后悔留了痕。到三十七层她先出去，门合拢前回头看了你一眼，像在核对一个数字。' },
+        { label: '什么也不问，跟上电梯', relation: 1, run: { track: { loyalty: 1 } },
+          after: '你什么也没问，跟着她进了电梯。她在三十六层按停，把你领进一间没有门牌的小会议室，桌上摊着十二张空白指令卡和一支旧笔，笔帽裂了。她指了指最左边那张：「从这张开始。折的时候手别抖，也别折在编号上。」' },
+        { label: '把日程表还给她，说这不归我管', relation: -1, run: { track: { power: 1, loyalty: -1 } },
+          after: '你把日程表塞回她怀里。她没有接话，只把那张纸抽出来对折，夹进自己表册的最后一页，压平。电梯来了两趟她都没上。「这话我听过三次，」她说，「前两次说的人，现在都在这张表上。」说完她按下上行键，站到你前面。' },
       ],
     },
     {
@@ -1559,11 +1562,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：一个已经清空的名录',
       when: { minFolded: 2 },
-      text: '夜里十一点，苏纹把一份名录推到你面前。十七个名字，全部划了横线，最后一栏统一写着「已回收」。备注列里只有一行字：均由本人自愿申请。她把手指压在最下面那个名字上——那行没被划掉，因为墨还没干。「这个人今天还在。」她说，「你要不要记住他？」',
+      text: '三天前你折掉第二张卡，系统里连条通知都没留，只有卡片折口那道白印还翘着。工位上方的灯管坏了一根，没人来换，你桌上的光比平时暗一档。夜里十一点，苏纹把门推开一条缝，没开顶灯，只在你桌上放下一份名录，纸还带着复印机的余温，边角是热的。十七个名字，全部划了横线，最后一栏统一写着「已回收」，备注列里只有一行小字：均由本人自愿申请。她俯下身，用手指压在最下面那个名字上——那行没被划掉，因为墨还没干，指腹一按就晕开一点。「这个人今天还在档案里喘气，」她说，「你要不要记住他？」窗外高架上的车灯一盏一盏过去，把她的影子从你桌面扫到墙上，又扫回去。她走的时候把门带上，锁舌响了两次才咬合。',
       options: [
-        { label: '记住这个名字', relation: 2, run: { intel: 3 }, flag: 'know_name' },
-        { label: '问她这十七个人是谁签的', relation: 1, run: { intel: 2, track: { sin: 1 } } },
-        { label: '把名录推回去', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '记住这个名字', relation: 2, run: { intel: 3 }, flag: 'know_name',
+          after: '你把那个名字念了一遍。她点头，没记在本子上，只把名录合起来，出门前撕掉那一页丢进碎纸机，机器卡了一下。你回到座位，发现私人备忘录里多了一行字，不是你打的——那三个字，笔画比你的工整，光标还在末尾闪。' },
+        { label: '问她这十七个人是谁签的', relation: 1, run: { intel: 2, track: { sin: 1 } },
+          after: '你问她这十七个人是谁签的。她翻到名录最后一页，指着右下角一处被涂掉又重写的签名：「字是我打的，手印是别人按的。」她把纸翻过来给你看背面，那里有十七个浅浅的凹坑，像被人用指腹反复按过，中间几个已经平了。' },
+        { label: '把名录推回去', relation: -1, run: { track: { loyalty: 1 } },
+          after: '你把名录推回桌沿。她停了两秒，收进文件夹，说了句「行」。走廊的感应灯一盏盏亮过去又灭掉，脚步声跟着灯走。第二天你桌上多了一张打印纸，只有一行日期，是你自己的入职日。没有署名，纸是从内线打印机出来的。' },
       ],
     },
 
@@ -1575,11 +1581,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：你活过了第一个七天',
       when: { minFolded: 3 },
-      text: '苏纹在茶水间堵住你，手里那杯咖啡已经凉了。「按流程，活过第一个周期的人要更新一次档案。」她把终端转过来给你看，照片是你入职那天拍的，比现在瘦。「上面问我，你是不是可以往下走。」她顿了一下，「我填的是可以。你要是想改，现在还能改。」',
+      text: '茶水间的咖啡机三天前就坏了，报修单还贴在墙上，边角被人撕掉一小块，日期那行看不清。台面上堆着没人洗的杯子，水渍干成一圈圈白印。苏纹在这儿堵住你，手里那杯咖啡已经凉透，杯壁上留着一个浅浅的唇印。她喝东西一向慢，这杯看样子放了一上午。她先朝门口看了两眼，才把你叫到窗边：「按流程，活过第一个周期的人要更新一次档案。」她把终端转过来给你看，照片是你入职那天拍的，比现在瘦，领口别着临时工牌，工号那栏还是临时的编号。她往下翻了两屏，「续任建议」那一栏已经填好了，两个字：可以。「上面问我，你是不是能往下走。我填的可以。」她顿了一下，把杯子往旁边挪开一点，「你要是想改，现在还来得及。」',
       options: [
-        { label: '不用改，继续', relation: 2, run: { track: { loyalty: 1, power: 1 } }, flag: 'kept_going' },
-        { label: '问她能不能把我从名单里删掉', relation: 1, run: { intel: 2, track: { sin: 1 } } },
-        { label: '自己动手改那份档案', relation: -1, run: { statRandom: 1, track: { sin: 2, loyalty: -1 } } },
+        { label: '不用改，继续', relation: 2, run: { track: { loyalty: 1, power: 1 } }, flag: 'kept_going',
+          after: '你说不用改。她收回终端，把咖啡整杯倒进水槽，杯子随手扔进回收桶，盖子没盖严。她擦干手往外走，走到门口又停下：「那从今天起，你的名字会出现在三张不同的表上。」说完补了一句，「别去看第三张。」' },
+        { label: '问她能不能把我从名单里删掉', relation: 1, run: { intel: 2, track: { sin: 1 } },
+          after: '你问她能不能把你从名单里删掉。她低头戳了两下终端，屏幕弹出一行小字：操作需双人授权。她把手缩回来，说：「我删过一次，删的是别人。」说完把杯子里剩的冷水一饮而尽，像在冲掉什么味道。杯子冲干净放回架上，摆得很正。' },
+        { label: '自己动手改那份档案', relation: -1, run: { statRandom: 1, track: { sin: 2, loyalty: -1 } },
+          after: '你伸手把终端转过来，自己改了几处，提交成功的提示弹出来时，她没拦，只往后退了半步，看着你的手。屏幕上那张入职照换成了今天的样子。她拿走终端时说了句：「从今天起，档案比我更熟你。」' },
       ],
     },
     {
@@ -1589,11 +1598,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '闻铎：一次没有预告的例行访问',
       when: { minFolded: 4 },
-      text: '你没有约过这场会面。闻铎坐在你工位对面，桌上放着一本很薄的手册，封面什么都没写。他翻到中间，那一页夹着一张你的门禁记录复印件，时间是上周四凌晨两点十一分。「例行核对。」他说，「顺便问一句——那天你去三十三层做什么？」走廊的灯正好暗了一格。',
+      text: '这场会面你没有约过。楼层的空调刚换过风口，吹出来的风里有一点灰味。上午十点，闻铎端着两杯水坐到你工位对面，手表链在桌角磕了一下，滴答声压住空调的嗡响。他带了一本很薄的手册，封面什么都没写，纸是灰的，像内部印的那种，纸边翘着，看得出来翻过很多遍。他翻到中间，那一页夹着一张你的门禁记录复印件，时间是上周四凌晨两点十一分，读卡器编号在三十三层。他把复件抽出来摆正，像是专门给你看的，杯口的水汽一缕缕散开，把复印件的一角洇软了。「例行核对。」他拧开水杯盖，没喝，「顺便问一句——那天你去三十三层做什么？」走廊的灯正好暗了一格，他的脸跟着黑下去，手册上的字也看不清了。',
       options: [
-        { label: '如实说明那晚的去向', relation: 2, run: { track: { loyalty: 2, renown: -1 } }, flag: 'told_truth' },
-        { label: '反问他手上那份记录从哪来的', relation: 1, run: { intel: 3, track: { loyalty: -1 } } },
-        { label: '说记不清了', relation: -1, run: { track: { sin: 1, loyalty: -1 } } },
+        { label: '如实说明那晚的去向', relation: 2, run: { track: { loyalty: 2, renown: -1 } }, flag: 'told_truth',
+          after: '你一五一十说了，从进楼的时间说到电梯停靠的层数。他没记录，只在手册上画了个小圈，圈住一个时间点。临走前他把手册扣在桌上，封面朝上，你才看清压着一行浅字：留痕者免责。走到电梯口，他回头说：「下次别一个人上去。」' },
+        { label: '反问他手上那份记录从哪来的', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+          after: '你没答，反问他手上那份记录从哪来的。他手指在复件边缘停了一下，笑了：「系统每天四点导出一份，我只是拿到了其中一页。」他把手册合上，夹进腋下，又补了一句，「能拿到它的人，不止我一个。」' },
+        { label: '说记不清了', relation: -1, run: { track: { sin: 1, loyalty: -1 } },
+          after: '你说记不清了。他笑了下，笑到嘴角就够。他合上手册，用指尖把它推回你桌边：「那本先放你这儿。」他走后你翻开中间那一页，复印件已经不见了，只剩一圈浅浅的压痕，时间的位置是空的，纸还热着。' },
       ],
     },
 
@@ -1605,11 +1617,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：有人在查我的排期表',
       when: { minFolded: 6 },
-      text: '苏纹没有进你的办公室，站在门口就把话说完了。她的排期表被调走过一次，回来时多了三处标注，全是她替你改过时间的记录。「我不怕被查，」她说，声音压得很低，「我怕他们顺着我的表，查到你哪天做了什么。」她把一份新的排期表塞给你，上面有几个时段是空的，空得不像她排的。',
+      text: '这一周你折掉第六张卡，楼下保安换了两拨，闸机旁边多了一台新的读卡器，红灯一直亮着。苏纹没有进办公室，站在门框外把话说完了，声音压得比走廊的空调还低。她说她的排期表三天前被调走过一次，回来时多了三处标注，全是她替你改过时间的记录，红笔，字迹不是她的，每处旁边还压出一道浅浅的折痕，像被人对着灯看过。她从文件袋里把那张纸抽出来，指着红标注给你看，指尖在各处之间来回挪，文件袋上用记号笔画着一道斜杠，那是她自己的标记。「我不怕被查，」她说，「我怕他们顺着我的表，一页页对照你哪天做了什么。」说完她把一份新的排期表塞给你，上面几个时段是空的，空得不像她会排出来的样子。',
       options: [
-        { label: '按她给的排期走', relation: 3, run: { intel: 3, track: { loyalty: -1, sin: 1 } }, flag: 'trusted_su' },
-        { label: '把排期表退回去，让她别管', relation: -1, run: { track: { loyalty: 2, renown: 1 } } },
-        { label: '留下表，但记下哪几处是她改的', relation: 1, run: { intel: 4, track: { sin: 1 } } },
+        { label: '按她给的排期走', relation: 3, run: { intel: 3, track: { loyalty: -1, sin: 1 } }, flag: 'trusted_su',
+          after: '你按她给的表走。第三天那两个空出来的小时，你在三十九层一间没挂牌的会议室里坐到灯自己灭，没人来找你，也没人被找到。晚上她发来一条不需要回复的消息，只有一串房号，是你的门禁权限里本来没有的。' },
+        { label: '把排期表退回去，让她别管', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你把表推回她手里，让她别管。她接过来直接对折两次，塞进外套口袋，没有争，也没看你。「行。」她说，「那从明天起，我按公事公办的表给你排。」第二天你的日程被排到晚上十点，一条缝都没留。' },
+        { label: '留下表，但记下哪几处是她改的', relation: 1, run: { intel: 4, track: { sin: 1 } },
+          after: '你把表收下了。回座位后你对着自己的旧记录核了半小时，把三处红笔标注的时间一一对上，抄进私人备忘录。第二天早上，那三行日期从系统里被抹掉了，抹得很干净。只有你的备忘还留着它们，还留着是哪天写的。' },
       ],
     },
     {
@@ -1619,11 +1634,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：她第一次把私人的东西拿出来',
       when: { minFolded: 7, minRel: 3 },
-      text: '她给你的是一个纸质笔记本，边角磨白了。前十几页是会议记录，后面几十页是手写的名字，每一个后面都跟着日期，日期后面什么都没写。「我在这张椅子上坐了六年，」她说，「我一直以为我是在排日程。上个月我才想明白，我在排的是顺序。」她把本子推过来，没有松手，等你先接。',
+      text: '你折掉第七张卡的那个晚上，她第一次把私人的东西拿出来。那是一个纸质笔记本，深蓝色封皮，边角磨白了，封面上有几道指甲掐过的浅印，本子用一根断了半截的皮筋箍着，箍得不紧。前十几页是会议记录，字很小，行距挤得密；后面几十页是手写的名字，每一个后面跟着一个日期，日期后面什么都没写，空着。茶水间的灯管在头顶闪了两下，谁也没去管。你注意到她的指甲剪得很短，指节上有一块旧茧，是长年写字磨出来的。她把本子放在桌上，掌心一直没离开封皮。「我在这张椅子上坐了六年，」她说，「一直以为自己在排日程。上个月我才想明白，我排的是顺序。」窗外那栋楼还有几层亮着灯，隔着一层水汽看不清编号。她把本子推过来，手没松开，等你先接。',
       options: [
-        { label: '接过本子', relation: 3, run: { intel: 4, track: { sin: 1 } }, flag: 'has_ledger' },
-        { label: '让她自己留着', relation: 1, run: { track: { loyalty: 1 }, statRandom: 1 } },
-        { label: '问她愿不愿意把本子交出去', relation: -1, run: { track: { loyalty: 2, renown: -1 } } },
+        { label: '接过本子', relation: 3, run: { intel: 4, track: { sin: 1 } }, flag: 'has_ledger',
+          after: '你把本子接过来，指腹压在某页的折痕上。她的手空了，收回膝盖上，人往后坐直了些。走廊有人经过，脚步在门口停了一秒又走远。她低声说：「第十四页往后，别在公司里翻。」本子现在在你抽屉最里层，压着两块备用芯片。' },
+        { label: '让她自己留着', relation: 1, run: { track: { loyalty: 1 }, statRandom: 1 },
+          after: '你把手收回去，让她自己留着。她看了你一会儿，把本子重新塞回包里，拉链一直拉到底，包带在肩上绕了一圈才起身。「也好，」她说，「放我这儿，翻的人只会是我。」第二天她的工位多了一个带锁的抽屉，锁是新的，钥匙不知道在谁手上。' },
+        { label: '问她愿不愿意把本子交出去', relation: -1, run: { track: { loyalty: 2, renown: -1 } },
+          after: '你问她愿不愿意把它交出去。她把本子往怀里收了半寸，手指停在封皮上，半天才说：「交出去，我就得在最后一页添一行。」她笑了一下，把本子放回包里。从那天起，她再没在你面前打开过它。' },
       ],
     },
 
@@ -1635,11 +1653,14 @@ window.GAME_DATA = (function () {
       district: 'docks',
       title: '银面：一张不该存在的牌',
       when: { minFolded: 9 },
-      text: '银面在你必经的路上等了很久，久到鞋面上的水已经干了。她递给你一张卡，正面空白，反面印着一个不存在的编号。「这张不在你的牌堆里，」她说，「但它在结算表上。」她歪了歪头，像是在听什么你没听见的声音，「你们发牌的时候，好像忘了一件事——牌也会数人。」雨滴穿过她影子的边缘，落在地上。',
+      text: '第九张卡折下去的那天，码头起了风，仓库的铁皮门被吹得一响一响，地上的积水一圈圈抖。路灯正在换班，一盏亮起来，旁边那盏就灭下去，水面反着一条碎红。银面在你必经的通道口等了很久，久到皮鞋面上的水痕已经干了，鞋尖上落了一层灰。她递给你一张卡，正面空白，反面印着一串编号，位数比你的指令卡多两位，墨色偏蓝，卡面比普通的厚一点，边上有个很小的圆孔。「这张不在你的牌堆里，」她说，「但它在结算表上。」她歪了歪头，像在听一段你听不见的电流声，「你们发牌的时候，好像忘了一件事——牌也会数人。」一滴雨穿过她影子的边缘，落在积水上，没有溅开。',
       options: [
-        { label: '收下这张牌', relation: 2, run: { intel: 4, chips: 2, track: { sin: 1 } }, flag: 'blank_card' },
-        { label: '当场把它撕掉', relation: -1, run: { track: { loyalty: 2, renown: 1 } } },
-        { label: '问她是谁派她来的', relation: 1, run: { intel: 3, track: { power: 1 } } },
+        { label: '收下这张牌', relation: 2, run: { intel: 4, chips: 2, track: { sin: 1 } }, flag: 'blank_card',
+          after: '你把卡收进内袋，纸面凉得贴着肋条。她看了一眼你放卡的位置，像是确认了什么，随后退进仓库侧门的阴影里，脚步声在铁皮上拖了两下就没了。风顺着门缝灌进来，你把外套拉严了些。第二天上午结算系统推来一条对账提醒，编号栏里那串数字，和你口袋里那张一模一样。' },
+        { label: '当场把它撕掉', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你当着她的面把卡撕成四片，扔进排水沟。她没拦，只看着水把纸片泡开、摊平、冲走。「撕了也一样，」她说，「结算表认编号，不认纸。」她走之后你低头看手，指缝里还留着一小块纸角，凉的。' },
+        { label: '问她是谁派她来的', relation: 1, run: { intel: 3, track: { power: 1 } },
+          after: '你问她是谁派来的。她想了很久，久到风又吹过一阵，铁皮门响了两声。「上一个问我这个问题的人，」她说，「现在在结算表的倒数第三行。」她没给答案，只把两只手摊开给你看，手心干干净净，连个印子都没有。' },
       ],
     },
     {
@@ -1649,11 +1670,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：把你的名字从流程里拿掉',
       when: { minFolded: 10 },
-      text: '凌晨三点，苏纹在她的工位上，屏幕上开着三份不同的排期表。她调出一份权限申请，把「执行人」那一栏填成空白，然后停下来看你。「从这里往下走，要么你变成写流程的人，要么你继续当被流程处理的人。」她把光标停在保存键上，「我只有一次机会做这件事。你说存还是不存。」',
+      text: '凌晨三点，整栋楼只剩三十七层还亮着灯，前台那排工位全空着，有张椅子上还搭着没人带走的灰色外套。保洁的车停在走廊尽头没动，车斗里堆着没扔的纸箱。苏纹坐在她自己的工位上，屏幕上开着三份排期表，一份标红、一份标黄、一份全是空的。她手边摊着两个空掉的糖包和半盒没拆的药。你走到她身后她才回头，眼里有血丝，敲键盘的声音很轻，像怕吵醒谁。她把光标移到权限申请那一栏，清掉「执行人」后面的名字，让那一格变成空白，然后停下来看你。「从这里往下走，要么你变成写流程的人，要么你继续当被流程处理的人。」她说，「我只有一次机会做这件事。你说存还是不存。」桌上那杯水早凉了，茶叶沉在底下一动不动。',
       options: [
-        { label: '让她存', relation: 3, run: { track: { power: 2, loyalty: -2, sin: 1 } }, flag: 'out_of_flow' },
-        { label: '让她删掉这份申请', relation: -1, run: { track: { loyalty: 2 }, intel: 2 } },
-        { label: '问她自己想不想存', relation: 2, run: { intel: 3, track: { renown: 1 } } },
+        { label: '让她存', relation: 3, run: { track: { power: 2, loyalty: -2, sin: 1 } }, flag: 'out_of_flow',
+          after: '你说存。她按下保存，屏幕右下角跳出一行绿字，随即消失，连撤销按钮都没来得及亮。她合上笔记本，把两份纸质排期表往碎纸机里塞，按下开关才想起机器昨天就坏了，只好把纸撕成条塞进口袋。「明天开始，」她说，「没人会叫我给你排时间。」' },
+        { label: '让她删掉这份申请', relation: -1, run: { track: { loyalty: 2 }, intel: 2 },
+          after: '你说删掉。她愣了几秒，最后点了取消，空白的「执行人」一栏回到原来的名字。她关掉屏幕，整个人往后靠在椅背上，手还搭在键盘上。「行。」她说，「那我明天照旧给你排表。」走廊的灯在你们说话的时候灭过一次。' },
+        { label: '问她自己想不想存', relation: 2, run: { intel: 3, track: { renown: 1 } },
+          after: '你没答，反问她：你自己想不想存。她盯着那个光标，很久没动，指尖慢慢从键盘上挪开。「我在这张表上坐了六年，」她说，「这问题是第一个有人问我。」她最后把窗口最小化，没存，也没关。那件事就停在屏幕上，像被人按住的电梯门。' },
       ],
     },
 
@@ -1665,11 +1689,14 @@ window.GAME_DATA = (function () {
       district: 'tower',
       title: '苏纹：最后一张牌发完了',
       when: { minFolded: 12 },
-      text: '十二张牌全部折下，会议室里只剩下你和苏纹。她把牌收拾好，一张张摞齐，动作比平时慢。「按流程，我现在要去系统里关掉这一局。」她说，「关掉以后，我不再是你的日程官，你也不再是执行人。我们可以不用再装了。」她把终端转过来，屏幕上是那行「结案」按钮，光标闪着。「你想怎么结束？」',
+      text: '十二张牌全部折下，用了不到两个月。会议室里只剩下你和苏纹，长桌上的纸杯都收了，只剩她带来的那个牌盒，旧硬纸壳，边角用胶带补过两次，盒盖上有几道旧划痕。长桌尽头的投影还开着，蓝光落在墙上一动不动。她把牌一张张摞齐，动作比平时慢，指甲刮在盒沿上，细响在空房间里听得很清楚。「按流程，我现在要去系统里关掉这一局。」她说，「关掉以后，我不再是你的日程官，你也不再是执行人。我们可以不用再装了。」她把终端转过来，屏幕上那行「结案」按钮亮着，光标在下面闪。窗外天在亮，雨已经停了，会议室的空调还在吹。「你想怎么结束？」她问，手停在桌上没动。',
       options: [
-        { label: '让她按下结案，回到原来的位置', relation: 1, run: { track: { loyalty: 2, power: 1 } } },
-        { label: '自己接过终端，把整份流程删掉', relation: 3, run: { track: { renown: 2, sin: 2, loyalty: -2 } }, flag: 'broke_flow' },
-        { label: '请她一起离开这栋楼', relation: 2, run: { track: { renown: 3, loyalty: -2 } }, flag: 'left_together' },
+        { label: '让她按下结案，回到原来的位置', relation: 1, run: { track: { loyalty: 2, power: 1 } },
+          after: '她按下结案。屏幕黑下去之前跳出一行小字：本局无归档人。她看了两秒，把终端扣在桌面上。「流程走完了，」她说，「从今天起，我们只是同一栋楼里的两个人。」她收好牌盒先走了。你的门禁权限没变，日程表空了。' },
+        { label: '自己接过终端，把整份流程删掉', relation: 3, run: { track: { renown: 2, sin: 2, loyalty: -2 } }, flag: 'broke_flow',
+          after: '你伸手把终端拿过来，把整份流程一层层删掉，从执行人一直删到模板。她没拦，只把牌盒盖上，压住翘起的卡角。系统提示「无可用流程」时，天已经大亮。她起身替你把椅子推回桌下：「下一局要是还有牌，就没人替你发了。」' },
+        { label: '请她一起离开这栋楼', relation: 2, run: { track: { renown: 3, loyalty: -2 } }, flag: 'left_together',
+          after: '你请她一起离开这栋楼。她把牌盒留在桌上，没带——那是她六年来第一件没归档的东西。电梯下到一层时大厅还没开灯，你们从侧门出去，路面是湿的。她问你有没有地方可去，你说没有。她停了停，说她也没有。' },
       ],
     },
   ];
@@ -5310,6 +5337,20 @@ window.GAME_DATA = (function () {
         '</button>';
     }).join('');
 
+    // 他会主动讲的这个世界的事
+    const lore = loreOf(npcId);
+    const loreHtml = lore.length ? lore.map((it) => {
+      const st = loreState(S, npcId, it);
+      const locked = !st.ok;
+      return '<button class="topic topic-lore' + (locked ? ' locked' : '') + '" data-lore="' + it.id + '"' +
+        (locked ? ' disabled' : '') + '>' +
+        '<span class="topic-label">' + esc(it.topic) + '</span>' +
+        '<span class="topic-note">' + (locked ? esc(st.why) : '听他讲') + '</span>' +
+        '</button>';
+    }).join('') : '';
+
+    const lp = loreProgress(S);
+
     host.innerHTML =
       '<div class="talk-head">' + faceTag('talk-face', info.portrait) +
         '<div class="talk-id">' +
@@ -5324,12 +5365,18 @@ window.GAME_DATA = (function () {
       '<div class="talk-said">' + esc(shown) + '</div>' +
       '<h4 class="sub-t">可以聊的</h4>' +
       '<div class="topic-list">' + topicHtml + '</div>' +
+      (loreHtml ? '<h4 class="sub-t">他想让你知道的事' +
+        '<span class="lore-count">已听 ' + lp.got + '/' + lp.total + '</span></h4>' +
+        '<div class="topic-list lore-list">' + loreHtml + '</div>' : '') +
       '<div id="talk-reply" class="talk-reply" hidden></div>' +
       '<div class="row"><button class="btn btn-ghost" data-back="1">返回名单</button></div>';
 
     host.querySelector('[data-back]').onclick = handlers.onBack;
     host.querySelectorAll('[data-topic]').forEach((b) => {
       b.onclick = () => handlers.onTopic(b.getAttribute('data-topic'));
+    });
+    host.querySelectorAll('[data-lore]').forEach((b) => {
+      b.onclick = () => handlers.onLore(b.getAttribute('data-lore'));
     });
   }
 
@@ -5347,7 +5394,52 @@ window.GAME_DATA = (function () {
     box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent };
+  /* ---------------- 世界观碎片 ----------------
+     NPC 会主动跟你讲这个世界的事：穹顶怎么来的、回收是怎么回事、
+     名望四轨在生活里意味着什么。不同人讲同一个主题会有出入，
+     玩家自己拼。
+  ------------------------------------------------ */
+  function loreOf(npcId) {
+    const L = window.LORE || {};
+    return Array.isArray(L[npcId]) ? L[npcId] : [];
+  }
+
+  function loreState(S, npcId, item) {
+    if (!S.loreHeard) S.loreHeard = {};
+    if (S.loreHeard[item.id]) return { ok: false, why: '已经听过了' };
+    if (ST.rel(S, npcId) < (item.minRel || 0)) {
+      return { ok: false, why: '关系不够（需 ' + item.minRel + '）' };
+    }
+    return { ok: true };
+  }
+
+  /* 聊一条世界观：不给数值，只把世界讲清楚 */
+  function hearLore(S, npcId, loreId) {
+    const v = voiceOf(npcId);
+    const item = loreOf(npcId).find((x) => x.id === loreId);
+    if (!item) return { ok: false, why: '没有这条。' };
+    const st = loreState(S, npcId, item);
+    if (!st.ok) return { ok: false, why: st.why };
+    S.loreHeard[item.id] = 1;
+    S.loreCount = (S.loreCount || 0) + 1;
+    // 听人讲事本身就拉近关系
+    const before = ST.rel(S, npcId);
+    const after = ST.addRel(S, npcId, 1);
+    const lines = [];
+    if (after !== before) lines.push((v ? v.name : '他') + ' 对你的看法变了（关系 ' + before + ' → ' + after + '）。');
+    S.log.unshift({ kind: 'story', day: S.day, text: '听' + (v ? v.name : '') + '讲 · ' + item.topic });
+    if (S.log.length > 80) S.log.pop();
+    return { ok: true, topic: item, reply: item.text, lines: lines, name: v ? v.name : '' };
+  }
+
+  function loreProgress(S) {
+    const all = [];
+    Object.keys(window.LORE || {}).forEach((k) => loreOf(k).forEach((x) => all.push(x)));
+    const got = all.filter((x) => S.loreHeard && S.loreHeard[x.id]).length;
+    return { got: got, total: all.length };
+  }
+
+  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
 })();
 
 /* ===== game/meta.js ===== */
