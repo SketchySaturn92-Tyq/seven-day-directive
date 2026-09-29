@@ -193,7 +193,7 @@
         { label: '把纸折起来，不收', run: { track: { loyalty: 1, sin: -1 } } },
       ] },
     { id: 'x28', portrait: 'portrait-scientist', district: 'lab', title: '不可签收品',
-      text: '程砚把那件东西推到你面前，签收栏空着。他说：你可以签，也可以不签，但无论如何，它明天都会完成。',
+      text: '程砚把那件东西推到你面前，签收栏空着。她说：你可以签，也可以不签，但无论如何，它明天都会完成。',
       options: [
         { label: '签下自己的名字', run: { gear: 2, track: { power: 3, sin: 2 } } },
         { label: '拒绝签收，并上报', run: { track: { loyalty: 3, renown: 2, power: -2 } } },

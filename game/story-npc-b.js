@@ -73,12 +73,12 @@
       act: 2,
       district: 'docks',
       title: '银面：她说的我们',
-      text: '她约在停用货梯的机房，制冷机的低鸣比上次更响。她说到一半停下来，像在等一个不在场的人接话。「我们查过那个编号——」她说的是我们，可机房里只有她一个人。你问是谁，她答：「替你收票的人。」她顿了两秒，又改口：「我说错了，是你。」',
+      text: '她约在停用货梯的机房，制冷机的低鸣比上次更响。门是从外面反锁的，锁舌上有新的刮痕。她从风衣内袋里抽出一张手写单，边角已经被攥软：「上周三下午三点十一分，有人拿这张单来提货。签名栏是我的字，但那不是我写的。」她说她的委托人已经在问这张单的下落，问到第二次就开始问她什么时候方便办离职。她把单子递到一半又收回去，「你拿着它，就等于替我把这件事认下来。」',
       when: { minFolded: 5, minRel: 2 },
       options: [
-        { label: '追问她到底替谁说话', relation: 1, run: { intel: 4, track: { sin: 1 } } },
-        { label: '不追问，把编号记下来', relation: 2, run: { intel: 2, chips: 1 }, flag: 'ym_noted_id' },
-        { label: '请她以后别再来找你', relation: -2, run: { track: { loyalty: 1 } } },
+        { label: '接过单子，替她扛住这件事', relation: 3, run: { intel: 3, track: { sin: 2, power: 1 } }, flag: 'ym_took_slip' },
+        { label: '不接，但帮她把签名比对清楚', relation: 1, run: { intel: 4, track: { sin: 1 } } },
+        { label: '让她自己交上去，你只当没见过', relation: -2, run: { track: { loyalty: 2, renown: -1 } } },
       ],
     },
     {
@@ -152,12 +152,12 @@
       act: 1,
       district: 'orbit',
       title: '雨客：他来传的那句话',
-      text: '轨道港的货运通道湿度常年七十往上，墙上挂着一层水珠，鞋底每一步都带响。雨客站在闸口外侧，穿着一件拧不干的雨衣，把一个密封袋按在胸口。他不是来递东西的，是来念话的：「潮说，穹顶第七接缝在响，已经响过三次。第三次，你能听见。」',
+      text: '轨道港的货运通道湿度常年七十往上，墙上挂着一层水珠，鞋底每一步都带响。雨客站在闸口外侧，穿着一件拧不干的雨衣，把一个密封袋按在胸口。他不是来递东西的，是来念话的：「潮说，穹顶第七接缝在响，已经响过三次。第三次，你能听见。」念完他没有立刻走，手指在袋子封口上按了两下，像在等一句别的话。你问他袋子里是什么，他说不归他管，他只负责把话带到，带完就空着手回去。',
       when: { minFolded: 2 },
       options: [
-        { label: '让他把密封袋交给你', relation: 2, run: { intel: 3 }, flag: 'yk_took_bag' },
-        { label: '只把这句话记下来', relation: 1, run: { intel: 2, track: { sin: 1 } } },
-        { label: '说接缝的事不该你管', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '先问他这一趟跑了多久', relation: 2, run: { intel: 2, track: { renown: 1 } }, flag: 'yk_asked_him' },
+        { label: '让他把密封袋交给你', relation: 0, run: { intel: 3, track: { sin: 1 } } },
+        { label: '说接缝的事不该你管', relation: -2, run: { track: { loyalty: 1 } } },
       ],
     },
     {
