@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T03:41:17Z */
+/* 生成时间: 2026-09-30T03:45:14Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -7377,23 +7377,20 @@ window.GAME_DATA = (function () {
 
   /* ---------------- 开关状态：读、写、以及系统偏好 ---------------- */
 
-  /* 系统开了“减弱动态效果”时，默认不发声；这也符合无障碍习惯 */
-  function prefersReduce() {
-    try {
-      const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
-      return !!(mq && mq.matches);
-    } catch (e) {
-      return false;
-    }
-  }
-
+  /* 曾经这里做过一件事：系统开了「减弱动态效果」就默认静音。
+     那是错的 —— prefers-reduced-motion 说的是「少动」，不是「别出声」。
+     macOS 上这个开关很容易被打开（辅助功能里点一下、或者系统更新后
+     跟着别的设置一起开），结果就是音效和 BGM 双双默认静音，
+     玩家只会觉得「这游戏没声音」，根本不会想到是系统偏好。
+     现在音频一律默认开启，要静音由玩家自己按开关；
+     「少动」那条偏好交回给 CSS，去关动画（见 style-v3.css）。 */
   function readEnabled() {
     try {
       const raw = window.localStorage.getItem(KEY);
       if (raw === '0') return false;
       if (raw === '1') return true;
     } catch (e) { /* 隐私模式下 localStorage 不可用，走默认值 */ }
-    return !prefersReduce();
+    return true;
   }
 
   function writeEnabled(v) {
@@ -7408,7 +7405,7 @@ window.GAME_DATA = (function () {
       if (raw === '0') return false;
       if (raw === '1') return true;
     } catch (e) { /* 隐私模式走默认值 */ }
-    return !prefersReduce();
+    return true;
   }
 
   function writeBgmEnabled(v) {

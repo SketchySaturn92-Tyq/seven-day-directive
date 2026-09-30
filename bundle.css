@@ -1583,3 +1583,22 @@ body{
 
 /* 关闭状态：按钮变灰划掉，一眼看出 */
 #btn-bgm.off{opacity:.45;text-decoration:line-through}
+
+/* ==========================================================
+   「减弱动态效果」交回给 CSS
+   之前这条系统偏好被错用在音频上：一开就默认静音，玩家只会觉得
+   「这游戏没声音」。它本来要说的是「少动」，那就只关动画。
+   ========================================================== */
+@media (prefers-reduced-motion: reduce){
+  .map-bg{animation:none;transform:scale(1.04)}
+  .hand .card{animation:none}
+  .card.breaking{animation:none}
+  .card.breaking::after{animation:none}
+  .guide-path{animation:none}
+  .guide-dot.pulse{animation:none}
+  .node-ring,
+  .node.eventing .node-ring{animation:none}
+  .res-deck.low{animation:none}
+  .hud-goal.urgent{animation:none}
+  .bg-ev{animation:none}
+}
