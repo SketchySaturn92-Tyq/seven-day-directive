@@ -796,9 +796,15 @@
     if (s.folded >= C.deckGoal) { s.ending = pickEnding(s); s.phase = 'end'; }
   }
 
+  /* 结局判定：按显式 priority 从高到低挑第一个命中的。
+     以前是「数组顺序即优先级」，顺序被人动一下就悄悄改了结局，
+     现在优先级写在数据里，谁都能看见。 */
   function pickEnding(s) {
-    for (let i = 0; i < D.ENDINGS.length; i++) if (D.ENDINGS[i].cond(s)) return D.ENDINGS[i];
-    return D.ENDINGS[D.ENDINGS.length - 1];
+    const list = D.ENDINGS.slice().sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    for (let i = 0; i < list.length; i++) {
+      if (typeof list[i].cond === 'function' && list[i].cond(s)) return list[i];
+    }
+    return list[list.length - 1];
   }
   function endingById(id) {
     return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1];

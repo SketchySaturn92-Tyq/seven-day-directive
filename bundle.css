@@ -1298,3 +1298,118 @@ body{
 .res-after{margin-top:14px;padding:12px 14px;border-left:2px solid var(--cyan);background:rgba(74,208,200,.05)}
 .res-after-t{font-size:11px;letter-spacing:.16em;color:var(--cyan);margin-bottom:6px}
 .res-after-x{margin:0;line-height:1.85;color:var(--txt);font-size:14px}
+
+
+/* ==========================================================
+   v6·卡牌质感
+   参考实体牌的版式：顶部名条压住插画上沿，中部整幅插画，
+   底部文字板。三档品级用三套边饰，曜金卡走描金。
+   纯 CSS 实现，不换引擎、不加依赖。
+   ========================================================== */
+.card{
+  border-radius:12px;
+  background:#0b1016;
+  border:1px solid var(--line2);
+  box-shadow:0 1px 0 rgba(255,255,255,.07) inset, 0 8px 18px rgba(0,0,0,.45);
+}
+/* 顶部名条：品级 + 路径，压在插画上 */
+.card-band{
+  display:flex;align-items:center;justify-content:space-between;gap:4px;
+  padding:4px 7px 3px;position:relative;z-index:2;
+  background:linear-gradient(180deg,rgba(4,8,12,.94),rgba(4,8,12,.55));
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.card .card-tier{font-size:8.5px;letter-spacing:.14em;opacity:.9}
+.card .card-path{font-size:12.5px;font-weight:800;line-height:1.1}
+
+/* 中部插画：占住卡面主体，底部渐隐接到文字板 */
+.card-art{
+  height:74px;border-bottom:none;
+  box-shadow:0 0 0 1px rgba(255,255,255,.04) inset;
+}
+.card-art::after{
+  background:linear-gradient(180deg,rgba(6,10,14,.35) 0%,transparent 26%,transparent 62%,rgba(9,13,18,.92) 100%);
+}
+/* 文字板：略亮于卡底，做出「另贴一块」的层感 */
+.card-body{
+  background:linear-gradient(180deg,rgba(9,14,20,.96),rgba(7,11,16,.92));
+  border-top:1px solid rgba(255,255,255,.07);
+}
+/* 割角：实体牌右上那道斜切 */
+.card::before{
+  content:'';position:absolute;top:0;right:0;width:15px;height:15px;z-index:3;pointer-events:none;
+  background:linear-gradient(225deg,rgba(0,0,0,0) 46%,rgba(255,255,255,.09) 50%,rgba(0,0,0,0) 54%);
+}
+/* 黑铁：冷灰边 */
+.card.t1{border-color:rgba(150,170,190,.28)}
+/* 白银：亮边 + 一点点内衬光 */
+.card.t2{
+  border-color:rgba(206,222,238,.45);
+  box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 8px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(206,222,238,.1);
+}
+/* 曜金：描金边 + 名条描金字（对应实体牌里苏丹卡的处理） */
+.card.t3{
+  border-color:var(--gold);
+  box-shadow:0 1px 0 rgba(255,255,255,.16) inset, 0 8px 22px rgba(0,0,0,.55), 0 0 14px rgba(201,168,90,.22);
+}
+.card.t3 .card-tier{color:var(--gold);text-shadow:0 0 8px rgba(201,168,90,.5)}
+.card.t3 .card-path{color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,.8), 0 0 10px rgba(201,168,90,.3)}
+.card.t3 .card-band{background:linear-gradient(180deg,rgba(24,18,6,.95),rgba(4,8,12,.6))}
+
+/* 悬停：抬起来的时候描边亮一度 */
+.card:hover{transform:translateY(-8px)}
+.card.t3:hover{box-shadow:0 18px 38px rgba(0,0,0,.65), 0 0 18px rgba(201,168,90,.3)}
+
+/* 手机横屏：名条要压到两行内不挤 */
+@media (orientation:landscape) and (max-height:520px){
+  .card-band{padding:3px 5px 2px}
+  .card .card-tier{font-size:7.5px;letter-spacing:.1em}
+  .card .card-path{font-size:11px}
+  .card-art{height:38px}
+  .card::before{width:12px;height:12px}
+}
+
+/* 旧样式把品级做成绝对定位，压在卡面左上；新版放进名条里，必须清掉 */
+.card .card-band .card-tier{
+  position:static;top:auto;left:auto;
+  font-size:8.5px;letter-spacing:.14em;font-weight:700;
+}
+.card .card-band .card-path{font-size:12.5px}
+
+/* 发牌：从底栏下面按底部枢轴落进来 */
+@keyframes dealIn{
+  from{opacity:0;transform:translateY(26px) scale(.9)}
+  70%{opacity:1;transform:translateY(-3px) scale(1.015)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.hand .card{animation:dealIn .34s cubic-bezier(.22,1.2,.36,1) backwards}
+.hand .card:nth-child(1){animation-delay:.02s}
+.hand .card:nth-child(2){animation-delay:.07s}
+.hand .card:nth-child(3){animation-delay:.12s}
+.hand .card:nth-child(4){animation-delay:.17s}
+.hand .card:nth-child(5){animation-delay:.22s}
+.hand .card:nth-child(6){animation-delay:.27s}
+.hand .card:nth-child(7){animation-delay:.32s}
+
+/* 悬停带来回过冲，而不是线性抬升 */
+.card{transition:transform .22s cubic-bezier(.22,1.35,.36,1),box-shadow .22s,border-color .16s}
+
+/* 缺牌告警：比静态阴影更容易被注意到 */
+@keyframes handLow{
+  0%,100%{box-shadow:0 0 0 0 rgba(224,85,74,0)}
+  50%{box-shadow:0 0 0 3px rgba(224,85,74,.25)}
+}
+.res-deck.low{animation:handLow 1.8s ease-in-out infinite}
+
+/* 折牌结算时卡面裂开：纯 CSS，两半朝两侧分离 */
+@keyframes cardBreak{
+  0%{transform:translateY(-14px) scale(1.06) rotate(0)}
+  100%{transform:translateY(34px) scale(.9) rotate(3deg);opacity:0}
+}
+.card.breaking{animation:cardBreak .5s ease-in forwards;pointer-events:none}
+.card.breaking::after{
+  content:'';position:absolute;inset:0;z-index:5;
+  background:linear-gradient(102deg,transparent 47%,rgba(255,255,255,.85) 49.6%,rgba(255,255,255,.85) 50.4%,transparent 53%);
+  animation:flashLine .5s ease-out forwards;
+}
+@keyframes flashLine{0%{opacity:0}35%{opacity:1}100%{opacity:0}}

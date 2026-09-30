@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T01:53:39Z */
+/* 生成时间: 2026-09-30T02:22:56Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -342,42 +342,42 @@ window.GAME_DATA = (function () {
   const ENDINGS = [
     {
       id: 'sultan', name: '新的苏丹',
-      cond: (s) => s.tracks.power >= 9 && s.tracks.sin >= 8 && s.tracks.loyalty < 6,
+      priority: 100, cond: (s) => s.tracks.power >= 9 && s.tracks.sin >= 8 && s.tracks.loyalty < 6,
       text: '第十二张牌折下时，厅里的光暗了一瞬。没有人宣布什么，但你站起来的时候，所有人也跟着站起来了。董事的位置空着，你坐下去，尺寸刚好。窗外，穹顶上又下起了雨。',
     },
     {
       id: 'dog', name: '忠犬归位',
-      cond: (s) => s.tracks.loyalty >= 9 && s.tracks.power < 8,
+      priority: 96, cond: (s) => s.tracks.loyalty >= 9 && s.tracks.power < 8,
       text: '你把最后一张牌按在桌上，折得整整齐齐。董事会为你鼓了掌，很轻，像在夸奖一件工具保养得好。你被留了下来，也仅是被留了下来。',
     },
     {
       id: 'hero', name: '脏手的善人',
-      cond: (s) => s.tracks.renown >= 8 && s.tracks.sin <= 3,
+      priority: 92, cond: (s) => s.tracks.renown >= 8 && s.tracks.sin <= 3,
       text: '你折完牌，把那对代码臂卸在董事会桌上。档案里你叫「可回收」，从今天起不是了。下层的人后来在穹顶边缘给你立了一块没有名字的碑。',
     },
     {
       id: 'ghost_out', name: '幽灵离场',
-      cond: (s) => s.tracks.sin <= 2 && s.tracks.renown < 5,
+      priority: 88, cond: (s) => s.tracks.sin <= 2 && s.tracks.renown < 5,
       text: '最后一天，没有告别的仪式。你在系统里删掉了自己的编号，穿过轨道港的侧门，头也不回。没有人追。奇怪的是，这比死更像一场胜利。',
     },
     {
       id: 'purged', name: '被回收',
-      cond: (s) => s.tracks.sin >= 10,
+      priority: 84, cond: (s) => s.tracks.sin >= 10,
       text: '你以为罪痕是勋章，其实那是编号。某一个清晨，你的门禁失效、账户清零、名字从系统里消失，连葬礼都省了。归档结论只有一行：「已回收」。',
     },
     {
       id: 'broken', name: '三十六层高的自由落体',
-      cond: (s) => s.tracks.loyalty <= 0,
+      priority: 80, cond: (s) => s.tracks.loyalty <= 0,
       text: '董事会不再需要你了。你被请进一间没有窗的会客室，对面的人一直在笑，笑到你不想再问下去。关于你的最后一条公开记录，是一次「自愿退出」。',
     },
     {
       id: 'emperor', name: '穹顶之上的名字',
-      cond: (s) => s.tracks.power >= 10 && s.tracks.sin <= 6,
+      priority: 76, cond: (s) => s.tracks.power >= 10 && s.tracks.sin <= 6,
       text: '十二张牌，你折得干净漂亮。新签署的章程里，你的名字第一次出现在封面，而不是附录。穹顶的雨现在按你的规则落下来。',
     },
     {
       id: 'survivor', name: '活着就好',
-      cond: () => true,
+      priority: 0, cond: () => true,
       text: '第十二张牌折下，你只是活着。在这里活着已经算一种功绩。你回到自己的椅子上，喝掉那杯已经凉透的茶，等下一场牌局发到你手上。',
     },
   ];
@@ -605,23 +605,23 @@ window.GAME_DATA = (function () {
 
   window.ENDINGS_EXTRA = [
     // 近似：文档条件为「power >= 8 且 renown >= 8 且 sin <= 4」，直接用四轨判定。
-    { id: 'w1', name: '账本之外', cond: (s) => s.tracks.power >= 9 && s.tracks.renown >= 9 && s.tracks.sin <= 3,
+    { id: 'w1', name: '账本之外', priority: 60, cond: (s) => s.tracks.power >= 9 && s.tracks.renown >= 9 && s.tracks.sin <= 3,
       text: '你折完最后一张牌，然后把那本记着所有人的账，原样放回桌上。没有人拦你，因为你已经不需要被拦。你走出高塔，电梯这次没有停。街上的雨还在下，落在你肩上是凉的，你第一次觉得凉也是种证明。清算行连夜改了报价，把「执行人」这一栏删掉了。有人在广场上贴了一张纸，上面写着你的名字，第二天就被雨泡烂了，但你确实看见过。' },
     // 近似：文档依赖「与程砚关系」，系统暂无关系值，退化为折完全部 12 张牌且声望与权柄中上。
-    { id: 'w2', name: '替她签收', cond: (s) => s.tracks.power >= 8 && s.tracks.sin >= 5 && s.tracks.renown < 8,
+    { id: 'w2', name: '替她签收', priority: 58, cond: (s) => s.tracks.power >= 8 && s.tracks.sin >= 5 && s.tracks.renown < 8,
       text: '签收栏终于有了字。程砚看了很久，然后把笔递回给你，说：谢谢。那件东西完成后没有造成任何事，它只是安静地待在下面，等着被需要的那一天。你回到自己的办公室，发现桌上多了一份新指令，编号是空的。你把笔放好，坐下，等着第一个告诉你要怎么做的人。窗外，穹顶内侧的雾照旧。你替所有人签了一个名字。' },
     // 近似：文档依赖「与潮结盟」关系，系统暂无关系值，退化为忠诚跌破阈值的通关条件。
-    { id: 'w3', name: '雨落进来', cond: (s) => s.tracks.loyalty <= 2 && s.tracks.sin >= 4,
+    { id: 'w3', name: '雨落进来', priority: 56, cond: (s) => s.tracks.loyalty <= 2 && s.tracks.sin >= 4,
       text: '穹顶第 41 号接缝在你手上裂开的时候，没有警报，只有风。风里有酸味，还有人抬头。第一场雨落在下层居住区的前十七秒里，没有人跑，所有人都在伸手。你站在雨里，衣服很快就湿透，编号也在同一时间被系统抹去。后来他们管那天叫第二次灰潮，也管那天叫第一次放晴。两个名字都没错，都跟你没关系了。' },
     // 近似：文档条件为「通关，但罪痕 >= 7 且忠诚 <= 4」。
-    { id: 'w4', name: '第十二名', cond: (s) => s.tracks.sin >= 9 && s.tracks.loyalty <= 5,
+    { id: 'w4', name: '第十二名', priority: 54, cond: (s) => s.tracks.sin >= 9 && s.tracks.loyalty <= 5,
       text: '最后一张牌折下，董事会为你开了香槟。第三杯时，例会的主持人向你介绍了对面那位，说：这位是第十二号。你才想起来，这一局牌本来有十二个人在打，而现在只剩你和对面的他。你和他对视了三秒，然后一起笑了。桌面下，两把枪都没有拔。桌上又发下一副新牌，洗完以后，谁也不会知道刚才那副是谁洗的。' },
     // 近似：文档条件为「money <= 20 且 renown >= 6 且通关」，直接用钱与声望判定。
-    { id: 'w5', name: '十八块钱的葬礼', cond: (s) => s.money <= 25 && s.tracks.renown >= 8,
+    { id: 'w5', name: '十八块钱的葬礼', priority: 52, cond: (s) => s.money <= 25 && s.tracks.renown >= 8,
       text: '你死的时候账户里剩下十八块。陆晚用这笔钱给你买了最便宜的骨灰盒，老鸦替你出了剩下的运费。来的人不多，但每一个都真的认识你。名单上你那一栏被划掉，括号里写着「非回收」。穹顶照旧下雨，落在你留下过名字的那条巷口，声音比落在别处轻一点。这算不上什么好结局，但它确实是你自己挣来的。' },
     // 近似：文档条件为「四轨全部落在中段，且通关」，中段取 4 到 8 的闭区间。
     { id: 'w6', name: '穹顶照着旧样子',
-      cond: (s) => s.folded >= 12 && s.tracks.power >= 4 && s.tracks.power <= 8 && s.tracks.renown >= 4 && s.tracks.renown <= 8 && s.tracks.sin >= 4 && s.tracks.sin <= 8 && s.tracks.loyalty >= 4 && s.tracks.loyalty <= 8,
+      priority: 50, cond: (s) => s.folded >= 12 && s.tracks.power >= 4 && s.tracks.power <= 8 && s.tracks.renown >= 4 && s.tracks.renown <= 8 && s.tracks.sin >= 4 && s.tracks.sin <= 8 && s.tracks.loyalty >= 4 && s.tracks.loyalty <= 8,
       text: '你没有变成谁的人，也没有把谁变成你的人。十二张牌，每一张都折得既不漂亮也不难看。散局那天，你回到工位，把那杯茶重新泡了一遍。穹顶还是那个穹顶，雨还是那场雨，穷人和富人都还在原来的位置上。有人问你，这七天你做了什么。你想了想，说：我什么都没改。然后你听见自己在心里补了一句——这在穹顶里，已经很难。' },
   ];
 })();
@@ -639,7 +639,7 @@ window.GAME_DATA = (function () {
     /* ---------- 假好结局：看起来赢麻了，其实是被留了下来当下一副牌 ---------- */
     {
       id: 'v2_fake', name: '最配合的那个人',
-      cond: (s) => s.folded >= 12 && s.tracks.loyalty >= 10 && s.tracks.power >= 9
+      priority: 120, cond: (s) => s.folded >= 12 && s.tracks.loyalty >= 10 && s.tracks.power >= 9
                 && s.tracks.sin >= 8 && s.tracks.renown <= 6,
       kind: 'fake',
       text: '十二张牌，你一张不落地折完，每一张都折在最合适的位置上。董事会为你开了会，会上所有人都站起来鼓掌，主持人说你已经证明了中层可以有多可靠。散会前，他把一副新牌推回你面前，说：那就再来一局。你低头看那副牌，第一张的编号是你自己的工号。你笑着点头，把牌收进内袋。掌声又响了一次，比刚才更热烈。你忽然想不起来，上一次有人问你累不累是什么时候。',
@@ -648,7 +648,7 @@ window.GAME_DATA = (function () {
     /* ---------- 真好结局：不靠任何一方，把规则本身改掉 ---------- */
     {
       id: 'v2_true', name: '牌不再发下来',
-      cond: (s) => s.folded >= 12 && s.tracks.renown >= 9 && s.tracks.sin <= 4 && s.tracks.power >= 9,
+      priority: 118, cond: (s) => s.folded >= 12 && s.tracks.renown >= 9 && s.tracks.sin <= 4 && s.tracks.power >= 9,
       kind: 'true',
       text: '你把最后一张牌折掉，然后没有把它放进回收格，而是塞进了董事会那台发牌机的进纸口。机器卡住了，先是停了一秒，然后吐出一整叠空白的卡。你抽出最上面那张，翻过来给所有人看——什么都没有印。会议室里安静了很久，久到有人先笑了。那天以后，穹顶集团再没有下发过指令卡。你走出高塔的时候雨还在下，但落在地面上是干净的，没有酸味。有人在广场上念了一段广播，说回收名单已经全部清空。你没听清念的是谁的名字，你只是继续往前走。',
     },
@@ -656,7 +656,7 @@ window.GAME_DATA = (function () {
     /* ---------- 坏结局：活着通关，但已经不是原来那个人 ---------- */
     {
       id: 'v2_bad', name: '我认得这张脸吗',
-      cond: (s) => s.folded >= 12 && s.tracks.sin >= 7 && s.tracks.renown <= 4 && s.tracks.power <= 6,
+      priority: 116, cond: (s) => s.folded >= 12 && s.tracks.sin >= 7 && s.tracks.renown <= 4 && s.tracks.power <= 6,
       kind: 'bad',
       text: '第十二张牌折下的时候，你已经没有感觉了。折卡的手很稳，稳到你有点陌生。散局之后，你按习惯去了下层那家常去的诊所，陆晚抬头看了你很久，然后问：你找谁。你说是我。她把手里的针放下来，仔细看了看你的脸，说：你上次来是三年前，那时候你还会因为一句话脸红。你想找一句反驳的，但你不记得脸红是什么感觉。你转身出去，雨落在你身上，你发现有件小事值得高兴——你还记得回家的路。',
     },
@@ -5452,9 +5452,6 @@ window.GAME_DATA = (function () {
         { label: '换个位置坐，不去动那摊水',
           run: { track: { sin: -1 }, vitality: 1 },
           after: '你换了位置，感应灯整晚没有亮。第二天那个工号的日志一起消失了，清洁记录还是每天两次。那把椅子的椅面一直没干过，你伸手摸过，是凉的，没有味道。' },
-        { label: '往上调这一层的清洁频次',
-          run: { track: { loyalty: 1, renown: 1 }, money: -15 },
-          after: '你多付了十五点把这一层改成每天三次清洁。保洁换了人，新来的把椅子搬到角落，擦完之后又搬回原位，位置分毫不差，连朝向都没改。' },
         { label: '按水痕的轮廓等一个人',
           run: { intel: 2, vitality: -1, grantCard: { n: 1 } },
           after: '十分钟后无面推门进来，把一张没人认领的指令牌放在桌上，说这局的登记人写的是你的编号，牌先放你这里，取不取随你。' },
@@ -7908,9 +7905,15 @@ window.GAME_DATA = (function () {
     if (s.folded >= C.deckGoal) { s.ending = pickEnding(s); s.phase = 'end'; }
   }
 
+  /* 结局判定：按显式 priority 从高到低挑第一个命中的。
+     以前是「数组顺序即优先级」，顺序被人动一下就悄悄改了结局，
+     现在优先级写在数据里，谁都能看见。 */
   function pickEnding(s) {
-    for (let i = 0; i < D.ENDINGS.length; i++) if (D.ENDINGS[i].cond(s)) return D.ENDINGS[i];
-    return D.ENDINGS[D.ENDINGS.length - 1];
+    const list = D.ENDINGS.slice().sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    for (let i = 0; i < list.length; i++) {
+      if (typeof list[i].cond === 'function' && list[i].cond(s)) return list[i];
+    }
+    return list[list.length - 1];
   }
   function endingById(id) {
     return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1];
@@ -9738,13 +9741,18 @@ window.GAME_DATA = (function () {
       const rate = Math.round(E.successRate(S, c) * 100);
       const rc = rate >= 65 ? 'var(--ok)' : rate >= 45 ? 'var(--gold)' : 'var(--red)';
       const el = document.createElement('div');
-      el.className = 'card' + (gate.ok ? '' : ' locked') + (selectedUid === c.uid ? ' picked' : '');
+      el.className = 'card t' + c.tier + (gate.ok ? '' : ' locked') + (selectedUid === c.uid ? ' picked' : '');
       el.style.setProperty('--c', p.color);
       el.dataset.uid = c.uid;
+      /* 卡面结构照抄实体牌的版式：顶部名条 → 中部插画 → 底部文字板。
+         曜金卡用描金字，和实体牌里苏丹卡的处理一致。 */
       el.innerHTML =
-        '<div class="card-art" style="background-image:url(' + CARD_ART[c.pathId] + ')"><span class="card-tier">' + t.name + '</span></div>' +
+        '<div class="card-band">' +
+          '<span class="card-tier">' + esc(t.name) + '</span>' +
+          '<span class="card-path">' + esc(p.name) + '</span>' +
+        '</div>' +
+        '<div class="card-art" style="background-image:url(' + CARD_ART[c.pathId] + ')"></div>' +
         '<div class="card-body">' +
-          '<div class="card-path" style="color:' + p.color + '">' + esc(p.name) + '</div>' +
           '<div class="card-verb">' + esc(p.verb) + '</div>' +
           '<div class="card-target"><span>' + esc(target ? target.name : '无目标') + '</span>' +
             '<span class="zone">' + esc(dist ? dist.name : '—') + '</span></div>' +
@@ -10043,15 +10051,24 @@ window.GAME_DATA = (function () {
     if (!gate.ok) { toast('无法执行', gate.why); return; }
     const boost = $('chk-boost').checked;
     const chipSpend = parseInt($('chip-range').value, 10) || 0;
+    /* 先让这张牌在手上裂开，再刷新界面。折牌就是这个游戏的核心动作，
+       值得半秒的交代。 */
+    const node = document.querySelector('#hand .card[data-uid="' + uid + '"]');
+    if (node) node.classList.add('breaking');
     const r = E.fold(S, uid, boost, chipSpend);
-    if (!r.ok) { toast('无法执行', r.why); return; }
+    if (!r.ok) {
+      if (node) node.classList.remove('breaking');
+      toast('无法执行', r.why);
+      return;
+    }
     selectedUid = null;
     M.setSelected(null);
     $('chk-boost').checked = false;
     $('chip-range').value = '0';
     const title = r.pass ? (r.crit ? '暴击 · 指令达成' : '指令达成') : (r.fumble ? '崩盘 · 指令失败' : '指令失败');
-    showResult(title, r.lines, r.pass);
-    afterAction();
+    const delay = node ? 420 : 0;
+    if (delay) setTimeout(() => { showResult(title, r.lines, r.pass); afterAction(); }, delay);
+    else { showResult(title, r.lines, r.pass); afterAction(); }
   }
 
   function onSwap(uid) {

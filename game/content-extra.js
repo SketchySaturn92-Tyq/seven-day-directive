@@ -217,23 +217,23 @@
 
   window.ENDINGS_EXTRA = [
     // 近似：文档条件为「power >= 8 且 renown >= 8 且 sin <= 4」，直接用四轨判定。
-    { id: 'w1', name: '账本之外', cond: (s) => s.tracks.power >= 9 && s.tracks.renown >= 9 && s.tracks.sin <= 3,
+    { id: 'w1', name: '账本之外', priority: 60, cond: (s) => s.tracks.power >= 9 && s.tracks.renown >= 9 && s.tracks.sin <= 3,
       text: '你折完最后一张牌，然后把那本记着所有人的账，原样放回桌上。没有人拦你，因为你已经不需要被拦。你走出高塔，电梯这次没有停。街上的雨还在下，落在你肩上是凉的，你第一次觉得凉也是种证明。清算行连夜改了报价，把「执行人」这一栏删掉了。有人在广场上贴了一张纸，上面写着你的名字，第二天就被雨泡烂了，但你确实看见过。' },
     // 近似：文档依赖「与程砚关系」，系统暂无关系值，退化为折完全部 12 张牌且声望与权柄中上。
-    { id: 'w2', name: '替她签收', cond: (s) => s.tracks.power >= 8 && s.tracks.sin >= 5 && s.tracks.renown < 8,
+    { id: 'w2', name: '替她签收', priority: 58, cond: (s) => s.tracks.power >= 8 && s.tracks.sin >= 5 && s.tracks.renown < 8,
       text: '签收栏终于有了字。程砚看了很久，然后把笔递回给你，说：谢谢。那件东西完成后没有造成任何事，它只是安静地待在下面，等着被需要的那一天。你回到自己的办公室，发现桌上多了一份新指令，编号是空的。你把笔放好，坐下，等着第一个告诉你要怎么做的人。窗外，穹顶内侧的雾照旧。你替所有人签了一个名字。' },
     // 近似：文档依赖「与潮结盟」关系，系统暂无关系值，退化为忠诚跌破阈值的通关条件。
-    { id: 'w3', name: '雨落进来', cond: (s) => s.tracks.loyalty <= 2 && s.tracks.sin >= 4,
+    { id: 'w3', name: '雨落进来', priority: 56, cond: (s) => s.tracks.loyalty <= 2 && s.tracks.sin >= 4,
       text: '穹顶第 41 号接缝在你手上裂开的时候，没有警报，只有风。风里有酸味，还有人抬头。第一场雨落在下层居住区的前十七秒里，没有人跑，所有人都在伸手。你站在雨里，衣服很快就湿透，编号也在同一时间被系统抹去。后来他们管那天叫第二次灰潮，也管那天叫第一次放晴。两个名字都没错，都跟你没关系了。' },
     // 近似：文档条件为「通关，但罪痕 >= 7 且忠诚 <= 4」。
-    { id: 'w4', name: '第十二名', cond: (s) => s.tracks.sin >= 9 && s.tracks.loyalty <= 5,
+    { id: 'w4', name: '第十二名', priority: 54, cond: (s) => s.tracks.sin >= 9 && s.tracks.loyalty <= 5,
       text: '最后一张牌折下，董事会为你开了香槟。第三杯时，例会的主持人向你介绍了对面那位，说：这位是第十二号。你才想起来，这一局牌本来有十二个人在打，而现在只剩你和对面的他。你和他对视了三秒，然后一起笑了。桌面下，两把枪都没有拔。桌上又发下一副新牌，洗完以后，谁也不会知道刚才那副是谁洗的。' },
     // 近似：文档条件为「money <= 20 且 renown >= 6 且通关」，直接用钱与声望判定。
-    { id: 'w5', name: '十八块钱的葬礼', cond: (s) => s.money <= 25 && s.tracks.renown >= 8,
+    { id: 'w5', name: '十八块钱的葬礼', priority: 52, cond: (s) => s.money <= 25 && s.tracks.renown >= 8,
       text: '你死的时候账户里剩下十八块。陆晚用这笔钱给你买了最便宜的骨灰盒，老鸦替你出了剩下的运费。来的人不多，但每一个都真的认识你。名单上你那一栏被划掉，括号里写着「非回收」。穹顶照旧下雨，落在你留下过名字的那条巷口，声音比落在别处轻一点。这算不上什么好结局，但它确实是你自己挣来的。' },
     // 近似：文档条件为「四轨全部落在中段，且通关」，中段取 4 到 8 的闭区间。
     { id: 'w6', name: '穹顶照着旧样子',
-      cond: (s) => s.folded >= 12 && s.tracks.power >= 4 && s.tracks.power <= 8 && s.tracks.renown >= 4 && s.tracks.renown <= 8 && s.tracks.sin >= 4 && s.tracks.sin <= 8 && s.tracks.loyalty >= 4 && s.tracks.loyalty <= 8,
+      priority: 50, cond: (s) => s.folded >= 12 && s.tracks.power >= 4 && s.tracks.power <= 8 && s.tracks.renown >= 4 && s.tracks.renown <= 8 && s.tracks.sin >= 4 && s.tracks.sin <= 8 && s.tracks.loyalty >= 4 && s.tracks.loyalty <= 8,
       text: '你没有变成谁的人，也没有把谁变成你的人。十二张牌，每一张都折得既不漂亮也不难看。散局那天，你回到工位，把那杯茶重新泡了一遍。穹顶还是那个穹顶，雨还是那场雨，穷人和富人都还在原来的位置上。有人问你，这七天你做了什么。你想了想，说：我什么都没改。然后你听见自己在心里补了一句——这在穹顶里，已经很难。' },
   ];
 })();

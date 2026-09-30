@@ -313,13 +313,18 @@
       const rate = Math.round(E.successRate(S, c) * 100);
       const rc = rate >= 65 ? 'var(--ok)' : rate >= 45 ? 'var(--gold)' : 'var(--red)';
       const el = document.createElement('div');
-      el.className = 'card' + (gate.ok ? '' : ' locked') + (selectedUid === c.uid ? ' picked' : '');
+      el.className = 'card t' + c.tier + (gate.ok ? '' : ' locked') + (selectedUid === c.uid ? ' picked' : '');
       el.style.setProperty('--c', p.color);
       el.dataset.uid = c.uid;
+      /* 卡面结构照抄实体牌的版式：顶部名条 → 中部插画 → 底部文字板。
+         曜金卡用描金字，和实体牌里苏丹卡的处理一致。 */
       el.innerHTML =
-        '<div class="card-art" style="background-image:url(' + CARD_ART[c.pathId] + ')"><span class="card-tier">' + t.name + '</span></div>' +
+        '<div class="card-band">' +
+          '<span class="card-tier">' + esc(t.name) + '</span>' +
+          '<span class="card-path">' + esc(p.name) + '</span>' +
+        '</div>' +
+        '<div class="card-art" style="background-image:url(' + CARD_ART[c.pathId] + ')"></div>' +
         '<div class="card-body">' +
-          '<div class="card-path" style="color:' + p.color + '">' + esc(p.name) + '</div>' +
           '<div class="card-verb">' + esc(p.verb) + '</div>' +
           '<div class="card-target"><span>' + esc(target ? target.name : '无目标') + '</span>' +
             '<span class="zone">' + esc(dist ? dist.name : '—') + '</span></div>' +
@@ -618,15 +623,24 @@
     if (!gate.ok) { toast('无法执行', gate.why); return; }
     const boost = $('chk-boost').checked;
     const chipSpend = parseInt($('chip-range').value, 10) || 0;
+    /* 先让这张牌在手上裂开，再刷新界面。折牌就是这个游戏的核心动作，
+       值得半秒的交代。 */
+    const node = document.querySelector('#hand .card[data-uid="' + uid + '"]');
+    if (node) node.classList.add('breaking');
     const r = E.fold(S, uid, boost, chipSpend);
-    if (!r.ok) { toast('无法执行', r.why); return; }
+    if (!r.ok) {
+      if (node) node.classList.remove('breaking');
+      toast('无法执行', r.why);
+      return;
+    }
     selectedUid = null;
     M.setSelected(null);
     $('chk-boost').checked = false;
     $('chip-range').value = '0';
     const title = r.pass ? (r.crit ? '暴击 · 指令达成' : '指令达成') : (r.fumble ? '崩盘 · 指令失败' : '指令失败');
-    showResult(title, r.lines, r.pass);
-    afterAction();
+    const delay = node ? 420 : 0;
+    if (delay) setTimeout(() => { showResult(title, r.lines, r.pass); afterAction(); }, delay);
+    else { showResult(title, r.lines, r.pass); afterAction(); }
   }
 
   function onSwap(uid) {

@@ -338,42 +338,42 @@ window.GAME_DATA = (function () {
   const ENDINGS = [
     {
       id: 'sultan', name: '新的苏丹',
-      cond: (s) => s.tracks.power >= 9 && s.tracks.sin >= 8 && s.tracks.loyalty < 6,
+      priority: 100, cond: (s) => s.tracks.power >= 9 && s.tracks.sin >= 8 && s.tracks.loyalty < 6,
       text: '第十二张牌折下时，厅里的光暗了一瞬。没有人宣布什么，但你站起来的时候，所有人也跟着站起来了。董事的位置空着，你坐下去，尺寸刚好。窗外，穹顶上又下起了雨。',
     },
     {
       id: 'dog', name: '忠犬归位',
-      cond: (s) => s.tracks.loyalty >= 9 && s.tracks.power < 8,
+      priority: 96, cond: (s) => s.tracks.loyalty >= 9 && s.tracks.power < 8,
       text: '你把最后一张牌按在桌上，折得整整齐齐。董事会为你鼓了掌，很轻，像在夸奖一件工具保养得好。你被留了下来，也仅是被留了下来。',
     },
     {
       id: 'hero', name: '脏手的善人',
-      cond: (s) => s.tracks.renown >= 8 && s.tracks.sin <= 3,
+      priority: 92, cond: (s) => s.tracks.renown >= 8 && s.tracks.sin <= 3,
       text: '你折完牌，把那对代码臂卸在董事会桌上。档案里你叫「可回收」，从今天起不是了。下层的人后来在穹顶边缘给你立了一块没有名字的碑。',
     },
     {
       id: 'ghost_out', name: '幽灵离场',
-      cond: (s) => s.tracks.sin <= 2 && s.tracks.renown < 5,
+      priority: 88, cond: (s) => s.tracks.sin <= 2 && s.tracks.renown < 5,
       text: '最后一天，没有告别的仪式。你在系统里删掉了自己的编号，穿过轨道港的侧门，头也不回。没有人追。奇怪的是，这比死更像一场胜利。',
     },
     {
       id: 'purged', name: '被回收',
-      cond: (s) => s.tracks.sin >= 10,
+      priority: 84, cond: (s) => s.tracks.sin >= 10,
       text: '你以为罪痕是勋章，其实那是编号。某一个清晨，你的门禁失效、账户清零、名字从系统里消失，连葬礼都省了。归档结论只有一行：「已回收」。',
     },
     {
       id: 'broken', name: '三十六层高的自由落体',
-      cond: (s) => s.tracks.loyalty <= 0,
+      priority: 80, cond: (s) => s.tracks.loyalty <= 0,
       text: '董事会不再需要你了。你被请进一间没有窗的会客室，对面的人一直在笑，笑到你不想再问下去。关于你的最后一条公开记录，是一次「自愿退出」。',
     },
     {
       id: 'emperor', name: '穹顶之上的名字',
-      cond: (s) => s.tracks.power >= 10 && s.tracks.sin <= 6,
+      priority: 76, cond: (s) => s.tracks.power >= 10 && s.tracks.sin <= 6,
       text: '十二张牌，你折得干净漂亮。新签署的章程里，你的名字第一次出现在封面，而不是附录。穹顶的雨现在按你的规则落下来。',
     },
     {
       id: 'survivor', name: '活着就好',
-      cond: () => true,
+      priority: 0, cond: () => true,
       text: '第十二张牌折下，你只是活着。在这里活着已经算一种功绩。你回到自己的椅子上，喝掉那杯已经凉透的茶，等下一场牌局发到你手上。',
     },
   ];
