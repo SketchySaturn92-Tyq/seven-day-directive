@@ -814,6 +814,24 @@
     const incoming = window.GAME_BRIEFS ? window.GAME_BRIEFS.maybeSpawn(s) : null;
 
     if (s.deadline <= 0) {
+      /* 「买命」花 100 信用点买的那三天，在这里兑现。
+         以前这个标记写进存档就没人读，等于最贵的行动之一什么都没发生。 */
+      if (s.storyFlags && s.storyFlags.graceKeep) {
+        s.storyFlags.graceKeep = 0;
+        s.deadline = 3;
+        pushLog(s, 'good', '那个被往后挪的人替你说了句话。会客室的门又开了 —— 期限回到 3 天。');
+        return { ok: true, grace: true, expired: expired, incoming: incoming };
+      }
+      /* 「押票」花 120 信用点押下的那张离城票，在这里兑现。
+         它的说明就写着「是后路，不是出路」：期限归零时，你不是被回收，
+         而是走出轨道港侧门 —— 没赢，但也没死。 */
+      if (s.storyFlags && s.storyFlags.ticket) {
+        s.storyFlags.ticket = 0;
+        pushLog(s, 'info', '你从内袋里摸出那张票，走向轨道港侧门。');
+        s.ending = endingById('ghost_out');
+        s.phase = 'end';
+        return { ok: true, ticket: true, dead: true, expired: expired, incoming: incoming };
+      }
       pushLog(s, 'bad', '期限归零。会客室的门在你身后关上了。');
       s.ending = endingById('broken');
       s.phase = 'end';

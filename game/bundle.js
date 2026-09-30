@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T09:08:03Z */
+/* 生成时间: 2026-09-30T09:12:16Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -259,14 +259,14 @@ window.GAME_DATA = (function () {
     {
       id: 'keep',
       perDay: 1,
-      gain: '那个人多留三天', name: '买命', cost: 1, price: 100, icon: '♡',
+      gain: '期限归零时，门再开一次：期限回到 3 天', name: '买命', cost: 1, price: 100, icon: '♡',
       desc: '把已经被判回收的人多留三天。救不了，只是往后挪。',
       run: { keep: true },
     },
     {
       id: 'ticket',
       perDay: 1,
-      gain: '押下一张离城票', name: '押票', cost: 2, price: 120, icon: '➤',
+      gain: '期限归零时凭票离场，不被回收', name: '押票', cost: 2, price: 120, icon: '➤',
       desc: '押一张离城的票。它是后路，不是出路。',
       run: { ticket: true },
     },
@@ -9845,6 +9845,24 @@ window.GAME_DATA = (function () {
     const incoming = window.GAME_BRIEFS ? window.GAME_BRIEFS.maybeSpawn(s) : null;
 
     if (s.deadline <= 0) {
+      /* 「买命」花 100 信用点买的那三天，在这里兑现。
+         以前这个标记写进存档就没人读，等于最贵的行动之一什么都没发生。 */
+      if (s.storyFlags && s.storyFlags.graceKeep) {
+        s.storyFlags.graceKeep = 0;
+        s.deadline = 3;
+        pushLog(s, 'good', '那个被往后挪的人替你说了句话。会客室的门又开了 —— 期限回到 3 天。');
+        return { ok: true, grace: true, expired: expired, incoming: incoming };
+      }
+      /* 「押票」花 120 信用点押下的那张离城票，在这里兑现。
+         它的说明就写着「是后路，不是出路」：期限归零时，你不是被回收，
+         而是走出轨道港侧门 —— 没赢，但也没死。 */
+      if (s.storyFlags && s.storyFlags.ticket) {
+        s.storyFlags.ticket = 0;
+        pushLog(s, 'info', '你从内袋里摸出那张票，走向轨道港侧门。');
+        s.ending = endingById('ghost_out');
+        s.phase = 'end';
+        return { ok: true, ticket: true, dead: true, expired: expired, incoming: incoming };
+      }
       pushLog(s, 'bad', '期限归零。会客室的门在你身后关上了。');
       s.ending = endingById('broken');
       s.phase = 'end';
@@ -12795,6 +12813,15 @@ window.GAME_DATA = (function () {
       return;
     }
     autosave();
+    /* 买命换来的那三天。引擎已经把期限改回 3 天，
+       但玩家不看日志，得把这件事当面说给他听。 */
+    if (r.grace) {
+      showResult('门又开了', [
+        '期限本来归零了。那个被往后挪的人在这里替你说了一句话。',
+        '期限回到 3 天。这是买来的，不是挣来的。',
+      ], true);
+      return;
+    }
     // 先播报超期与新委托，再出当日的故事或事件
     const notes = [];
     (r.expired || []).forEach((x) => { notes.push('「' + x.brief.title + '」超期。' + x.lines.join(' ')); });

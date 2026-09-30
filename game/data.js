@@ -255,14 +255,14 @@ window.GAME_DATA = (function () {
     {
       id: 'keep',
       perDay: 1,
-      gain: '那个人多留三天', name: '买命', cost: 1, price: 100, icon: '♡',
+      gain: '期限归零时，门再开一次：期限回到 3 天', name: '买命', cost: 1, price: 100, icon: '♡',
       desc: '把已经被判回收的人多留三天。救不了，只是往后挪。',
       run: { keep: true },
     },
     {
       id: 'ticket',
       perDay: 1,
-      gain: '押下一张离城票', name: '押票', cost: 2, price: 120, icon: '➤',
+      gain: '期限归零时凭票离场，不被回收', name: '押票', cost: 2, price: 120, icon: '➤',
       desc: '押一张离城的票。它是后路，不是出路。',
       run: { ticket: true },
     },

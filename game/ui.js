@@ -909,6 +909,15 @@
       return;
     }
     autosave();
+    /* 买命换来的那三天。引擎已经把期限改回 3 天，
+       但玩家不看日志，得把这件事当面说给他听。 */
+    if (r.grace) {
+      showResult('门又开了', [
+        '期限本来归零了。那个被往后挪的人在这里替你说了一句话。',
+        '期限回到 3 天。这是买来的，不是挣来的。',
+      ], true);
+      return;
+    }
     // 先播报超期与新委托，再出当日的故事或事件
     const notes = [];
     (r.expired || []).forEach((x) => { notes.push('「' + x.brief.title + '」超期。' + x.lines.join(' ')); });
