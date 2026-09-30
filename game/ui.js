@@ -629,6 +629,13 @@
     hint._t = setTimeout(() => el.classList.remove('show'), ms || 2400);
   }
 
+  /* 抽屉是否开着。类名是 open，不是 on —— on 是给面板和侧栏按钮用的，
+     这两个混淆过一次，所以收成一个函数，别在别处再手写。 */
+  function isDrawerOpen() {
+    const d = $('drawer');
+    return !!(d && d.classList.contains('open'));
+  }
+
   function openDrawer(name) {
     const titles = { actions: '行动', tracks: '名望与属性', people: '认识的人', log: '记录' };
     if (drawerOpen === name) return closeDrawer();
@@ -809,6 +816,7 @@
     const title = r.pass ? '委托完成' : '委托未办成';
     showResult(title, r.lines, r.pass);
     if (S.phase === 'end' && S.ending) showEnd();
+    else autosave();
   }
 
   function onRefuseBrief(uid) {
@@ -819,13 +827,19 @@
     renderBriefs();
     showResult('你回绝了', r.lines, false);
     if (S.phase === 'end' && S.ending) showEnd();
+    else autosave();
   }
 
   function onEndDay() {
     const r = E.endDay(S);
     renderAll();
     renderBriefs();
-    if (r.dead && S.ending) { showEnd(); return; }
+    if (r.dead && S.ending) {
+      try { if (SV) SV.clear(); } catch (e) {}
+      showEnd();
+      return;
+    }
+    autosave();
     // 先播报超期与新委托，再出当日的故事或事件
     const notes = [];
     (r.expired || []).forEach((x) => { notes.push('「' + x.brief.title + '」超期。' + x.lines.join(' ')); });
@@ -1155,7 +1169,8 @@
           /* 先看数值，再看后来发生了什么。有 after 就多一屏。 */
           showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null, r.after);
         }
-        if (S.phase === 'end' && S.ending) showEnd();
+        if (S.phase === 'end' && S.ending) { try { if (SV) SV.clear(); } catch (e) {} showEnd(); }
+        else autosave();
       };
       wrap.appendChild(b);
     });
@@ -1300,7 +1315,7 @@
     /* Esc：先关剧情层，再关抽屉，最后取消选中 */
     if (e.key === 'Escape') {
       if (storyOn) { return; }             // 剧情层必须选完，不给 Esc 逃
-      if ($('drawer').classList.contains('on')) { openDrawer(null); return; }
+      if (isDrawerOpen()) { closeDrawer(); return; }
       if (selectedUid) { selectedUid = null; M.setSelected(null); renderHand(); }
       return;
     }
@@ -1339,10 +1354,8 @@
     const map = { a: 'actions', t: 'tracks', p: 'people', l: 'log' };
     const k = String(e.key).toLowerCase();
     if (map[k]) {
-      const cur = $('drawer').classList.contains('on') ? document.querySelector('.rail-btn.on') : null;
-      const want = document.querySelector('.rail-btn[data-panel="' + map[k] + '"]');
-      if (cur && cur === want) openDrawer(null);
-      else if (want) openDrawer(map[k]);
+      if (isDrawerOpen() && drawerOpen === map[k]) closeDrawer();
+      else openDrawer(map[k]);
     }
   });
   $('cp-back').onclick = () => { show('screen-home'); renderHome(); };
