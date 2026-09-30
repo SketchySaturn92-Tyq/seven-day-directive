@@ -8,6 +8,45 @@
 
 ---
 
+## v5.5 — 修掉线上 BGM 被 CSP 拦掉
+
+### 真正的病因
+
+v5.4 换成音轨后，本地能放，**线上依然没声**。查下来不是音频问题，是网关的 CSP：
+
+```
+content-security-policy: default-src 'none'; script-src 'self' 'unsafe-inline';
+  style-src ...; connect-src https://artifact.catsco.cc/the-board/ ...;
+  img-src 'self' data: blob:; font-src 'self' data:; ...
+```
+
+这条策略里**没有 `media-src`**，于是 `media-src` 回落到 `default-src 'none'` —— 浏览器直接拒绝加载任何音频/视频文件。现场表现是 `MediaError.code = 4`（SRC_NOT_SUPPORTED）、`networkState = 3`（NO_SOURCE），**连请求都不发出去**，所以看网络面板什么都看不到，很容易误判成"文件 404"或"格式不对"。本地直连 `127.0.0.1:19994` 没有这个头，问题只在线上复现。
+
+### 改法
+
+不再用 `<audio>`，改走 Web Audio：
+
+1. `fetch('assets/bgm-main.mp3')` 取回字节 —— CSP 的 `connect-src` 里已经含应用自身的源，同源 fetch 放行
+2. `decodeAudioData` 解码成 `AudioBuffer`
+3. `AudioBufferSourceNode`（`loop = true`）经 BGM 专用增益接进 master 播放
+
+CSP 的 `media-src` 管不到 Web Audio 的输出，这条路绕开了限制；顺带还解决了两件事：BGM 与音效共用 master 总闸（关音效时音乐自然停），淡入淡出可以直接用 `AudioParam` 的指数斜坡，比手推 `element.volume` 干净。
+
+另外把 master 音量从 0.45 提到 0.6，BGM 单独增益 0.8 —— 音轨本身录得偏轻（实测整体 −14.4 dBFS），叠上原来的衰减后音量偏小。
+
+### 验证方式
+
+用一个 Playwright 路由钩子把**线上逐字一致的 CSP 头**注入到本地响应里，先复现再修：
+
+- 注入后走 `<audio>` 的老路：`{tag:"error", err:4, net:3}` —— 症状与线上完全一致
+- 注入后走 `fetch` 的新路：`{ok:true, status:200}`
+- 同样条件下进游戏：`live:true`、`ctx:running`，音轨请求 200
+- 控制台里那条 `Refused to load media ... violates "default-src 'none'"` 只出现在 `<audio>` 的尝试上，新路没有被拦
+
+教训写在这里：**本地能跑不等于线上能跑**。前一版我只在 `127.0.0.1` 和"带自动播放豁免的 headless"里测过，两个条件都偏离了真实环境，把问题放过去了。之后凡是依赖浏览器策略（CSP、自动播放、跨域）的功能，都要在带真实响应头的条件下验一遍。
+
+---
+
 ## v5.4 — 换成真实音轨的 BGM
 
 ### 为什么换

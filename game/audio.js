@@ -91,10 +91,11 @@
       /* 总音量压到一半以下，游戏里音效不该抢戏。
          关掉音效时这里直接归零 —— play() 只是不再新建声音，
          已经在小节里跑的 BGM 得靠总闸才停得住。 */
-      master.gain.value = on ? 0.45 : 0.0001;
+      master.gain.value = on ? 0.6 : 0.0001;
       master.connect(ctx.destination);
       noiseBuf = makeNoiseBuf(ctx);
       resumeCtx();
+      document.addEventListener('visibilitychange', bgmVisibility);
       bgmSync();                             // 上下文备好了，BGM 该响就响起来
     } catch (e) {
       ctx = null;                            // 初始化失败就彻底退回静默模式
@@ -347,85 +348,90 @@
   };
 
   /* ==========================================================
-     BGM —— 循环音轨
-     音轨来自 Meowa（assets/bgm-main.mp3，约 3 分钟，192kbps）。
+     BGM —— 循环音轨，走 Web Audio 播放
 
-     早先那版是现场合成的，有一个致命的时间量纲错误：把绝对时刻
-     减掉 currentTime 之后才交给 start()，振荡器全部被排到过去，
-     于是 bgmLive 为 true、上下文 running、分析器读出来却是全零。
-     换成真实音轨后不存在这个问题，听感也远好于几个正弦叠一起。
+     音轨是 Meowa 生成的（assets/bgm-main.mp3，约 3 分钟）。
 
-     用 HTML5 Audio，不走 Web Audio 的 MediaElementSource：
-     少一层路由，出问题好查；音量直接改 element.volume。
+     为什么不用 <audio>：线上网关给页面加的 CSP 里没有 media-src，
+     于是 media-src 回落到 default-src 'none'，浏览器直接拒绝加载
+     任何音频文件 —— 本地跑得好好的（本地无 CSP），一上线就
+     MediaError.code=4、networkState=3，连请求都不发出去。
+     改成 fetch 取回字节、decodeAudioData 解码、AudioBufferSourceNode
+     播放：CSP 的 media-src 管不到 Web Audio，而 connect-src 里已经
+     有应用自身的源，同源 fetch 是放行的。
+
+     顺带解决两件事：BGM 与音效共用 master 总闸（关音效时音乐自然停），
+     音量渐变也能用 AudioParam 的斜坡做，比手推 element.volume 干净。
      ========================================================== */
 
   const BGM_SRC = 'assets/bgm-main.mp3';
-  const BGM_VOL = 0.42;         // 音轨本身混得很轻，这里不用再压太狠
-  const BGM_FADE_IN = 2600;     // 淡入毫秒
-  const BGM_FADE_OUT = 1200;    // 淡出毫秒
+  const BGM_VOL = 0.8;          // 再经 master，音轨本身录得偏轻
+  const BGM_FADE_IN = 2.6;      // 淡入秒数
+  const BGM_FADE_OUT = 1.2;     // 淡出秒数
 
-  let bgmEl = null;             // 音轨元素，第一次要用才创建
-  let bgmFade = null;           // 淡入淡出的推进定时器
+  let bgmBuf = null;            // 解码后的音轨，只解一次
+  let bgmLoading = false;       // 是否正在取/解码
+  let bgmFailed = false;        // 取过一次拿不到就不再重试
+  let bgmSource = null;         // 正在播的 BufferSource
+  let bgmGain = null;           // BGM 专用增益，接在 master 上
   let bgmLive = false;          // 是否正在播放
 
-  function bgmCreate() {
-    if (bgmEl) return bgmEl;
-    try {
-      const el = new Audio();
-      el.src = BGM_SRC;
-      el.loop = true;
-      el.preload = 'auto';
-      el.volume = 0;
-      /* 音轨拿不到就彻底放弃 BGM，绝不牵连游戏本体 */
-      el.addEventListener('error', function () { bgmEl = null; bgmLive = false; });
-      bgmEl = el;
-      return el;
-    } catch (e) { bgmEl = null; return null; }
+  /* 该不该有音乐：音效总闸开着、BGM 开关开着、标签页在前台 */
+  function bgmWant() {
+    return !!(on && bgmOn && !document.hidden);
   }
 
-  /* element.volume 没有内建过渡，自己按 50ms 一步推上去。
-     比 setInterval 直接跳到目标值稳，也免得出现“啪”的爆音。 */
-  function bgmFadeTo(to, ms, done) {
-    if (bgmFade) { window.clearInterval(bgmFade); bgmFade = null; }
-    const el = bgmEl;
-    if (!el) { if (done) done(); return; }
-    const from = Number(el.volume) || 0;
-    const steps = Math.max(1, Math.round(ms / 50));
-    let i = 0;
-    bgmFade = window.setInterval(function () {
-      i++;
-      const k = Math.min(1, i / steps);
-      try { el.volume = Math.max(0, Math.min(1, from + (to - from) * k)); } catch (e) {}
-      if (k >= 1) {
-        window.clearInterval(bgmFade);
-        bgmFade = null;
-        if (done) done();
-      }
-    }, 50);
-  }
-
-  /* 开关或上下文的实际状态变了，就调这里对齐。
-     总闸（音效开关）关掉时，BGM 也要停 —— 它不受 play() 那个
-     「不发新声音」的限制，是一段一直在跑的媒体。 */
-  function bgmSync() {
-    try {
-      if (on && bgmOn) bgmStart();
-      else bgmStop();
-    } catch (e) {}
+  function bgmLoad() {
+    if (bgmBuf || bgmLoading || bgmFailed) return;
+    if (!ctx) return;
+    bgmLoading = true;
+    fetch(BGM_SRC)
+      .then(function (r) {
+        if (!r.ok) throw new Error('bgm http ' + r.status);
+        return r.arrayBuffer();
+      })
+      .then(function (buf) {
+        /* 新浏览器返回 Promise，老 Safari 只认回调，两条路都挂上 */
+        return new Promise(function (res, rej) {
+          let done = false;
+          const ok = function (d) { if (!done) { done = true; res(d); } };
+          const no = function (e) { if (!done) { done = true; rej(e); } };
+          const pr = ctx.decodeAudioData(buf, ok, no);
+          if (pr && pr.then) pr.then(ok).catch(no);
+        });
+      })
+      .then(function (decoded) {
+        bgmBuf = decoded;
+        bgmLoading = false;
+        bgmSync();                       // 解好了，如果本来就该响，现在响
+      })
+      .catch(function () {
+        bgmLoading = false;
+        bgmFailed = true;                // 拿不到就彻底放弃，不反复重试
+      });
   }
 
   function bgmStart() {
     try {
       if (bgmLive) return;
-      const el = bgmCreate();
-      if (!el) return;
+      if (!ctx || !master) return;
+      if (!bgmBuf) { bgmLoad(); return; }   // 还没解码完，加载完会自动接上
+      const t = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(BGM_VOL, t + BGM_FADE_IN);
+      g.connect(master);
+
+      const src = ctx.createBufferSource();
+      src.buffer = bgmBuf;
+      src.loop = true;
+      src.connect(g);
+      src.start();                          // 不传时间参数：立即开始。
+                                            // 早先合成版就是在这里把绝对
+                                            // 时刻减成了相对值，整段排到过去
+      bgmGain = g;
+      bgmSource = src;
       bgmLive = true;
-      /* play() 返回 Promise，被浏览器策略拦下会 reject。
-         拦下就当这局没音乐，等下一次用户手势再试。 */
-      const pr = el.play();
-      if (pr && pr.catch) pr.catch(function () { bgmLive = false; });
-      bgmFadeTo(BGM_VOL, BGM_FADE_IN);
-      document.addEventListener('visibilitychange', bgmVisibility);
     } catch (e) { bgmLive = false; }
   }
 
@@ -433,26 +439,32 @@
     try {
       if (!bgmLive) return;
       bgmLive = false;
-      document.removeEventListener('visibilitychange', bgmVisibility);
-      bgmFadeTo(0, BGM_FADE_OUT, function () {
-        try { if (bgmEl) bgmEl.pause(); } catch (e) {}
-      });
+      const g = bgmGain, src = bgmSource;
+      bgmGain = null;
+      bgmSource = null;
+      if (!g || !ctx) return;
+      const t = ctx.currentTime;
+      g.gain.cancelScheduledValues(t);
+      g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + BGM_FADE_OUT);
+      window.setTimeout(function () {
+        try { if (src) { src.stop(); src.disconnect(); } } catch (e) {}
+        try { g.disconnect(); } catch (e) {}
+      }, (BGM_FADE_OUT + 0.3) * 1000);
     } catch (e) {}
   }
 
-  /* 切后台就停，省电也避免后台响；回前台接着放 */
-  function bgmVisibility() {
+  /* 开关、上下文、标签页可见性，任何一处变了都调这里对齐 */
+  function bgmSync() {
     try {
-      if (!bgmEl) return;
-      if (document.hidden) {
-        if (!bgmEl.paused) bgmEl.pause();
-      } else if (bgmLive && bgmEl.paused) {
-        const pr = bgmEl.play();
-        if (pr && pr.catch) pr.catch(function () {});
-        bgmEl.volume = BGM_VOL;
-      }
+      if (bgmWant()) bgmStart();
+      else bgmStop();
     } catch (e) {}
   }
+
+  /* 切后台就停（BufferSource 没有 pause，只能停掉再重起），
+     回前台再由 bgmSync 接上。省电，也避免后台出声。 */
+  function bgmVisibility() { bgmSync(); }
 
   function setBgmEnabled(v) {
     try {
@@ -500,7 +512,7 @@
     try {
       if (!ctx || !master) return;
       const now = ctx.currentTime;
-      const target = on ? 0.45 : 0.0001;
+      const target = on ? 0.6 : 0.0001;
       master.gain.cancelScheduledValues(now);
       master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
       master.gain.exponentialRampToValueAtTime(target, now + (on ? 0.35 : 0.6));
