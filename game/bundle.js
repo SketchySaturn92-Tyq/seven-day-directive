@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-29T09:25:24Z */
+/* 生成时间: 2026-09-30T01:53:39Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -13,10 +13,11 @@ window.GAME_DATA = (function () {
     deadlineDays: 7,        // 每张指令卡的期限
     apPerDay: 4,            // 每日行动点
     deckGoal: 12,           // 折完全部 12 张牌 = 通关
+    startHand: 3,           // 开局只发三张：牌是挣来的
+    handMax: 7,             // 手牌上限
     statCap: 10,
     trackCap: 12,
-    swapCost: 2,            // 换牌消耗行动点
-    version: '1.0.0',
+    version: '5.0.0',
   };
 
 
@@ -185,8 +186,13 @@ window.GAME_DATA = (function () {
     },
     {
       id: 'clean', name: '善后', cost: 1, icon: '⌫',
-      desc: '花 30 信用点买通关系，洗掉一层罪痕。',
+      desc: '花 45 信用点买通关系，洗掉一层罪痕。',
       run: {},
+    },
+    {
+      id: 'draw', name: '申领', cost: 2, icon: '▤',
+      desc: '走一遍流程，从董事会那里再要一张指令卡。牌不够时的保底来源。',
+      run: { draw: true },
     },
   ];
 
@@ -1390,6 +1396,541 @@ window.GAME_DATA = (function () {
   ];
 })();
 
+/* ===== game/content-briefs2.js ===== */
+/* 委托与通牒（第二批，60 条）。 */
+(function () {
+  'use strict';
+
+  window.BRIEFS2 = [
+
+    /* ================= demand 事务要求 ================= */
+    { id: 'd1', kind: 'demand', npc: 'su-wen', district: 'tower',
+      title: '排一份下周的会客顺序',
+      text: '苏纹把一张会客日程推到你面前，说下周有三拨人要进高塔，董事会不想让他们碰面，顺序由你来排。她说这不是礼貌问题，是路径问题，周三上午之前交给她。表格下面她留了半行铅笔字：别按亲疏排。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 40 } },
+      onSolve: { intel: 1, track: { loyalty: 2 } },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    { id: 'd2', kind: 'demand', npc: 'dai-siyuan', district: 'exchange',
+      title: '补三个月前的培训签到',
+      text: '戴思远说稽查下周会调上季度的合规培训记录，你们部门那一栏只有一次签到，日期还写错了一天。他要你在周一之前把三次签到补齐，笔迹别都一样，也别用同一种笔。他说这份顺序不进会议纪要，也不上系统。',
+      days: 4,
+      solve: { type: 'stat', stat: 'intellect', dc: 13 },
+      onSolve: { track: { loyalty: 2, power: 1 } },
+      onExpire: { track: { loyalty: -3 } } },
+
+    { id: 'd3', kind: 'demand', npc: 'yu-nanzhi', district: 'exchange',
+      title: '明天中午前把这两笔拆开',
+      text: '郁南枝说有两笔同额度的转账在清算行被标成可疑，因为是同一天进出，而且同属一个楼层。她给你到明天中午，把其中一笔改走别的通道，手续费她出，单据要留痕但不能连号。她说尾号错一位就算两笔，两笔就是两个人来查。',
+      days: 1,
+      solve: { type: 'resource', need: { money: 45 } },
+      onSolve: { track: { loyalty: 2, power: 1 } },
+      onExpire: { track: { loyalty: -2, sin: 2 } },
+      onRefuse: { track: { loyalty: -3 } },
+      refuseLabel: '回绝' },
+
+    { id: 'd4', kind: 'demand', npc: 'cheng-yan', district: 'lab',
+      title: '把三号柜的温控记录补上',
+      text: '程砚发来一条内部短讯，说三号柜周四凌晨断电四十分钟，记录里那一段是空的。她要求你在本周结束前补齐曲线，数值自己填，别填得太平。她说太平了看着像假的，她一眼就能看出来。她说她不想在伦理那一栏里看到空白。',
+      days: 4,
+      solve: { type: 'resource', need: { intel: 3 } },
+      onSolve: { intel: 2, gear: 1 },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    { id: 'd5', kind: 'demand', npc: 'peng-jian', district: 'lab',
+      title: '换掉走廊尽头那只摄像头',
+      text: '彭戬说二号走廊尽头那只摄像头角度偏了，照不到消防门，巡检报告上连着三次记了这一条。他要你在两天内把这条记录处理掉，或者把那扇门的开合次数改回正常值，两样随你挑。他说记录这种东西，改一次就要一直改下去。',
+      days: 2,
+      solve: { type: 'stat', stat: 'stealth', dc: 12 },
+      onSolve: { track: { power: 1, sin: 1 } },
+      onExpire: { track: { sin: 2, loyalty: -1 } } },
+
+    { id: 'd6', kind: 'demand', npc: 'tie-gui', district: 'docks',
+      title: '把夜班的排班表重排一遍',
+      text: '铁贵把上周的排班表拍在桌上，说罢工那天有九个人的班次对不上考勤机。他给你三天，按他的口述重排一份正式的，别问为什么。他说问了也没用，那台机器那天下午确实坏过。他把那台考勤机的检修单也一起放在桌上。',
+      days: 3,
+      solve: { type: 'district', district: 'docks' },
+      onSolve: { intel: 2, track: { power: 1 } },
+      onExpire: { track: { loyalty: -2, renown: -1 } },
+      onRefuse: { track: { renown: 2, loyalty: -2 } },
+      refuseLabel: '不接这活' },
+
+    { id: 'd7', kind: 'demand', npc: 'lao-ya', district: 'slum',
+      title: '到回收场取一只寄存箱',
+      text: '老鸦说他有一只箱子寄在回收场，编号是手写的，只有他记得。他给你两天时间，用你部门的调拨单把它提出来。箱子里是什么他没说，只说别看，看完就不算他寄的了。他说箱子在四号堆场最里面那一排，锈得看不出编号。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 55 } },
+      onSolve: { intel: 3, track: { sin: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } } },
+
+    { id: 'd8', kind: 'demand', npc: 'wen-duo', district: 'tower',
+      title: '周五前交两页风险说明',
+      text: '闻铎在电梯里说，董事会要一份关于你们那条线的风险说明，两页，只写不利的那部分。他说不用掩饰，掩饰的东西他们看过太多，写清楚反而好交代，念完他自己会补两句。他说写完把稿子留在台上就行，别带走。',
+      days: 3,
+      solve: { type: 'stat', stat: 'charm', dc: 13 },
+      onSolve: { track: { loyalty: 3 } },
+      onExpire: { track: { loyalty: -3, power: -1 } } },
+
+    { id: 'd9', kind: 'demand', npc: 'xun-jie', district: 'ring',
+      title: '把环带的巡检缺口补平',
+      text: '荀戒在环带三十二号段截住你，说上个月那根支撑柱的巡检记录空了一段，空缺那天是他值的班。他要你在两天内补一条正常读数进去，或者代他签一次到场。他把记录本从腰带里抽出来，那一页折了一个角，说签的是他的名字。',
+      days: 2,
+      solve: { type: 'district', district: 'ring' },
+      onSolve: { intel: 2, track: { power: 1 } },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    { id: 'd10', kind: 'demand', npc: 'sa-er', district: 'salvage',
+      title: '把回收场那批货挑出来',
+      text: '萨尔说回收场新进了一批从穹顶外拉回来的东西，混在废钢里，编号早被磨掉了。她要你在三天内用调拨单把其中七件挑出来，单独堆在四号堆场。她说清单会给你，但别一次全给，分三次拿，每次少拿一件。',
+      days: 3,
+      solve: { type: 'resource', need: { money: 50 } },
+      onSolve: { gear: 1, intel: 2, track: { sin: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } } },
+
+    { id: 'd11', kind: 'demand', npc: 'ban-tou', district: 'salvage',
+      title: '把废料的重量重新登记',
+      text: '班头把过磅单推过来，说昨天有一批废料出场时的重量和入库差了四百公斤，中间只经过你们的手。他给你两天，把差额平到合理区间，别平得太干净。他说查这个的人不识数，但会数小数点后面几位。他说数目这种东西，只要前后一致就没人细究。',
+      days: 2,
+      solve: { type: 'stat', stat: 'intellect', dc: 12 },
+      onSolve: { money: 30, track: { power: 1 } },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    { id: 'd12', kind: 'demand', npc: 'wu-mian', district: 'memory',
+      title: '补一张记忆柜台的交接单',
+      text: '无面说记忆银行三号柜台的交接单少了一个签收时间，那段恰好没有监控。无面要你在本周内补上，具体到分钟，笔迹要像写字很慢的人。柜台外面排着长队，没有人说话，也没有人抬头看那台钟。无面把笔推过来，笔尖朝着自己那一侧。',
+      days: 4,
+      solve: { type: 'district', district: 'memory' },
+      onSolve: { intel: 3, track: { sin: 1 } },
+      onExpire: { track: { sin: 2, loyalty: -1 } } },
+
+    /* ================= summon 传唤 ================= */
+    { id: 'd13', kind: 'summon', npc: 'wen-duo', district: 'tower',
+      title: '董事会临时加了一场答辩',
+      text: '闻铎说董事会临时加了一场答辩，明天下午两点，你一个人去，讲你们那条线这季度的差错。他说稿子不用带，带一张纸的提纲就行。他还说，进去之后他们问什么你答什么，别自己加。他把一支笔放在桌上，说这个借你。',
+      days: 1,
+      solve: { type: 'stat', stat: 'charm', dc: 14 },
+      onSolve: { track: { loyalty: 2, power: 1 } },
+      onExpire: { track: { loyalty: -3, power: -1 } } },
+
+    { id: 'd14', kind: 'summon', npc: 'su-wen', district: 'tower',
+      title: '今晚十点，日程多了一栏',
+      text: '苏纹把你今晚的日程改动截图发过来，说十点那一栏是新加的，没有议题，也没有参会人名单，只有一间会议室的编号。她让你准时到，别带记录设备。她说她也不知道里面是谁，只知道是董事会直接排的。',
+      days: 1,
+      solve: { type: 'resource', need: { money: 35 } },
+      onSolve: { intel: 3, track: { loyalty: 1 } },
+      onExpire: { track: { loyalty: -2, power: -1 } } },
+
+    { id: 'd15', kind: 'summon', npc: 'dai-siyuan', district: 'exchange',
+      title: '合规面谈挪到今晚下班后',
+      text: '戴思远把面谈通知塞进你的工位抽屉，时间改到今晚七点，地点从会议室挪到地下一层的小问询室。他说这次不谈流程，只谈上个月那两次授权是谁按的。他让你带授权书原件，复印件不算，他说纸上有没有指纹差别很大。',
+      days: 2,
+      solve: { type: 'stat', stat: 'intellect', dc: 13 },
+      onSolve: { track: { loyalty: 2 } },
+      onExpire: { track: { loyalty: -3 } } },
+
+    { id: 'd16', kind: 'summon', npc: 'yu-nanzhi', district: 'exchange',
+      title: '清算行的复核要你亲自去',
+      text: '郁南枝说周五上午有一场内部复核，清算行那边指名要签发人到场。她说你可以不带任何材料，人到了就行，但不到就会出现一条默认结论。她把时间写在你的手背上，用的是油性笔，说洗掉也得来。她说复核席上坐着的人不看材料，只看谁到了。',
+      days: 2,
+      solve: { type: 'district', district: 'exchange' },
+      onSolve: { track: { loyalty: 2, power: 1 } },
+      onExpire: { track: { loyalty: -3, sin: 1 } } },
+
+    { id: 'd17', kind: 'summon', npc: 'cheng-yan', district: 'lab',
+      title: '明早七点的评审要你到场',
+      text: '程砚说三号项目的评审提前到明早七点，会场研究所地下二层，参会名单上写着你的工号。她说你不用准备，只用在签到场那一栏签个字。她把签到表翻到最后一页给你看，那一页只有三行格子。她说签完就能走，不用等散会。',
+      days: 1,
+      solve: { type: 'stat', stat: 'intellect', dc: 12 },
+      onSolve: { intel: 2, gear: 1 },
+      onExpire: { track: { loyalty: -2, power: -1 } } },
+
+    { id: 'd18', kind: 'summon', npc: 'peng-jian', district: 'lab',
+      title: '安保事故复盘，明天上午',
+      text: '彭戬说周一那起门禁误报开了复盘会，时间定在明天上午九点，安保线以外只有一个旁听位，给了你。他说旁听席不发言，但你坐的位置正对着记录员的镜头。他还说，坐姿别太随便。他说镜头后面的人会把你坐了多久记下来。',
+      days: 2,
+      solve: { type: 'resource', need: { gear: 1 } },
+      onSolve: { intel: 2, track: { power: 1 } },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    { id: 'd19', kind: 'summon', npc: 'lao-ya', district: 'slum',
+      title: '灰市分账，账房先生等你',
+      text: '老鸦说下层那间洗衣房后屋今晚九点开分账，账房先生等着见你一面。他说这不是鸿门宴，是要你当面确认一个数，确认完这笔就算结了。他让你带现金去，别带卡，卡后面会留痕。他说这笔钱当面点清，出了这间屋就不算数。',
+      days: 1,
+      solve: { type: 'district', district: 'slum' },
+      onSolve: { money: 35, track: { sin: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } } },
+
+    { id: 'd20', kind: 'summon', npc: 'tie-gui', district: 'docks',
+      title: '码头七号仓，午夜前到',
+      text: '铁贵传话过来，说午夜前十一点半在七号仓等你，只他一个人。他说这件事不上台面，你也别带人。仓里堆着还没清关的橡胶，味道很重，他说在那说话，外面听不见，里面也看不清脸。他说橡胶的味道能盖住烟味，也能盖住别的。',
+      days: 1,
+      solve: { type: 'stat', stat: 'force', dc: 12 },
+      onSolve: { intel: 2, track: { power: 1, sin: 1 } },
+      onExpire: { track: { power: -1, renown: -1 } } },
+
+    { id: 'd21', kind: 'summon', npc: 'yin-mian', district: 'docks',
+      title: '女术士的代理人约你一面',
+      text: '银面说委托人愿意见你，时间是后天傍晚，地点在一艘没登记的小船上。她说船不会开，只停在泊位，见面不超过二十分钟。她还说委托人有个习惯，说话时喜欢用第三人称称呼自己，你别觉得奇怪。她说委托人只问一句话，问完就走。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 30 } },
+      onSolve: { intel: 3, track: { sin: 1 } },
+      onExpire: { intel: -1, track: { power: -1 } } },
+
+    { id: 'd22', kind: 'summon', npc: 'yu-ke', district: 'outside',
+      title: '穹顶外有人要见你一面',
+      text: '雨客说外环那边有人想跟你说几句话，隔着气闸，不进来。后天下午气压窗口只有四十分钟，你得在第九道闸门外站着。他说不用带礼物，对方只想知道你上一次做决定时，先想到的是谁。他说对方不进门，你也不用出闸。',
+      days: 2,
+      solve: { type: 'district', district: 'outside' },
+      onSolve: { intel: 3, track: { sin: 1, power: 1 } },
+      onExpire: { intel: -1, track: { renown: -1 } } },
+
+    { id: 'd23', kind: 'summon', npc: 'sa-er', district: 'salvage',
+      title: '拾荒者的队伍要你去一趟',
+      text: '萨尔说回收场那帮人这周不出工，起因是一张被压了两个月的配给单。她要你在三天内到堆场去，站在人群前面说一句话，说清那张单子什么时候能下来。她说他们不听文件，只听人。她说你站上去的时候他们不会鼓掌，只会安静。',
+      days: 3,
+      solve: { type: 'stat', stat: 'charm', dc: 13 },
+      onSolve: { track: { renown: 2, loyalty: -1 } },
+      onExpire: { track: { renown: -2, loyalty: -1 } } },
+
+    { id: 'd24', kind: 'summon', npc: 'wu-mian', district: 'memory',
+      title: '记忆银行要你去核对一次',
+      text: '无面递来一张通知，说有一份记录里的授权人写的是你的工号，需要你本人到柜台确认一次。时间约在四天后下午，无面说不用带证件，柜台认得人。柜台里那盏灯很白，坐下来之后没人会催你。无面说那天柜台只开一半，灯不会全亮。',
+      days: 4,
+      solve: { type: 'district', district: 'memory' },
+      onSolve: { intel: 2, track: { loyalty: 1 } },
+      onExpire: { track: { loyalty: -2, sin: 1 } } },
+
+    /* ================= blood 血腥差事 ================= */
+    { id: 'd25', kind: 'blood', npc: 'wen-duo', district: 'tower',
+      title: '今晚有个人要从系统里消失',
+      text: '闻铎说高塔十七层有个人手上有份不该外流的会议录音，人还在楼里。他给你到今天午夜，让这个人的门禁记录、工位访问、考勤三样同时断在今天之前。他说别做得干净，干净了反而像抹过。他说录音交出去之前，这个人还算是一个人。',
+      days: 1,
+      solve: { type: 'fold', path: 'purge' },
+      onSolve: { intel: 2, track: { sin: 2, power: 1 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    { id: 'd26', kind: 'blood', npc: 'yu-nanzhi', district: 'exchange',
+      title: '把那个追债的人断在港区',
+      text: '郁南枝说清算行有一笔账的追索权被一个人攥了三年，这人每季度寄一次函，最近开始去找记者。她给你两天，让这件事没有下一个季度。她说这人不是坏人，只是太有耐心。她说她会把信和笔一起收走，收得很干净。',
+      days: 2,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { money: 60, track: { sin: 2 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    { id: 'd27', kind: 'blood', npc: 'dai-siyuan', district: 'exchange',
+      title: '让那个稽核员提前病退',
+      text: '戴思远说稽查组里有个人已经翻到去年那叠底稿，翻的速度比预期快了两周。他不要别的，只要这个人本周内离开岗位。他说方法随你，但手续上要像病退，像到人事那边挑不出毛病。他说病退这个说法最好用，因为它不需要解释。',
+      days: 2,
+      solve: { type: 'stat', stat: 'stealth', dc: 14 },
+      onSolve: { track: { loyalty: 2, sin: 2 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    { id: 'd28', kind: 'blood', npc: 'peng-jian', district: 'lab',
+      title: '把那个值班员调离这一层',
+      text: '彭戬说监控室那个夜班值班员看见了不该看的一段，人没做错什么，就是嘴不太严。他给你到明天早上，让这个人不再出现在地下二层的班表上，用哪种方式他不问，只要周一之前不再见他。他说这人只是运气不好，撞在了那个时间点上。',
+      days: 1,
+      solve: { type: 'resource', need: { money: 50 } },
+      onSolve: { track: { power: 1, sin: 1 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    { id: 'd29', kind: 'blood', npc: 'tie-gui', district: 'docks',
+      title: '让罢工牵头人今晚退出',
+      text: '铁贵说港口罢工那个牵头人今晚要在二号仓开个小会，会有十几个人去。他要你让这个会开不起来，也不用让他伤得多重，只要这几天站不起来。他说工人这块地他清楚，动手的分寸他知道，你只要把车开到位置。',
+      days: 1,
+      solve: { type: 'district', district: 'docks' },
+      onSolve: { intel: 2, track: { sin: 2, power: 1 } },
+      onExpire: { track: { sin: 2, renown: -2 } } },
+
+    { id: 'd30', kind: 'blood', npc: 'lao-ya', district: 'slum',
+      title: '处理掉一个不太安静的线人',
+      text: '老鸦说下三层有个线人两头卖，上周把你们一次交接的时间说了出去。他说这人不用留，但也别做得太狠，留个能交代的说法就行。他把地址写在烟盒内侧，撕下来给你，说火里烧过就没人认得。他说下面的人换得快，少一个不会有人去数。',
+      days: 2,
+      solve: { type: 'stat', stat: 'force', dc: 13 },
+      onSolve: { intel: 2, track: { sin: 2 } },
+      onExpire: { track: { sin: 2, renown: -1 } } },
+
+    { id: 'd31', kind: 'blood', npc: 'yin-mian', district: 'ring',
+      title: '让一个人错过了那趟船',
+      text: '银面说她的委托人今早改了主意，不想再让某个人离开这座城。她给你两天，让那人在登船前被拦下，方式不重要，只要上不了船。她说委托人原话是「她要留在这座城里，跟这里一起」。她说这是委托人的原话，她只负责转达。',
+      days: 2,
+      solve: { type: 'fold', path: 'control', need: 1 },
+      onSolve: { track: { sin: 1, power: 2 } },
+      onExpire: { track: { sin: 2, power: -1 } } },
+
+    { id: 'd32', kind: 'blood', npc: 'wen-shicheng', district: 'orbit',
+      title: '把那个没上船的记录抹干净',
+      text: '温仕成说昨天凌晨有个人从轨道港的货梯下去，没有出境记录，也没过体检。这事上面今天已经开始查登船名单。他给你一天，把四号登船口七点前后的交接记录处理成设备故障，别留下一个人名。他说查到最后总要有一个原因，故障最省事。',
+      days: 1,
+      solve: { type: 'stat', stat: 'stealth', dc: 12 },
+      onSolve: { money: 30, track: { sin: 1 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    { id: 'd33', kind: 'blood', npc: 'sa-er', district: 'salvage',
+      title: '回收场那只手要处理掉',
+      text: '萨尔说三号堆场那台压机这几天总卡，昨天清理的时候从料里挑出一只戴着手环的手。她说手环是登记过的。她给你两天，把这件事了结，别让它进任何一份事故报告。她说这块地她扫了八年，第一次不想扫。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 40 } },
+      onSolve: { intel: 2, track: { sin: 2 } },
+      onExpire: { track: { sin: 2, renown: -1 } } },
+
+    { id: 'd34', kind: 'blood', npc: 'xun-jie', district: 'ring',
+      title: '把环带那个坠落记录改掉',
+      text: '荀戒说上周环带有一处平台缺口，有人从那儿掉了下去，记录被写成检修期间无人通行。现在巡检员换班，那份记录还在。他给你两天，把它改成设备故障导致的坠落，责任人写设备编号，不写人。他说平台缺口的检修单他能补，现在缺的是一个名字。',
+      days: 2,
+      solve: { type: 'district', district: 'ring' },
+      onSolve: { track: { power: 1, sin: 2 } },
+      onExpire: { track: { sin: 2, loyalty: -1 } } },
+
+    { id: 'd35', kind: 'blood', npc: 'wu-mian', district: 'memory',
+      title: '把一段记忆提前结清掉',
+      text: '无面说有一份记录的主人下周会来取，但柜台的排期已经把它移到了处理名单里。无面要你在两天内签字确认提前结清。无面说话时一直看着柜台后面的墙，说这是件让人不舒服的工作，签字的人通常不看。',
+      days: 2,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { track: { sin: 2, loyalty: 1 } },
+      onExpire: { track: { sin: 2, power: -1 } } },
+
+    { id: 'd36', kind: 'blood', npc: 'cheng-yan', district: 'lab',
+      title: '让那份样本来源查不下去',
+      text: '程砚说伦理那边开始追问三号柜样本的来源人，问到这一步就有点近了。她要你在两天内让这条线断掉，方式由你，但别动研究所里的人。她说动了自己人就不好再往下了，这话说得很轻。她说这条线断在谁身上都行，别断在她组里。',
+      days: 2,
+      solve: { type: 'stat', stat: 'intellect', dc: 14 },
+      onSolve: { intel: 2, gear: 1, track: { sin: 2 } },
+      onExpire: { track: { sin: 2, loyalty: -2 } } },
+
+    /* ================= favor 人情托付 ================= */
+    { id: 'd37', kind: 'favor', npc: 'lu-wan', district: 'slum',
+      title: '帮一个发烧的孩子躲过体检',
+      text: '陆晚说她收了个发烧的孩子，烧退了但伤口还在，明天巡防要挨户做体检。她要你在明天中午前把孩子送进你名下一间空置的库房，门牌照常挂着不用的牌子。她说这次不用你出钱，只要你签一张临时占用单。',
+      days: 1,
+      solve: { type: 'resource', need: { money: 35 } },
+      onSolve: { track: { renown: 2, loyalty: -1, sin: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } },
+      onRefuse: { track: { sin: 1, renown: -1 } },
+      refuseLabel: '帮不了' },
+
+    { id: 'd38', kind: 'favor', npc: 'yu-ke', district: 'outside',
+      title: '给穹顶外的人送一箱药',
+      text: '雨客说外环那边缺一批治烧伤的药，气闸只在后天傍晚开一次，东西得装在不保温的箱子里。他要你用维修物资的名义过一次申报，收件人写你们部门自己。他说送到就行，别问谁用，也别看开箱记录。他说药是用过的，箱子是空的，两边都不会细问。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 45 } },
+      onSolve: { intel: 2, track: { sin: 1, power: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '不送' },
+
+    { id: 'd39', kind: 'favor', npc: 'wen-shicheng', district: 'orbit',
+      title: '帮一个搬货的留住名额',
+      text: '温仕成说轨道港那个常年在月台搬货的人，体检这关被卡住了，理由是肺功能边缘值。他要你以用人部门的名义出一份不需要体检的岗位说明，后天之前交到引航局。他说位子他留着，但只留到这一周结束。',
+      days: 2,
+      solve: { type: 'resource', need: { intel: 2 } },
+      onSolve: { track: { renown: 2, loyalty: -1 } },
+      onExpire: { track: { renown: -2, sin: 1 } } },
+
+    { id: 'd40', kind: 'favor', npc: 'ban-tou', district: 'salvage',
+      title: '帮班头把一个人的名字保住',
+      text: '班头说回收场这季度要裁一批人，名单上有个老工人，手抖得厉害但没出过一次错。他要在三天内把这个人从裁撤名单挪到留用名单，理由栏空着也行。他说他自己填不了，他签的字从来没人认。他说那个人的手是抖的，但捡起的每一颗螺丝都是对的。',
+      days: 3,
+      solve: { type: 'stat', stat: 'charm', dc: 12 },
+      onSolve: { track: { renown: 2, loyalty: -1 } },
+      onExpire: { track: { renown: -2, sin: 1 } },
+      onRefuse: { track: { renown: -2 } },
+      refuseLabel: '不管这事' },
+
+    { id: 'd41', kind: 'favor', npc: 'xun-jie', district: 'ring',
+      title: '帮巡检员重抄一份承诺书',
+      text: '荀戒说环带那起事故之后每个人都要补签一份安全承诺书，他那一份被组长退回来，说字太潦草。他要你替他重抄一遍，签名留白，明天上班前压在巡检站的抽屉里。他说这纸没别的用处，就是让人心里过得去。',
+      days: 1,
+      solve: { type: 'stat', stat: 'intellect', dc: 12 },
+      onSolve: { track: { renown: 1, power: 1 } },
+      onExpire: { track: { renown: -1, loyalty: -1 } } },
+
+    { id: 'd42', kind: 'favor', npc: 'lu-wan', district: 'slum',
+      title: '帮诊所把那位病人送出城',
+      text: '陆晚说诊所里那个人伤口已经能走路，但留在城里迟早被人认出来。她要在两天内弄到一张去轨道的长途票，用别的名字。她说钱她凑了一半，剩下的用手上的止血粉抵，那批粉是正规货，批号对得上。她说票根她会烧掉，烧完这事就当没办过。',
+      days: 2,
+      solve: { type: 'district', district: 'slum' },
+      onSolve: { track: { renown: 2, sin: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } },
+      onRefuse: { track: { renown: -1, sin: 1 } },
+      refuseLabel: '不掺和' },
+
+    { id: 'd43', kind: 'favor', npc: 'lao-ya', district: 'slum',
+      title: '帮老鸦把一封信递上去',
+      text: '老鸦手上有一封信，走正规渠道会在第二道签收没回音。他要你在三天内让它落进稽查组的内部收件箱，别署名，也别转手。他说这信寄出去之后你就当从没见过，问他他也不认，问急了还会翻脸。他说这信是谁写的不重要，重要的是谁收。',
+      days: 3,
+      solve: { type: 'stat', stat: 'stealth', dc: 13 },
+      onSolve: { intel: 3, track: { sin: 1, renown: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } } },
+
+    { id: 'd44', kind: 'favor', npc: 'tie-gui', district: 'docks',
+      title: '帮港区家属把抚恤办下来',
+      text: '铁贵说上个月港区那起事故，家属的抚恤卡在工伤认定上，因为死者的工牌那天没打卡。他要你在两天内让认定走完，材料他来补，你只需要在事故经过那一栏签个字。他说这钱等不起，家里有两个孩子。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 30 } },
+      onSolve: { track: { renown: 3, loyalty: -1 } },
+      onExpire: { track: { renown: -2, sin: 1 } },
+      onRefuse: { track: { renown: -2, loyalty: 1 } },
+      refuseLabel: '不签这个字' },
+
+    { id: 'd45', kind: 'favor', npc: 'yin-mian', district: 'docks',
+      title: '帮她的委托人补一段经历',
+      text: '银面说她那位委托人这周要办一次离港备案，可身份记录里有一段空白，正好是三年。她要你在三天内把那段空白填成一段普通的工作经历，公司名随便挑一家已经注销的。她说填得越普通越好，普通到没人记得。',
+      days: 3,
+      solve: { type: 'stat', stat: 'intellect', dc: 13 },
+      onSolve: { track: { power: 1, sin: 1, renown: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } } },
+
+    { id: 'd46', kind: 'favor', npc: 'cheng-yan', district: 'lab',
+      title: '帮她留下那台旧离心机',
+      text: '程砚说研究所那台旧离心机下个月要按资产清算拉走，编号已经进了报废单。她要你在三天内把报废单退回一次，理由写账实不符。她说这台机器还能转，转得比新来的那台稳，稳的东西不应该先走。她说清算的人只认编号，不认转数。',
+      days: 3,
+      solve: { type: 'fold', path: 'control', need: 1 },
+      onSolve: { track: { renown: 2, loyalty: -1, power: 1 } },
+      onExpire: { track: { renown: -2 } } },
+
+    { id: 'd47', kind: 'favor', npc: 'su-wen', district: 'tower',
+      title: '帮她过闸机那天不登记',
+      text: '苏纹说她母亲后天要从穹顶外侧进来做一次复查，手续齐全，只是不想让名字进高塔的访客系统。她要你在两天内安排一条不登记的内部通道，用员工临时授权。她说刷一次就够，出来的时候不用再刷。她说她母亲怕的不是规矩，是名单。',
+      days: 2,
+      solve: { type: 'stat', stat: 'intellect', dc: 12 },
+      onSolve: { track: { loyalty: 1, renown: 1 } },
+      onExpire: { track: { renown: -1, loyalty: -1 } } },
+
+    { id: 'd48', kind: 'favor', npc: 'wu-mian', district: 'memory',
+      title: '帮一份记录的主人留副本',
+      text: '无面说有一份记录下周就要按流程销毁，主人是个上了年纪的维修工，家里人希望留一份纸质副本。无面要你在三天内走一次复印审批，编号写别的。无面说这算违规，但柜台里从来没有人问过这一栏。无面说这一栏从建行那天起就没人填过。',
+      days: 3,
+      solve: { type: 'district', district: 'memory' },
+      onSolve: { intel: 2, track: { sin: 1, renown: 1 } },
+      onExpire: { track: { sin: 1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '不办' },
+
+    /* ================= trap 试探 ================= */
+    { id: 'd49', kind: 'trap', npc: 'wu-mian', district: 'memory',
+      title: '一份白送的记忆清仓权限',
+      text: '无面把一张盖好章的记忆清仓授权推到窗口边上，说到今天下班前有效，没人会回来核对。用它的条件是以后每次柜台盘点，你都要在备注里写一句「无异常」。无面说这只是让他们省点事，不是要你做什么。',
+      days: 2,
+      solve: { type: 'fold', path: 'control', need: 1 },
+      onSolve: { intel: 3, track: { sin: 1 } },
+      onExpire: { track: { power: -1 } },
+      onRefuse: { track: { renown: 1 } },
+      refuseLabel: '把授权推回去' },
+
+    { id: 'd50', kind: 'trap', npc: 'lu-wan', district: 'slum',
+      title: '一位不用付钱的诊所常客',
+      text: '陆晚说诊所近来多了一位常客，每次来都坐同一把椅子，走时留下一小包东西，说是还人情。她不肯拆，也不肯说是谁。她要你在三天内替她看一眼那包东西，如果她之后再提，就说你从没见过。她说那把椅子最近总是热的，但人走得很干净。',
+      days: 3,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { intel: 3, track: { sin: 1, power: 1 } },
+      onExpire: { track: { sin: 1, renown: -1 } },
+      onRefuse: { track: { renown: 1, loyalty: -1 } },
+      refuseLabel: '不碰' },
+
+    { id: 'd51', kind: 'trap', npc: 'wen-shicheng', district: 'orbit',
+      title: '一张便宜到离谱的舱位',
+      text: '温仕成说四号登船口有个位子空着，价格只要正常价的两成，明早六点半走。他说位子的原主上周临时不去了，手续都已经办完。他让你三天内决定，决定之前不要问那个人的名字，问了这单就作废。他说原主的手续齐全，只是人已经没了。',
+      days: 3,
+      solve: { type: 'resource', need: { money: 30 } },
+      onSolve: { track: { power: 1, sin: 1 } },
+      onExpire: { track: { renown: -1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '不要这个位子' },
+
+    { id: 'd52', kind: 'trap', npc: 'yu-ke', district: 'outside',
+      title: '一份来自穹顶外的馈赠',
+      text: '雨客把一个没有封口的袋子放在闸门内侧，说是外环那边托他带来的，不收钱。袋子里是一叠手写的纸条，字迹和你一位已经不在的同事一样。雨客说这不是他写的，他只是没问是谁写的。雨客说他没拆过，也不打算知道里面写的是什么。',
+      days: 2,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { intel: 3, track: { sin: 1 } },
+      onExpire: { intel: -1, track: { power: -1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '不签收' },
+
+    { id: 'd53', kind: 'trap', npc: 'ban-tou', district: 'salvage',
+      title: '一本记着两套数的台账',
+      text: '班头把回收场的进货台账推过来，说这上面有两套数，一套给上面看，一套他自己记。他给你三天时间去核一遍，核完把第二种记法教给他手下那个学徒。他说这孩子聪明，学东西快得让人不安。他说孩子学会之后，这本台账就该换一个封面了。',
+      days: 3,
+      solve: { type: 'stat', stat: 'intellect', dc: 13 },
+      onSolve: { intel: 2, money: 25, track: { power: 1 } },
+      onExpire: { track: { renown: -1, power: -1 } },
+      onRefuse: { track: { renown: 1, loyalty: -1 } },
+      refuseLabel: '不教' },
+
+    { id: 'd54', kind: 'trap', npc: 'sa-er', district: 'salvage',
+      title: '一只不该归你的旧手环',
+      text: '萨尔说从废料里翻出一只手环，编号被磨掉一半，另一半还认得出，是你们部门去年发出去的。她说这东西她不打算上报，给你两天拿走，怎么处置随你。她还说这手环原本戴在一只手上，那只手现在也归你了。',
+      days: 2,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { intel: 2, track: { sin: 2 } },
+      onExpire: { track: { sin: 1, renown: -1 } },
+      onRefuse: { track: { renown: 1, sin: 1 } },
+      refuseLabel: '不接手环' },
+
+    { id: 'd55', kind: 'trap', npc: 'yu-nanzhi', district: 'exchange',
+      title: '一笔提前结清的陈年旧账',
+      text: '郁南枝说有一笔三年前的账突然被结清了，付款方是一个已经不存在的部门，收款方是你。钱不多，来得干净，路径也对。她让你两天内确认一下这笔钱的性质，确认完就当作季度奖金入账，不用再提。她说这笔钱挂在账上，比拿在手上更显眼。',
+      days: 2,
+      solve: { type: 'resource', need: { money: 40 } },
+      onSolve: { money: 45, track: { power: 1, sin: 1 } },
+      onExpire: { track: { sin: 1, loyalty: -1 } },
+      onRefuse: { track: { loyalty: 1, renown: 1 } },
+      refuseLabel: '退回这笔钱' },
+
+    { id: 'd56', kind: 'trap', npc: 'dai-siyuan', district: 'exchange',
+      title: '一份没有署名的审计底稿',
+      text: '戴思远把一叠审计底稿放在你桌上，说这是有人匿名递到他办公室的，前面三页写的是别人的事，第四页开始写你。他给你三天时间去认笔迹，认出来告诉他，认不出来就当没这回事。底稿他没有留复印件。',
+      days: 3,
+      solve: { type: 'stat', stat: 'intellect', dc: 14 },
+      onSolve: { intel: 3, track: { power: 1 } },
+      onExpire: { track: { loyalty: -2, renown: -1 } },
+      onRefuse: { track: { loyalty: 1, sin: 1 } },
+      refuseLabel: '不认领' },
+
+    { id: 'd57', kind: 'trap', npc: 'peng-jian', district: 'lab',
+      title: '一把没人会查的备用钥匙',
+      text: '彭戬把一把地下二层冷库的备用钥匙放在你手边，说到下个月换锁前都没人会用这把。他说拿着它什么都不用做，只要不还回来。他还说冷库里存的东西最近换过一批，现在的比上个月那批轻，也安静。他说钥匙上的编号已经被磨掉了，认不出是哪一间。',
+      days: 3,
+      solve: { type: 'district', district: 'lab' },
+      onSolve: { gear: 1, intel: 2, track: { sin: 1 } },
+      onExpire: { track: { sin: 1, loyalty: -1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '把钥匙还回去' },
+
+    { id: 'd58', kind: 'trap', npc: 'cheng-yan', district: 'lab',
+      title: '一次不用登记的样本补录',
+      text: '程砚说三号项目缺一组对照样本，正规流程要三周审批，她有办法当天补上，只要你在一张空白的入库单上先签字。她说这批样本来路干净，只是不想让它经过伦理那一关。她把签字笔横放在单子中间，没有催你。',
+      days: 2,
+      solve: { type: 'fold', path: 'purge', need: 1 },
+      onSolve: { intel: 3, gear: 1, track: { sin: 1 } },
+      onExpire: { track: { loyalty: -1, power: -1 } },
+      onRefuse: { track: { loyalty: 1 } },
+      refuseLabel: '不签这张单' },
+
+    { id: 'd59', kind: 'trap', npc: 'xun-jie', district: 'ring',
+      title: '一段可以随意填的巡检空档',
+      text: '荀戒说环带那段巡检记录里有个四小时的空档，系统已经默认成设备维护，谁也不会去核对。他说这四小时你可以拿去办自己的事，只要在记录上按他的写法补一句「一切正常」。他说大家都是这么写的。',
+      days: 2,
+      solve: { type: 'fold', path: 'expand', need: 1 },
+      onSolve: { intel: 2, track: { power: 1, sin: 1 } },
+      onExpire: { track: { renown: -1 } },
+      onRefuse: { track: { renown: 1, loyalty: 1 } },
+      refuseLabel: '按实填写' },
+
+    { id: 'd60', kind: 'trap', npc: 'wen-duo', district: 'tower',
+      title: '一句可以替他说出口的话',
+      text: '闻铎说下周董事会简报上有一句对你不利的话，他可以删掉，也可以换成另一句。换的那句会把责任挪到隔壁部门一个刚调来的人身上。他给你三天，让你自己决定要不要换。他说他不催，反正那天总要有人被念到。',
+      days: 3,
+      solve: { type: 'fold', path: 'control', need: 1 },
+      onSolve: { track: { power: 2, sin: 1 } },
+      onExpire: { track: { loyalty: -2 } },
+      onRefuse: { track: { renown: 1, loyalty: 1 } },
+      refuseLabel: '按原文念' },
+
+  ];
+})();
+
 /* ===== game/intro.js ===== */
 /* 世界观入门：开局的连续剧情段落。由内容设计生成。 */
 (function () {
@@ -1588,7 +2129,7 @@ window.GAME_DATA = (function () {
         { label: '问她能不能把我从名单里删掉', relation: 1, run: { intel: 2, track: { sin: 1 } },
           after: '你问她能不能把你从名单里删掉。她低头戳了两下终端，屏幕弹出一行小字：操作需双人授权。她把手缩回来，说：「我删过一次，删的是别人。」说完把杯子里剩的冷水一饮而尽，像在冲掉什么味道。杯子冲干净放回架上，摆得很正。' },
         { label: '自己动手改那份档案', relation: -1, run: { statRandom: 1, track: { sin: 2, loyalty: -1 } },
-          after: '你伸手把终端转过来，自己改了几处，提交成功的提示弹出来时，她没拦，只往后退了半步，看着你的手。屏幕上那张入职照换成了今天的样子。她拿走终端时说了句：「从今天起，档案比我更熟你。」' },
+          after: '你伸手把终端转过来，自己改了几处，提交成功的提示弹出来时，她没拦，只往后退了半步，看着你的手。屏幕上那张入职照换成了今天的样子，领口那张临时工牌也被系统抹掉了。她拿走终端时说了句：「从今天起，档案比我更熟你。」' },
       ],
     },
     {
@@ -1639,9 +2180,9 @@ window.GAME_DATA = (function () {
         { label: '接过本子', relation: 3, run: { intel: 4, track: { sin: 1 } }, flag: 'has_ledger',
           after: '你把本子接过来，指腹压在某页的折痕上。她的手空了，收回膝盖上，人往后坐直了些。走廊有人经过，脚步在门口停了一秒又走远。她低声说：「第十四页往后，别在公司里翻。」本子现在在你抽屉最里层，压着两块备用芯片。' },
         { label: '让她自己留着', relation: 1, run: { track: { loyalty: 1 }, statRandom: 1 },
-          after: '你把手收回去，让她自己留着。她看了你一会儿，把本子重新塞回包里，拉链一直拉到底，包带在肩上绕了一圈才起身。「也好，」她说，「放我这儿，翻的人只会是我。」第二天她的工位多了一个带锁的抽屉，锁是新的，钥匙不知道在谁手上。' },
+          after: '你把手收回去，让她自己留着。她看了你一会儿，把本子重新塞回包里，拉链一直拉到底，包带在肩上绕了一圈才起身。「也好，」她说，「放我这儿，翻的人只会是我。」第二天她的工位多了一个带锁的抽屉，锁是新的，钥匙不知道在谁手上。那天下午抽屉被拉开过一次，里面只有一包没拆的纸巾。' },
         { label: '问她愿不愿意把本子交出去', relation: -1, run: { track: { loyalty: 2, renown: -1 } },
-          after: '你问她愿不愿意把它交出去。她把本子往怀里收了半寸，手指停在封皮上，半天才说：「交出去，我就得在最后一页添一行。」她笑了一下，把本子放回包里。从那天起，她再没在你面前打开过它。' },
+          after: '你问她愿不愿意把它交出去。她把本子往怀里收了半寸，手指停在封皮上，半天才说：「交出去，我就得在最后一页添一行。」她笑了一下，把本子放回包里。从那天起，她再没在你面前打开过它。后来你又见过那个包两次，都比从前鼓一点。' },
       ],
     },
 
@@ -1656,9 +2197,9 @@ window.GAME_DATA = (function () {
       text: '第九张卡折下去的那天，码头起了风，仓库的铁皮门被吹得一响一响，地上的积水一圈圈抖。路灯正在换班，一盏亮起来，旁边那盏就灭下去，水面反着一条碎红。银面在你必经的通道口等了很久，久到皮鞋面上的水痕已经干了，鞋尖上落了一层灰。她递给你一张卡，正面空白，反面印着一串编号，位数比你的指令卡多两位，墨色偏蓝，卡面比普通的厚一点，边上有个很小的圆孔。「这张不在你的牌堆里，」她说，「但它在结算表上。」她歪了歪头，像在听一段你听不见的电流声，「你们发牌的时候，好像忘了一件事——牌也会数人。」一滴雨穿过她影子的边缘，落在积水上，没有溅开。',
       options: [
         { label: '收下这张牌', relation: 2, run: { intel: 4, chips: 2, track: { sin: 1 } }, flag: 'blank_card',
-          after: '你把卡收进内袋，纸面凉得贴着肋条。她看了一眼你放卡的位置，像是确认了什么，随后退进仓库侧门的阴影里，脚步声在铁皮上拖了两下就没了。风顺着门缝灌进来，你把外套拉严了些。第二天上午结算系统推来一条对账提醒，编号栏里那串数字，和你口袋里那张一模一样。' },
+          after: '你把卡收进内袋，纸面凉得贴着肋条。她看了一眼你放卡的位置，像是确认了什么，随后退进仓库侧门的阴影里，脚步声在铁皮上拖了两下就没了。第二天上午结算系统推来一条对账提醒，编号栏里那串数字，和你口袋里那张一模一样。提醒没有落款，你盯着看了三秒，它自己消失了。' },
         { label: '当场把它撕掉', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
-          after: '你当着她的面把卡撕成四片，扔进排水沟。她没拦，只看着水把纸片泡开、摊平、冲走。「撕了也一样，」她说，「结算表认编号，不认纸。」她走之后你低头看手，指缝里还留着一小块纸角，凉的。' },
+          after: '你当着她的面把卡撕成四片，扔进排水沟。她没拦，只看着水把纸片泡开、摊平、冲走。「撕了也一样，」她说，「结算表认编号，不认纸。」她走之后你低头看手，指缝里还留着一小块纸角，凉的，边缘的蓝墨蹭在皮肤上，洗了两遍才掉。' },
         { label: '问她是谁派她来的', relation: 1, run: { intel: 3, track: { power: 1 } },
           after: '你问她是谁派来的。她想了很久，久到风又吹过一阵，铁皮门响了两声。「上一个问我这个问题的人，」她说，「现在在结算表的倒数第三行。」她没给答案，只把两只手摊开给你看，手心干干净净，连个印子都没有。' },
       ],
@@ -2469,6 +3010,954 @@ window.GAME_DATA = (function () {
         { label: '不替它选，让它自己定', relation: 1, run: { intel: 2, track: { sin: -1 } } },
       ],
     },
+  ];
+})();
+
+/* ===== game/story-npc-a2.js ===== */
+/* NPC 个人支线 A 组·续：每人新增三幕（第 4-6 幕）。 */
+(function () {
+  'use strict';
+
+  window.STORY_NPC_A2 = [
+
+    /* ============ 闻铎 · 董事会监事 · 高塔商业区 ============ */
+    {
+      id: 'wd-4',
+      npc: 'wen-duo',
+      stage: 4,
+      act: 3,
+      district: 'tower',
+      title: '闻铎：先写在登记栏上的名字',
+      text: '茶室上个月改成了储物间，四十九层那扇门锁着，玻璃上还贴着当年那张「下午四点停供」的告示，边角翘起，被里面堆的纸箱顶住，纸箱上落着一层灰。闻铎把你约到楼梯间，从外套内侧掏出一只凉茶杯，杯口磕掉一块，正是三年前茶室里的那只，他一直留着，杯里那圈茶垢再也洗不掉。他把杯子搁在消防栓顶上，说旧案走到了第三轮核查，监事会这回点了名，要找一个还活着的经手人。你正要开口，他先递来一页影印件，是监事会公开目录的登记栏，联系人一栏写着你的编号，登记日期是上周三，比他第一次找你早了四天。「先写上，免得以后补。」他说这话时盯着楼梯灯的感应区，没看你。灯灭下去，两个人都没有出声。楼梯间的感应灯坏了三格，走到一半会突然黑下去。他说明天上午八点前给答复，逾期登记栏就当确认，谁也不用再来补签字。他把影印件折成四折塞进你口袋，折痕压得很实。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '问他凭什么先写我的名字', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+          after: '你把问题问出口。他停了很久才答，登记是上周三定的，那时候他还没决定要不要找你。楼梯灯又亮了一格，照见杯子里那圈很深的茶垢。他补了一句：写上去的名字能撤，可撤一次要留一次痕，你手上已经有痕了。他说完低头看了一眼杯子，想喝又没喝。你下楼时他站在楼梯口没动，灯在他身后一格一格灭掉。' },
+        { label: '认下登记栏，跟他一起做证人', relation: 2, run: { intel: 2, track: { power: 1, sin: 1 } },
+          after: '你说认下。他点头，把凉茶杯收进口袋，杯口朝下，剩的那点水顺着裤缝淌了一线。他说明天的流程要你到场，签字就行。下楼时他一直走在你右边，楼梯间的灯一盏盏跟着脚步灭掉，到最后一层他先出去了。' },
+        { label: '要求现在就把我的名字撤下来', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说现在就撤。他没拦，把杯子从消防栓上拿下来倒扣在台阶上，水从杯沿滴到下一层，一滴一滴，滴了很久。他说撤一件要写两份说明，一份交监事会，一份交给他，两份都得你自己手写，不能代签，写了才算数。' },
+      ],
+    },
+    {
+      id: 'wd-5',
+      npc: 'wen-duo',
+      stage: 5,
+      act: 4,
+      district: 'tower',
+      title: '闻铎：一份要你署名的证词',
+      text: '这一周雨一直没停，监事会楼下的台阶积了半指深的水，鞋踩进去会响。闻铎约你在负一层车库见面，他靠在承重柱上，手里还捏着那只磕了口的凉茶杯，杯里晃着半杯自动售货机的热水，热气遇上冷空气就散了。他说第三轮核查要出书面证词，证人一栏他填了自己，第二栏空着，他要你填。填了，你就是那晚在三十三层的经手人，罪痕那一栏从今往后跟着你走；不填，他一个人扛，扛不过他认。车库入口的卷帘门升起又落下，一辆车开出去，尾灯把墙照亮一下又黑下去。他把笔递过来，笔帽是新的，笔身还是那支旧的，笔杆上留着一道被咬过的印子。他把笔在指间转了一圈，笔杆上那道牙印转了半圈又回来。证词一旦进第三轮，后面每份材料都要写经手人，写一个补一个，补到谁也说不清为止。车库顶上的灯管闪了两下，他的影子在承重柱上晃了晃。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '署名作证，跟他一起扛', relation: 2, run: { intel: 3, track: { loyalty: -1, sin: 1 } },
+          after: '你签了。他把两份证词对齐，用杯底压住纸角，说材料明天进第三轮，进了第三轮就没有回头路。出车库时雨小了一些，他走在前面半步，一直没回头。你的公寓楼下当晚多了一辆没挂牌的车，停到天亮才走。他送你到卷帘门下面，抬手扶了一下门，没让你伸手。雨声隔着铁皮传进来，闷闷的。' },
+        { label: '不署名，出钱替他另找证人', relation: -1, run: { money: 55, track: { loyalty: 1 } },
+          after: '你说人不去，钱我来出。他收下那笔钱，第二天找了个退休的档案员签字，签在证人那栏。核查过关，他的编号干干净净，那个档案员的编号底下多了一条记录。他把新笔帽留给了你，笔身他带走了，说旧东西还是自己拿着。' },
+        { label: '拒绝，把这件事先报给日程官', relation: -2, run: { track: { loyalty: 2, power: 1 } },
+          after: '你没签，转身把证词的事报给了苏纹。第二天闻铎被叫去谈话，出来时在走廊上碰见你，只点了一下头，没有停步。他把那只凉茶杯留在了车库的承重柱上，谁也没去拿，直到物业清场，杯子后来被人挪到了柱子底下。' },
+      ],
+    },
+    {
+      id: 'wd-6',
+      npc: 'wen-duo',
+      stage: 6,
+      act: 5,
+      district: 'tower',
+      title: '闻铎：听证会上念出的编号',
+      text: '听证那天雨停了，监事会圆厅的空调开得过低，桌上每人一只纸杯，只有闻铎那只是他从口袋里掏出来的旧凉茶杯。他先陈述，讲了四十分钟，把 J-1147 的每一道流程一个个念过去，念到最后才提到经手人。他念出你的编号时，语速和念别的编号一模一样，没有停顿，也没有看你。念完他把杯子推到桌子中间，杯壁的水痕在灯下亮了一道。休会前主持人问材料里还有没有补充，他一只手按在那只杯子上，指节发白，停了三秒才开口，整个圆厅都在等他那句话。窗外高架上的车灯一盏一盏过去，照在圆厅的玻璃上，又滑下去。他念完之后翻到下一页，像是刚才那几句只是目录里的一行。圆厅外有人推门进来又退出去，门轴响了一声，全场没有人回头。他把那只杯子往自己这边挪了半寸，杯底在桌面上磨出一条浅白的弧线，正好停在材料边缘，谁也没去碰它。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '站起来补一句，替他把话说完', relation: 3, run: { intel: 3, track: { power: 2, sin: 1 } },
+          after: '你站起来把话接下去，从三十三层那晚说到签名页，主持人记了两页。他始终按着那只杯子，直到你说完才把手松开。散会时他把杯子留在了桌上，说从今天起它不归他了，归谁他没说。散会的人从他身边走过去，他一直坐着，等人走空了才把纸杯收进兜里，只带走了旧杯子。' },
+        { label: '沉默，只答他念的那个编号', relation: -2, run: { track: { loyalty: 2, renown: -1 } },
+          after: '你什么也没补，只在问到时答了编号。结论当天出，责任分摊，你的名字排在第二行。他走出圆厅时把杯子拿走了，走到门口又停下等你，你没跟上去，他自己进了电梯，电梯下行了两层。第二天早上你桌上多了一份复印的材料，扉页上那个编号被人用铅笔圈过一次，圈得很轻。' },
+        { label: '提前把复印件交给对面的人', relation: 0, run: { money: 50, track: { sin: 2, renown: -1 } },
+          after: '你早一步把复印件递到了对面。听证到一半有人提出新证据，流程被打断，第十九条被翻出来重读了一遍。闻铎听完什么也没说，散会后在门口站了很久，杯子一直握在手里没喝，水都凉透了。对面的人当天就把复印件收走，之后再没提过这件事，也再没找过你，像这件事从来不存在。' },
+      ],
+    },
+
+    /* ============ 苏纹 · 董事会日程官 · 高塔商业区 ============ */
+    {
+      id: 'sw-4',
+      npc: 'su-wen',
+      stage: 4,
+      act: 3,
+      district: 'tower',
+      title: '苏纹：她第一次开口求人',
+      text: '排期系统上周做了一次权限回收，苏纹的编辑权限被压到只读，她那张表现在每改一格都要走流程，改完还要等复核科盖章。周四夜里你从三十七层出来，她在楼梯口等你，怀里抱着表册，最上面那页折着角，折角上有一枚浅浅的指印。她说这是她第一次开口求人：下周二上午十点那一格，本来排着一个姓江的人，她要你换掉，换成她自己。理由她只说了一半，那人上周被点了名，名字进了回收名单，她只是想让他多活七天。她说这话时右手一直捏着那支铅笔，就是上次折成两截的那一支，接缝缠了一圈胶带。说完她又补一句：她替别人改过十一次，今天才是第一回求人。她把表册翻开又合上，动作很轻，像怕翻出别的名字。楼上传来电梯停靠的提示音，响了两下就没了。她说这一次她不要回报，只求你别问那个人为什么会被点名，问了也改不过来。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '替她换掉那一格', relation: 2, run: { intel: 2, track: { power: 1, sin: 1 } },
+          after: '你去把那一格换了，系统里只留了一条时区调整的备注。第二天上午十点，姓江的人出现了，坐在原不属于他的位置上点了杯茶，坐满四十分钟才走。苏纹在走廊那头站着没过来，等人走了才合上表册。她把那一页的折角抹平，抹了两次，又在旁边补了一格空的，谁也没提那格是留给谁的。' },
+        { label: '问她那十一次都改了谁', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '她翻到表册中间，把十一次的日期一个个念给你听，念到第七次停住了，那一次改的是她自己的名字。她把表册抱紧，胶带缠着的铅笔从册子缝里露出一节。她说第七次以后她再没替自己改过，一次也没有。她把表册抱在怀里往楼上走，走到一半回头看了你一眼，什么也没说，像是要把这一眼记下来。' },
+        { label: '不办，让她自己走流程', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说走流程。她站了几秒，把表册抱得更紧，转身下楼，鞋跟踩在台阶上一格一格响。第二天她的编辑权限降到最低一档，表册换了人抱。楼道灯还亮着，那页折角一直在最上面，没人去碰它，谁也没敢动。' },
+      ],
+    },
+    {
+      id: 'sw-5',
+      npc: 'su-wen',
+      stage: 5,
+      act: 4,
+      district: 'tower',
+      title: '苏纹：这次的痕迹挂在谁名下',
+      text: '那次改动在系统里留了痕。周五下午，四十七层的表被调去复核，苏纹把复核单拿给你看：操作记录里署的是你的工号，改掉的却是她表册里的一格，两个时间戳只差两分钟。她说可以当场申诉，申诉就得交出那本表册，册子里有十一次改动，一条都不干净，条条都查得到人。电梯口的灯亮着，她站在灯下等你决定，灯管一响她就抬一下头。她说还有第二个办法：你认下这次操作，写一份说明，她把说明压进内部件，年末清档时一起消掉。她把表册抱得很紧，手指压在那页折角上，胶带缠着的铅笔夹在册子中间，露出一小截笔尖。她把复核单从册子缝里抽出来递给你，纸角压得很平。她说内部件每年清一次，清档那天她会在场，别人不在。走廊尽头的电梯响了一声，她立刻把表册翻到最上面那页盖上，像是那声音会看册子。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '认下操作记录，写说明', relation: 3, run: { intel: 2, track: { sin: 1, loyalty: -1 } },
+          after: '你把说明写完交上去，落款用的是自己的工号。三天后复核单结案，结论一栏写着操作失误已说明。她来道谢时只把表册放在你桌角，翻开的那页折角被抹平了，铅笔还在，胶带换了新的一圈。她走的时候把册子压在键盘底下，只露出封面那一角，谁翻都得先动键盘，动了就会留痕。' },
+        { label: '让她申诉，交出整本表册', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '她第二天就交了表册。复核科把十一次改动逐条列出，最上面一条挂在她自己的权限编号底下。第三天她抱着空表册回四十七层，走廊灯只亮一半，她把表册锁进抽屉，钥匙交给了值班的。她下班前把抽屉钥匙又借回来一次，打开看了看那本空册子，合上，再锁回去，什么也没带走。' },
+        { label: '认下，但要她先付价', relation: 0, run: { money: 60, track: { sin: 1, power: 1 } },
+          after: '你说认，先付价。她答应了，钱走的是外部账，说明上写的还是你的工号，一个字没改。从那以后她每次来找你都先看一眼电梯指示灯，确认走廊上没人再开口。表册那页折角一直没动。清档那天她把那页折角抚平，用的是手指，没有再用铅笔，抚完就合上册子出了门。' },
+      ],
+    },
+    {
+      id: 'sw-6',
+      npc: 'su-wen',
+      stage: 6,
+      act: 5,
+      district: 'tower',
+      title: '苏纹：清档记录上的最后一个名字',
+      text: '年末清档那天高塔暖气检修，四十七层只有应急灯亮着，走廊看上去比平时短了一截。苏纹把那本表册摊在键盘上，翻到最后一页，原先记的十一次改动全被划掉，只剩一行新字，写得比她的字慢，像是想了很久：本次清档经手人，后面空着，空出一行半的位置。她说她可以签自己，把整本册子带走；也可以签你，把你写进清档记录，让这件事跟你一起转进下一年。她把那支铅笔从册子里抽出来，胶带那一圈已经磨开，笔尖断掉一小截，露出里面的木芯。她说这一次她不动笔，等你选。窗外高架上的车灯一盏盏过去，照得表册封面亮一下又暗下去。她用笔尖在那行空白上虚虚地划了一道，没有留下印子。她说清档记录只存一份，存进去就跟着走，跟着谁谁就得在下一年第一个月来签一次到。暖气管道里响了一阵，四十七层的灯跟着亮了一格，照见表册封面那道旧折痕。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '让她签自己，把册子带走', relation: 3, run: { intel: 3, track: { renown: 1, power: 1 } },
+          after: '她签了自己的名字，抽出整本册子夹在腋下，出门时在灯下停了停，把铅笔丢进了楼道口的回收桶。清档记录里那一行是她的编号，你的名字从头到尾没出现。第二天她的工位空了，桌上只留一副耳机。那副耳机你后来在别人的工位上见过一次，摆的位置和原来一模一样，谁也没有认领的意思。' },
+        { label: '签我，这件事我来背', relation: 2, run: { track: { sin: 1, loyalty: 1, power: 1 } },
+          after: '你签了，她坐在旁边看笔尖落到最后一笔。清档记录跟着你转进下一年，你的编号在第一页第一行。她把铅笔留在你桌上，断了的那一小截自己收走，说留着当个记号，以后认得出来是谁的。年末清档名单上第一行是你的编号，第二行是日期。她签字那一栏还留着，一直空着。' },
+        { label: '把表册交去复核科', relation: -2, run: { track: { loyalty: 2, power: -1 } },
+          after: '你把册子交去复核科。当天封存，十一次改动逐条重查，从中查出三条超出权限。苏纹第二天照常来上班，把工牌放在桌上，谁问什么都答按流程。表册最后一页贴上封条，那一行空着。封条上盖的是复核科的章，日期是当天。她第二天来的时候看了一眼封条，什么也没说。' },
+      ],
+    },
+
+    /* ============ 郁南枝 · 清算行首席 · 交易所广场 ============ */
+    {
+      id: 'yn-4',
+      npc: 'yu-nanzhi',
+      stage: 4,
+      act: 3,
+      district: 'exchange',
+      title: '郁南枝：关联人那一栏',
+      text: '上个月注销的那笔坏账被复核科翻出来了，卷宗编号后面多了一行小字：关联人。郁南枝约你在交易所广场底下的清算库房见面，那地方常年十六度，纸发脆，碰一下就有细屑掉下来，落在袖口上像灰。她把第一卷摊开，关联人一栏写着她的姓，关系栏写着直系。她说这笔账三年前她主动报过一次，报完就在归档室躺了两年，今年突然被人借出去，借阅栏上是空的，归还日期也没有。她说她父亲已经在回收场躺了六年，账却还活着，活着的账比人难下葬。库房最里面那台除湿机响了一阵，她自己伸手把卷宗合上，合得很快，像怕你多看一行。她把卷宗推回来的时候，拇指一直按在关联人那一栏上，按出一小片汗印。她说复核科这半年翻过三次旧账，翻一次动一个人，前两次翻的是别人，这一次翻到了她父亲的姓。库房的门缝里透进来一道走廊的光，正好落在那一行小字上。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '帮她把借阅记录查出来', relation: 2, run: { intel: 3, track: { loyalty: -1 } },
+          after: '借阅记录查出来了，签名一栏空着，日期在四个月前，归还时间没有。她抄在便签上，塞进卷宗夹层。除湿机又响了一阵，她等它停才说话：借走的人还在楼里，楼层比清算行高，高两层。她把便签从卷宗夹层里又摸出来看了一遍，看完塞回去，塞得比刚才更深一格。' },
+        { label: '劝她把关联如实上报', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
+          after: '她第二天把关联人那行圈出来递了上去，结论是关联属实待处理。名单没变，她的名字却从第九位挪到了第六位，理由栏多了半行字。她把那张软了的旧清算单压回抽屉，说这算是她第一次不自己扛。名单调整的通知下来那天，她把自己的抽屉清了一遍，只留一支铅笔和那枚回形针。' },
+        { label: '抽走卷宗里的一页', relation: 0, run: { money: 50, track: { sin: 2 } },
+          after: '你抽走一页，卷宗里留了一道裁口。她看见了，没吭声，只把剩下的部分按页码码齐。那页上有她父亲的一段手写备注，归了你。她后来补一句，那页她抄过三份，都放在别处，别人拿不走。她把卷宗交还归档室时在借阅单上签了字，签得比平时慢，落款那一笔压得很重。' },
+      ],
+    },
+    {
+      id: 'yn-5',
+      npc: 'yu-nanzhi',
+      stage: 5,
+      act: 4,
+      district: 'exchange',
+      title: '郁南枝：名单上的第九个名字',
+      text: '清算行周三发了一份内部名单，十九个人，排在第九的是郁南枝，理由栏只有四个字：关联未清。她把你叫到凌晨的清算室，只剩一台终端亮着，屏幕上正是那份名单，光标停在第九行一闪一闪。她说她只有两个晚上：要么把父亲的旧账彻底核销，把关联人抹平；要么收拾东西，等回收组上门，回收组从来只在清早上门。她把夹着回形针的旧清算单抽出来，纸角已经软了，就是第一次见面那张。她把铅笔放在桌上，笔尖朝着你，说核销要两个签名，一个签名是伪造，另一个是共谋。她没有催你，只把那枚回形针从单子上取下来，又别了回去。她把终端转过来给你看清第九行的编号，那串数字和你部门的差两位。她说清算行内部名单只管到下个月三号，三号之后名单会重排一次，重排时谁在上面谁在下面由别人定。她把回形针在指腹上压了一下，针脚弹开又合上。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '陪她核销，签第二个名字', relation: 3, run: { money: 55, track: { sin: 2, power: 1 } },
+          after: '你签了。两个名字落下的时候，终端上的名单刷新了一次，第九位换成了别人，理由栏也跟着换了。她把回形针从旧清算单上取下来，别在调整单第一页，说这个留着以后用得着。凌晨四点，清算行的门从外面锁上了。你们从侧门出去的时候天刚亮，广场上的清扫车正在转圈，谁也没有回头看那栋楼。' },
+        { label: '拒绝，劝她走正当申诉', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '她说那她走申诉。三天后申诉驳回，理由一栏仍写着关联未清。回收组上门那天你只在场外，看见她拎着一只纸袋从侧门出来，袋口露出那枚回形针，压着一张核销单，走得很慢，一直没有抬头。她经过你身边时把回形针从纸袋里取出来放在台阶上，什么也没说，也没有回头。' },
+        { label: '只把名单顺序改掉', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你只改了顺序。第二天名单第九位换成另一个人，那人下午来过清算行门口，站了一会儿没进来，抽完半支烟就走了。郁南枝把回形针别在名单复印件上给你，说这一份你收好，用得上时别装不认得，认得出来就拿出来。' },
+      ],
+    },
+    {
+      id: 'yn-6',
+      npc: 'yu-nanzhi',
+      stage: 6,
+      act: 5,
+      district: 'exchange',
+      title: '郁南枝：金额栏留给你填',
+      text: '回收组给的期限是周五八点。周四深夜，郁南枝把一份调整单压在清算桌上，金额栏空着，她说数字让你填，填多少都行，只要能压住关联人那一栏。她自己已经签了第一个名字，笔迹抖得不像她，最后一笔拖出去一条细线。桌角压着那枚回形针和那张已经软透的旧清算单，单子上她父亲的姓氏被铅笔涂淡过，只剩一点灰。她说还有第三条路：她今天下班前把自己的名字主动报进清算名单，走正当核销，账留着，人进去。说完她就不说话了，把铅笔推到你手边。清算室外面的走廊灯一格一格亮过去，脚步声停在门口，没有再往前。她说调整单只要递进去，复核科不会逐笔核对，只核金额和签名。金额栏空着不交，二十四小时后单子自动作废，作废的单子会留档，留档的单子上有她的名字。她把铅笔在桌面上转了个方向，笔尾朝你，笔尖朝着她自己。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '替她填数字，做下这笔账', relation: 3, run: { money: 70, track: { sin: 2, power: 1 } },
+          after: '数字你填了。调整单递上去，关联人那栏被压平，名单上第九位没了。她把回形针别在你的文件夹上，说这一笔从此挂在两个名字底下。走廊那盏灯灭了，脚步声也退了，退到楼梯口就不响了。第二天名单重排，第九位换人，换上的那个下午就递了辞呈，谁也没拦。' },
+        { label: '撕掉调整单，报她的名字核销', relation: -2, run: { track: { loyalty: 2, sin: -1 } },
+          after: '你把单子撕了，替她报了名字。核销走正当流程，账留着，人进去了。她走之前把那张旧清算单给你，上面她父亲的姓氏被她用铅笔轻轻涂淡，只剩一点灰，擦不掉也看不清。她进去那天你站在广场对面，看见清算行的门开了一次又关上，之后再没有开过。' },
+        { label: '单子留下，人先走', relation: 1, run: { intel: 3, track: { sin: 1, renown: -1 } },
+          after: '你没签也没撕，把单子留在桌上先走了。第二天调整单被人补上了数字，签名是她的，笔迹比前一天稳。她照常上班，只是不再叫你去清算室，见面都在走廊，说的也只剩流程上的话。那张调整单后来归档在清算行的旧柜里，柜门锁着，钥匙在复核科，谁也没再去开。' },
+      ],
+    },
+
+    /* ============ 戴思远 · 合规伦理审查官 · 交易所广场 ============ */
+    {
+      id: 'ds-4',
+      npc: 'dai-siyuan',
+      stage: 4,
+      act: 3,
+      district: 'exchange',
+      title: '戴思远：追责函上的七个签名位',
+      text: '三年前那份合规例外终于被追责了。追责函是周五下午到的，合规处那半排灯还是黑的，坏了一个月没人报修，灯管上积了一层灰。戴思远把函件摊在你面前，上面列着七个签名位，只有一个是实的，其余六个空着，空位旁边都用铅笔点过一个小点。他说追责组要他在函件上补全经手链条：补全了，责任分摊到六个人头上，每人一份；不补，就全落他一个人，落在他那个编号上。他说话时手腕上那圈旧表带又断了一根线头，他把线头往表带里塞了两次，都没塞住。他问你那份授权书副本还在不在你手里，问得很慢，眼睛一直没抬。函件最后一页贴着追责组的收件回执，回执上的日期是当天下午五点前。他说五点之前补不全，追责组就按现状归档，归档之后这件事就归他一个人的编号，谁也别想再翻。他把袖口往下拽了拽，盖住表带断的那一节。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '承认副本还在，交给他', relation: 2, run: { intel: 3, track: { loyalty: -1, sin: 1 } },
+          after: '你说副本在你手里。他愣了两秒，把表带往下拽了拽，说明天就交。第二天函件上的经手链补齐六个名字，你的排在第六位。他把表带换了根新的，旧的收进抽屉，压在一沓底稿最底下。他后来每次看表都会先摸一下新表带，摸两下就停手，像是确认它还在。' },
+        { label: '坚持说副本早就不在了', relation: -1, run: { track: { loyalty: 1 } },
+          after: '你咬定副本没了。他没追问，只把函件对折夹进底稿最上面。追责结论一周后下来，七个签名位只落实一个，责任全落在他编号上。他的座位搬去走廊尽头，那半排灯还是黑的，没人报修。他搬走那天把函件的复印件留在了原工位的抽屉里，抽屉没上锁，也没人来收。' },
+        { label: '让他先查第七个签名是谁', relation: 1, run: { intel: 4, track: { sin: 1 } },
+          after: '第三天他回来了，说第七个签名是三年前的临时工号，人早被回收，记录只剩一格空栏。他把这条写进函件，追责组暂时停手。他把红笔收回口袋，说这次是拖住了，不是了结，拖不了多久。他把那份追责函夹进旧底稿的最上层，说这批底稿再不借出去了，谁要都不借。' },
+      ],
+    },
+    {
+      id: 'ds-5',
+      npc: 'dai-siyuan',
+      stage: 5,
+      act: 4,
+      district: 'exchange',
+      title: '戴思远：最后一个空着的签名位',
+      text: '追责组只给三天。周三夜里，戴思远把你约进合规处那间没有窗的会议室，顶灯只剩一半亮，灯管偶尔响一声，响完要过很久才有回声。函件上的七个签名位已经填了六个，最后一个空着，落款线正对着你坐的那把椅子，椅面上有一道很旧的划痕。他说他不劝你，只说清代价：签下去，你的名字进事故链条，年底考核里会多一条；不签，他一个人兜，兜完以后他手上那本例外清单会被整本调走，那本清单上有你和另外十一个人的名字。他把红笔放在函件上，笔帽没拧，笔尖朝着你。走廊有人推车过去，轮子响了一阵才停。他把函件翻到最后一页给你看，落款线下面还有一行小字：经手人签字即视为知悉全部内容。他说这行字是模板里带的，往年没人看，今年追责组拿它当过依据。会议室的灯管又响了一声，这次回声更长，像有人在里面说话。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '签下第七个签名位', relation: 3, run: { intel: 2, track: { loyalty: -1, sin: 2 } },
+          after: '你签了。函件补齐七个签名，责任摊到四家公司三个部门。年底考核里你的名字底下多了一条备注。他把红笔帽拧上还给你，说这根笔跟你一样，签过的东西都留着，擦不掉，也改不回去。他把函件装进文件袋，袋口折了三折，说这一份要送到追责组手上，不经过任何人。' },
+        { label: '不签，让他一个人兜', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你最终没签。结论写着经手不清、责任人一人。半个月后例外清单被整本调走，十一个名字全部进了问询记录。他工位清空那天，你桌上多了一张打印纸，上面只印着那七个签名位。那张纸你留了很久，后来在一次搬工位时丢了，丢在哪儿谁也不知道。' },
+        { label: '不签，先把清单复印一份', relation: 0, run: { intel: 3, track: { sin: 2, renown: -1 } },
+          after: '你把清单复印了一份。他没拦，看着复印机的光扫过去，扫了四遍才停。函件照旧交上去，你那份复印件在抽屉里放了很久。他后来问过一次，你说不在手上，他点头，没再问第二次。清单在原处又放了两个月，一直到追责组撤走，归进档案，谁也没有再翻过那十一页。' },
+      ],
+    },
+    {
+      id: 'ds-6',
+      npc: 'dai-siyuan',
+      stage: 6,
+      act: 5,
+      district: 'exchange',
+      title: '戴思远：他第一次签了自己不该签的名字',
+      text: '复核会开在周四上午。戴思远提前半小时到，把那份新的例外申请摊在桌上，申请人一栏写着另一个部门，理由不成立，和第三幕那份一模一样，只是这一次没有人拦他，走廊上连脚步声都没有。他把手表从手腕上解下来放在一边，表带早断了，戴着只是习惯，腕上留着一圈白印。他拿起笔，在签批人栏里写下自己的名字，写得很慢，每一笔都压到纸背，纸背鼓起一道浅痕。签完他把笔帽拧上，推到你面前，说还有第二栏：复核人。他第一次签了不该签的名字，那一栏要么是你，要么空着等追责组来填。会议室的灯这时全亮了。申请人栏那个部门的编号他念了一遍，念得很慢，像是要你记住。他说第二栏空着也行，追责组会从复核人名单里随机指派一个，指到谁算谁，连他自己都猜不到。他把解下来的表带在手心里卷了两圈，放到桌角，正好压在材料边上。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '签第二栏，跟他一起担', relation: 3, run: { intel: 2, track: { loyalty: -1, sin: 2 } },
+          after: '你签了第二栏。两份材料一起归档，责任栏里写着两个名字。他把解下来的旧表带留给你，说这东西跟了他三年，现在不跟了。之后合规处的灯修好了，他那半边顶灯还是关着，没人碰。旧表带你收进抽屉最里面，跟那根红笔放在一起，两样东西一直没人来要。' },
+        { label: '不签，把申请原件带走', relation: -2, run: { track: { renown: 2, loyalty: 1 } },
+          after: '你把原件带走了。第二天复核会重开，申请作废，他签下的那个名字被画了一道红杠。他的位置还在，只是不再签任何例外。那根红笔后来一直放在你抽屉里，没人来要，也没人问起。他后来调去了另一个处室，走之前把手上的例外清单交接得干干净净，一条没留。' },
+        { label: '两栏都空着，把材料寄出去', relation: 0, run: { track: { renown: -2, sin: 1, power: 1 } },
+          after: '你没签，把两份材料一起寄了出去。第三天复核组进驻，合规处封门查了四天，名单上不只是这一份申请，还有十一份旧的。封门那天他没来上班，椅背上挂着那根空表带。复核组撤走那天你去了合规处，门开着，桌上的东西还在，没有人回来收拾。' },
+      ],
+    },
+
+    /* ============ 程砚 · 首席科学家 · 研究所园区 ============ */
+    {
+      id: 'cy-4',
+      npc: 'cheng-yan',
+      stage: 4,
+      act: 3,
+      district: 'lab',
+      title: '程砚：事故报告里空着的那一栏',
+      text: '三号项目在周二凌晨出了事故，园区西侧的排风停了四十分钟，值班记录上只写了一句：异常已处置，落款是机器打的时间。程砚把你叫进三号实验室，那台一直响的培养箱现在静着，柜门贴了封条，封条边角被人揭起过一次又按平。她说事故报告已经写完，结论是设备老化，报告里只留一处空着，签收人，也就是把三号柜那批样本接进园区的人。她翻开第四页给你看，正是你签字的那天，签字栏旁边还有一点铅笔的余痕。她说记得你签的时候问过她去向，她没答。她把报告合上，说这份东西现在还在她手里，交上去只要十分钟。她把报告翻到封面，封面上印着三号项目的编号，编号后面用铅笔划了一道浅线。她说这份报告送上去之前，她还可以把排风停的时间从四十分钟改成二十分钟，改一个数字就够。她说这话时没抬头，看着报告里那处空白。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '认下签收责任', relation: 2, run: { intel: 3, track: { sin: 1, loyalty: -1 } },
+          after: '你认了。报告当天交上去，结论写设备老化，签收人一栏是你的编号。她把报告首页钉在实验室门口的公告板上，谁走过都能看见，钉得很正。培养箱的封条三天后撕掉，柜子里空了。公告板上的报告首页一直贴到月底，边角被人翻起过，又按回去，谁也没撕。' },
+        { label: '要求先看完整值班记录', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '她翻了很久，最后只给你一份删过的摘要，排风停的时间被改成二十分钟。她说原件不在她手里，你信不信都行。那天以后你每次进园区，门禁记录都会多挂一行，没人解释，也没人来清。她把那份删过的摘要收进实验台最下面的抽屉，上了锁，钥匙挂在自己工牌后面。' },
+        { label: '拒绝，让她自己填签收人', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你拒绝了。她当场把报告翻回第四页，用铅笔在签收人栏写下自己的名字，写完把铅笔折断扔进废料桶。第二天报告交上去，签收人是她的编号，结论还是设备老化，没人再提那四十分钟。废料桶里的半截铅笔第二天还在，她把台面擦干净才对你说了一句话：这回算清了。' },
+      ],
+    },
+    {
+      id: 'cy-5',
+      npc: 'cheng-yan',
+      stage: 5,
+      act: 4,
+      district: 'lab',
+      title: '程砚：重测六天，还是补一行编号',
+      text: '复核组进园区的第三天，程砚把一份新的签收单放在实验台上，冷链记录那栏还停在前天凌晨，格子的时间戳被划掉又写上。她说报告已经改到第三版：第二版签收人空着，第三版要重测数据，测一次六天，六天之后事故就过了追溯期。她只能选一条，要么让报告走设备老化，把签收栏补上你的编号；要么把样本重测，谁签的字谁留名，报告退回重写，追溯到哪一天算哪一天。她用指腹抹了下培养箱封条上的灰，抹出一道白。她说这一批样本里有一支是她自己的血样，第三幕那只没标号的箱子，就是从这儿出来的。她说这两条路她算过，重测六天要停一整条线，停线的损失写在项目表上，谁签字谁认。她把手从封条上收回来，指腹上沾了一点灰，她在实验服上擦了两次才擦掉。冷链记录那栏的时间戳还在跳，一格一格往前。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '走设备老化，让她补上我的编号', relation: 3, run: { money: 40, track: { sin: 2, power: 1 } },
+          after: '你说走设备老化。数字补上，报告结了，追溯期平安过去。她第二天给你一只金属盒，里面是那支血样的残余部分，盒盖内侧用记号笔写着一个日期。她说留着，将来有人问起签收栏，这东西能替你说话。金属盒你放在柜子最上层，盒盖上的日期你后来查过，正是排风停的那天凌晨。' },
+        { label: '重测六天，签收栏照实填', relation: -2, run: { intel: 3, track: { renown: 2, loyalty: 1 } },
+          after: '六天里她没回过宿舍，第二版数据出来时人是瘦的，眼下有青。报告退回重写，签收人照实填，追溯期从头算起。追责下来评级降了一档，她没申诉，只说这一次纸上是干净的，晚半年也值。重测的数据进了新档，旧档封存，封条上写着作废，日期比她签的那份晚六天。' },
+        { label: '拖着，两边都不交', relation: 0, run: { intel: 2, track: { sin: 1, renown: -1 } },
+          after: '你拖着。第三天追溯期过去，报告自动归档，签收栏空着。复核组走的时候问过一句，她说人不在园区。那台培养箱后来被贴上停用的标，一直停到现在，没人来拆，也没人来问，实验室那盏灯也一直坏着。' },
+      ],
+    },
+    {
+      id: 'cy-6',
+      npc: 'cheng-yan',
+      stage: 6,
+      act: 5,
+      district: 'lab',
+      title: '程砚：签收栏推到你面前',
+      text: '追溯期最后一天的早上，三号实验室的灯全开着，走廊里一个人都没有。程砚把签收单摆在台面正中，签收人栏空着一行，旁边压着一支笔，笔尖朝外。她说第三版数据是她自己签的字，样本编号也是她编的，这件事已经做完，改不掉了。现在只剩这一栏：她可以签自己的名字，明天递辞呈；也可以让你签，把三号项目整个留下，包括那台封了条的培养箱。她说这话时没有看你，一直看着那只箱子，玻璃里映出的数字还是红的。她把笔往前推了一寸，手缩回台面边缘，指尖碰到台面就停住了。她说签收单只印了两份，一份进项目档案，一份她自己留着，留到项目结束。她把台面上那支笔的笔帽拧开又拧上，拧了三次。实验室的排风今天开着，风声盖过了别的声音，两个人站着都没说话。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '签下自己的名字，接下三号项目', relation: 3, run: { intel: 3, gear: 1, track: { sin: 1, power: 2 } },
+          after: '你签了。三号项目的交接单当天生效，她的名字从项目表上撤下来。她走时把培养箱的钥匙放在台面上，说这台机器响过三个月，现在静了，比什么都好。项目从此留给了你。钥匙上还挂着一根细绳，绳结打得很紧。她把实验室的门带上，没有回头。' },
+        { label: '让她签自己，辞呈我替她递', relation: 2, run: { track: { renown: 2, sin: -1 } },
+          after: '她签了自己。辞呈是你去递的，人事收件时没多问，只把签收单归了档。她第二天离开园区，实验室的灯还是全开着，台面上压着那只空了的金属盒，盖子合得很平。人事第二天寄回一张收件回执，回执上写着辞呈已收，没有写原因，也没有写日期。' },
+        { label: '把签收单交去伦理组', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你交去伦理组。当天封室，样本重新编号，事故结论改成操作失当，她的实验员资格被暂停。封条贴上台面那天她在场，看着贴完才走，走之前把台面从头到尾擦了一遍。伦理组重新编号那天你在走廊上碰见她，她手里抱着两只空盒子，谁也没有停步。' },
+      ],
+    },
+
+    /* ============ 彭戬 · 研究所安保总管 · 研究所园区 ============ */
+    {
+      id: 'pj-4',
+      npc: 'peng-jian',
+      stage: 4,
+      act: 3,
+      district: 'lab',
+      title: '彭戬：贴在他门上的停职通知',
+      text: '停职通知是周三早上贴在总控室门上的，A4 纸，胶带贴得很正，四个角都压平了，落款是综合管理处。彭戬没撕，就让它贴着，自己搬了把椅子坐在门外，四块屏看不见了，只能听里面那台报警器偶尔响一声，响一声他数一次。他说那道门他到底没开，报告写了三页，结论四个字：未按规定执行。他找你只要一件事：那晚第七道上锁申请的卡号，系统里已经被抹掉，但记录仪的纸带还在他口袋里，边缘有一道撕过的毛口。他把纸带抽出一角给你看，上面一行编号只剩前半段。他说他不上诉，只想让那行卡号有个去处。他把那张通知的下角捋平了一次，捋完又翘起来。他说综合管理处给的理由只有一句：拒令未报。他说他不后悔，只后悔当晚没把第七道上锁申请截图存下来，截图比纸带管用。他说完把纸带折回口袋，毛口那一边朝里。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '接过纸带，替他把卡号查出来', relation: 2, run: { intel: 4, track: { loyalty: -1 } },
+          after: '卡号查出来归一个临时工号，上个月就注销了。你把结果告诉他，他在门外的椅子上看了很久那张通知，最后说这一趟没白停职。纸带他自己收回口袋，毛口那边折了一折。他第二天把椅子搬回门里，通知还贴在门上，他坐在通知后面，四块屏又能看见了。' },
+        { label: '劝他把纸带交上去申诉', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
+          after: '他第二天把纸带连同三页报告一起递上去，申诉被驳回，处分记档，复职的事往后拖。他每天照样来门口坐着，看里面那四块屏一块一块暗下去，报警器响一次他数一次。到了月底他被安排去看港区的仓库，总控室的钥匙交了出去，钥匙盘留在架子上。' },
+        { label: '不接，让他自己收着', relation: -2, run: { track: { power: 1 } },
+          after: '你没接。他把纸带塞回口袋，说那就先这样。停职期满他被调去港区看仓库，钥匙盘留在总控室架子上，第三格一直空着，没人补，也没人来查那格到底少了什么。他在港区待了两个月，回来过一次，只在总控室门口站了一会儿就走了，没进门。' },
+      ],
+    },
+    {
+      id: 'pj-5',
+      npc: 'peng-jian',
+      stage: 5,
+      act: 4,
+      district: 'lab',
+      title: '彭戬：夜里那一次开门',
+      text: '复职材料要等两周，这两周彭戬进不了园区，门禁卡已经被停掉。周五夜里他给你打电话，说总控室后面的储物柜里还留着一只钥匙盘，第三格空着，其余七把都是他自己的。他要你开一次门，就一次，取完就走，不碰别的东西。他说那把空格的钥匙在第九道上锁申请那晚被拔走了，只剩钥匙盘上一个空印子，他想把那处空印子拍下来，拍完就还。园区外围的灯只亮了一半，巡逻车刚过去一趟，地上的水渍还没干，反着光。他还说了一句：你开门这件事，记录会挂在你名下，出园区的时候会跟着你走，跟到年底都甩不掉。他说这话的时候没有提那晚的门禁记录会挂多久。电话里有风声，他大概站在园区外面，隔着围栏看过那排灯。他说如果记录跟着你出园区，你就把说明写简单点，只写取物，别写拍照，别写钥匙盘。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '给他开门，记录算我头上', relation: 3, run: { intel: 2, track: { sin: 1, loyalty: -1 } },
+          after: '门开了。他进去七分钟，拍完空印子就出来，门禁记录挂在你名下。第二天综合管理处调了日志，你写了一份说明。钥匙盘他没带走，放回储物柜，第三格朝上摆着。那份说明写了两页，写的是取物，没有写拍照。他把照片存在自己的旧手机里，没上传。' },
+        { label: '不开门，让他等复职', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你没开门。他在电话那头应了一声，没多说。复职下来后他第一件事就是去储物柜，钥匙盘还在，第三格还是空的。他把那处空印子拍下来，照片传给你一份，一句说明都没有。那张照片你存了下来。他复职以后不再坐门口那把椅子，改坐在屏前，一直坐到下班。' },
+        { label: '开门，但把钥匙盘拍两份', relation: 1, run: { intel: 3, track: { sin: 1, power: 1 } },
+          after: '你开了门，拍了两份，一份给他，一份自己留着。他看见你手机屏幕的时候停了一下，什么也没说。后来那份照片被人问过一次，你说没有，他也说没有，问的人转身就走了。照片你后来又翻出来看过一次，看的是第三格那处空印子，别的什么都没看。' },
+      ],
+    },
+    {
+      id: 'pj-6',
+      npc: 'peng-jian',
+      stage: 6,
+      act: 5,
+      district: 'lab',
+      title: '彭戬：钥匙盘上的第三格',
+      text: '复职通知和处分通知同一天到，两份纸都搁在总控室门口的椅子上，风把上面那张吹起一角，露出下面那行字。彭戬把四块屏挨个看了一遍，最左边那块的红点还在闪，闪得比上周慢。他手里捏着那只钥匙盘，第三格还是空的，空印子朝上。他说他可以把记录仪的纸带交上去，交出纸带就复职，处分抹掉，代价是那行卡号再也不会有人查；也可以把纸带留着，复职的事作废，明天开始他就不在园区上班了。他把钥匙盘搁在椅子上，两把钥匙磕了一下，声音很轻。他说最后一次，让你来选。他把两份通知叠在一起，对折了一次，压在钥匙盘底下。四块屏上最左边那块的红点还在闪，他说这红点三个月了没人管，谁也不在意它到底在报警什么。他把椅子往门边挪了半尺，让出门，让你先走。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '让他留着纸带，复职我去跑', relation: 3, run: { intel: 3, track: { power: 2, sin: 1 } },
+          after: '纸带留在他手里。复职的事你跑了两周，只跑下来一个临时安保的岗。他把钥匙盘交给你保管，说岗位不重要，钥匙在谁手里才重要。第三格那处空印子他没再拍过第二次。临时岗上了两个月，园区里又出过一次上锁申请，这次他按了确认，记录上什么都没少。' },
+        { label: '让他交纸带复职', relation: -2, run: { track: { loyalty: 2, renown: -1 } },
+          after: '他交了纸带，复职当天生效，处分抹掉。那处空印子从此没人提。他把钥匙盘放回总控室的架子上，第三格朝里摆着，谁也看不见。见你的时候他只说了一句：这次算我认。那格空印子后来被新来的安保总管填上了钥匙，谁也没有提过原来那把去了哪里。' },
+        { label: '把纸带拿走，两样都不给他', relation: 0, run: { money: 50, track: { sin: 2, renown: -1 } },
+          after: '你把纸带拿走，两样都没给他。他没拦，只把钥匙盘放回椅子上，说随你。第二天园区里没见到他，也没见到那份复职通知。钥匙盘被收进储物柜，上了锁。储物柜的钥匙交到了综合管理处，柜子一直没开过，那格空印子还朝上摆着。' },
+      ],
+    },
+
+    /* ============ 老鸦 · 灰市掮客 · 下层居住区 ============ */
+    {
+      id: 'ly-4',
+      npc: 'lao-ya',
+      stage: 4,
+      act: 3,
+      district: 'slum',
+      title: '老鸦：公账上多出来的一笔',
+      text: '灰市那边的人上周找过老鸦，来的是两个中年人，在他铺子门口站了十分钟没进门。水泵房的水声还是一阵一阵，他把账本摊在铁桶上，翻到撕掉那页留下的毛边，毛边还翘着，边上沾了一点烟灰。他说为了保你，他破了两条规矩：一条是不能替客户顶罪，一条是不能用灰市的名头做私活，前一条他自己认了，后一条记在了灰市的公账上，要还，而且要快。他把那包没拆的烟从口袋里掏出来，在手上掂了掂，说这包本来是留着事情办成那天拆的，现在看是拆不动了。他问你一句：那笔公账，你认不认。他把账本合上，用手压了一下边角，让它翘着的毛边贴回去。他说灰市要账从来不写期限，只写在人身上，写在谁头上谁就得自己记着日子。水泵房外面的巷子里有脚步声走过去又走回来，他没抬头。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '认下公账，钱我来出', relation: 3, run: { money: 70, track: { sin: 1, renown: 1 } },
+          after: '你说钱我来出。他没道谢，只把那包烟拆了，抽出一支点上，剩下的塞回口袋。公账当天销掉，灰市收得干脆利落。水泵房的水一直没停，他翻回那页，用左手补了一行新的。他补的那一行字很小，写在页脚，写的是日期，别的什么都没写，也没让你看。' },
+        { label: '不认，这是他自己破的规矩', relation: -2, run: { track: { loyalty: 2, power: 1 } },
+          after: '你说不认。他把烟收回口袋，说行，这一笔他自己偿。十天后他那间铺子过了户，账本上那行被划掉。他见你还照常说话，只是不再让你碰他的账本，连铁桶都不让你挪。铺子过户那天他在门口站了一会儿，看着新主人换了锁，然后转身进了巷子。' },
+        { label: '认账，但要转成灰市的人情', relation: 1, run: { money: 40, intel: 3, track: { power: 1, sin: 1 } },
+          after: '你说认账，但走灰市的人情。他想了想，把账本中间那页翻出来，在空位上写了一个字：欠。他说这个字比钱管用，也比钱难还。水泵房的水声那晚一直没停，他数到很晚才走。那个欠字后来被灰市的人看到过一次，问了一句，他说是旧账，问的人就没再问。' },
+      ],
+    },
+    {
+      id: 'ly-5',
+      npc: 'lao-ya',
+      stage: 5,
+      act: 4,
+      district: 'slum',
+      title: '老鸦：第十天的那一行空位',
+      text: '灰市给的期限是十天。第十天晚上，老鸦把你叫到旧水泵房的铁梯上，水已经停了，管道上的白霜化了一半，地上湿着一片，踩上去不出声。他说灰市开的价不是钱，是人：要么他把自己三十年记的账交出去，要么去清算行把名下那间铺子过掉，两样都不留。他两样都不想给。他说还有第三条路，是最脏的一条，把你那张指令卡的编号写进灰市的公账，用你的名头把这一笔抵掉。他把账本翻到中间那页，那里留着一行空位，字是左手写的，笔画歪着，一直没有落笔。他说这一行，本来是给你留的。他把账本往前推了半寸，空位那一行朝着你。他说这一行不写也没事，灰市回头会找人来写，写谁的名字不看情分，只看谁的名字好用。铁梯下面湿着一片，反着一盏很远的楼道的灯。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '让他写我的编号', relation: 3, run: { track: { sin: 2, loyalty: -1, power: 1 } },
+          after: '你让他写。编号落进公账那天，灰市把账收了，他撕掉那一页，毛边比上次还长。他把没拆的那包烟整包塞给你，说这包他拆不动了。旧水泵房的管道上，白霜又结了一层。他撕页那天没有开灯，撕下来的那页他没有烧，折起来塞进了外套内侧的口袋。' },
+        { label: '拿钱把我那份买回来', relation: 2, run: { money: 70, track: { sin: 1 } },
+          after: '你出钱把账买回来。他收下，账本上那页贴着，一个字没改，铺子保住了，人也留住了。他后来说，这一趟是他三十年里做过最不划算的一笔，也是最值的一笔，说完就再也不提。铺子的账他重新抄过一遍，抄到中间那页空位置时停了手，最后留了一行空白。' },
+        { label: '拒绝，让他自己交账本', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '你拒绝了。他没说话，第二天早上用铁皮盒把账本装好，去了清算行门口。灰市的人比他先到，站在台阶下等着。水泵房那天起再没开过灯，铁梯上落了一层灰。灰市的人收完账就走了，旧水泵房的门一直虚掩着，里面的水管上还挂着半层白霜。' },
+      ],
+    },
+    {
+      id: 'ly-6',
+      npc: 'lao-ya',
+      stage: 6,
+      act: 5,
+      district: 'slum',
+      title: '老鸦：清算行门口的台阶',
+      text: '第十天早上，老鸦站在清算行门口，穿着那件领口磨白的旧外套，手里拎着一只铁皮盒，里面是他三十年的账，盒子提手缠着胶布。交易所广场还没开门，风把地上的纸吹到台阶下面，贴着台阶角一圈一圈打转。他说他走进去，账本一变公，灰市上就再没有他的位置，你也再欠不着他；他也可以把铁皮盒交给你，让你替他走这一段，账本换成你的名字，铺子留着，人不用进去。他把铁皮盒搁在台阶上，两只手插回袖子里，说这盒子里的东西，你比清算行的人更清楚。台阶上的水还没干，映着盒子的一个角。他说铁皮盒里的账按年份分成七捆，最旧那一捆是三十年前的，纸都脆了，一动就掉渣。他说清算行收账不烧账，只重新编号，编完号以后每一笔都能查到经手人。他把手从袖子里抽出来，在盒盖上按了一下。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '替他走这趟，把账本接过来', relation: 3, run: { money: 60, track: { sin: 1, loyalty: -1, power: 1 } },
+          after: '你拎起铁皮盒走进清算行。账本换成你的名字过了一遍，铺子留在他名下。他站在台阶下等你出来，手里空着，外套领口还是磨白的。他说这回轮到你被人记住了。他把那只空掉的手从袖子里抽出来，跟你握了一下，手心很凉，握完就揣回去。' },
+        { label: '让他自己进去，我在外面等', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+          after: '他自己进去了。出来时手里什么也没有，账本成了公本。灰市上再没人叫他老鸦，只剩几个老人还记得水泵房。他把那包没拆的烟留在台阶上，谁也没拿，吹到中午还在。那包烟后来被谁捡走了不知道，台阶上留了个压痕，到晚上下雨才冲平。' },
+        { label: '都不动，把盒子留在台阶上', relation: 0, run: { intel: 3, track: { sin: 1, renown: -2 } },
+          after: '你把盒子留在台阶上先走了。中午盒子不见了，摊主说是扫地的人收走的。三天后灰市换人管事，旧水泵房的水管被锯开，账本的纸屑在管道口堆了一小撮，一直没人扫。灰市换人以后规矩也换了，旧规矩里那两条再没人提过，提了也没人认得。' },
+      ],
+    },
+
+    /* ============ 陆晚 · 无证诊所医生 · 下层居住区 ============ */
+    {
+      id: 'lw-4',
+      npc: 'lu-wan',
+      stage: 4,
+      act: 3,
+      district: 'slum',
+      title: '陆晚：她收了一个不该收的人',
+      text: '上周有人半夜敲诊所的门，敲三下就停了。陆晚收了他，现在那人躺在靠里那张床上，盖着一件灰制服，制服上的部门标被剪掉了，剪口很整齐。周四下午，市面上来了两个人，穿便服，拿着调档函，要她把这一周的病历全部交出去，态度客气，站在门口不进来。她把调档函折了一下塞进抽屉，说诊所从来不留完整病历，都是手写单，写完就烧。她说这话时没看你，手上在给一件器械消毒，酒精棉擦了三遍，擦到布都白了。抽屉里还压着那张撕成两半的手写单，两半都没扔，边上被药水洇黄了一角。她把调档函的回执压在药柜玻璃底下，压得很平。她说这两个人来了三次，第一次只站在巷口，第三次才敲门。床上那人睁着眼看天花板，一句话没说，手一直放在被子外面。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '帮她把单子全换成别的名字', relation: 3, run: { intel: 2, track: { sin: 2 } },
+          after: '手写单全换成了别人的名字。那两个人来收档时翻了一遍，没找到问题，留下两张调档回执。陆晚把回执压在药瓶底下，转身给床上那人换药，胶布换了三次才贴正。那两张回执她一直压在药瓶底下，压到年底才拿出来，拿出来的时候边角已经发黄。' },
+        { label: '劝她把该交的交出去', relation: -2, run: { track: { loyalty: 2, sin: -1 } },
+          after: '她把能交的都交了，那人被带走时是自己下的床，走得很稳。她那天没给人看诊，坐在门口的小板凳上坐到半夜。抽屉里两半的手写单她没扔，也没再拼，就那样压着。后来她又收过两个不该收的人，每次都在门口的小板凳上坐到半夜，坐到灯灭。' },
+        { label: '先弄清床上那人是哪一边的', relation: 1, run: { intel: 4, track: { renown: 1 } },
+          after: '你去见了那人。他什么也不肯说，只在纸上画了一条竖线。你把纸拿给陆晚看，她认出那是第七层的层标，转身就去翻药柜最底下那本过期登记册，翻的时候手很稳。那本过期登记册她一直收在药柜最底下，谁要都不借，说是诊所的旧账，不能出屋。' },
+      ],
+    },
+    {
+      id: 'lw-5',
+      npc: 'lu-wan',
+      stage: 5,
+      act: 4,
+      district: 'slum',
+      title: '陆晚：这一次名字要写在她自己的病历上',
+      text: '调档函给了三天。第三天夜里，陆晚把靠里那张床推到帘子后面，自己坐在门口的小板凳上，膝盖上摊着那两半手写单。她说这回躲不过去了：要么交病历，要么把床上那个人交出去，要么诊所明天关门，她带着手写单去下一层，去更深的半层地下室。三条路里只有一条要你出手，交出病历可以，但交出去的名字得对得上，那需要一份能过系统的身份记录，和第一次那份一样，只是这一次要写在她自己的病历上。她把两半单子拼在一起，压在一只空药瓶下面。楼道灯一闪一闪，楼上有人走动，走了很久都没有停。她说身份记录不用太真，只要能过系统那一关，撑三天就够。她把手写单收进药瓶下面的抽屉，又把它拿出来折了一遍，折成更小的一块。她说这一次她不想再让人替她决定救谁。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '给她做一份病历身份', relation: 3, run: { money: 45, track: { sin: 2, loyalty: -1 } },
+          after: '系统里那个名字对得上，调档函如期收档，人留在床上。她把两半手写单拼好压在药瓶下，说这一次是她的名字，下一次不用你出手了。诊所那晚的灯亮到很晚才灭。床上那人第七天自己走了，走前把灰制服的剪口缝上了，针脚很粗，缝完就放在床上。' },
+        { label: '帮不了，让她自己决定', relation: -2, run: { track: { loyalty: 1, sin: -1 } },
+          after: '你说帮不了，让她自己决定。第三天她交出去一半病历，人被带走了，诊所门口贴了张停诊的单子。她把手写单烧了一半，剩下那半卷起来塞进药瓶，谁也看不见。停诊的单子贴了三天就被人撕了，诊所照旧开门，只是不再留任何手写的东西。' },
+        { label: '先见床上那人再定', relation: 1, run: { intel: 3, track: { renown: 1 } },
+          after: '你先见了人。那人退烧后说了三句话，第三句里带着你部门的编号。你把话原样告诉陆晚，她沉默了一阵，把调档函从抽屉里拿出来，翻到背面看了看落款，又照原样折回去。调档函第三天到期，她把函件交了出去，交的是复印件，正本一直压在药瓶底下。' },
+      ],
+    },
+    {
+      id: 'lw-6',
+      npc: 'lu-wan',
+      stage: 6,
+      act: 5,
+      district: 'slum',
+      title: '陆晚：撕成两半的那张单子',
+      text: '那两个人第四天又来了，这回站在巷口，不进诊所，一个看表，一个看巷子深处。床上那人烧退了，能坐起来，穿着剪了标的灰制服，问什么也不答，只在纸上画过一条竖线。陆晚把两瓶标着别人名字的血浆从柜子里取出来摆到台面上，又把那张拼好的手写单撕成两半，这一次撕得很准，一半是上半段的名字，一半是下半段。她说这回她选得出来：留一半在诊所，把另一半连着身份记录一起交出去，人留下来，记录走掉。她把其中一半塞进你手里，说这一次她站街这边，签字的事要你来。她把两瓶血浆摆正，标签朝外，谁也看不出原来是谁的血。她说人留下以后，病历上那个名字要跟着走，走多久她不知道，也不问。巷口那两个人还在，一个看表，一个看巷子深处，谁也没有进来。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '接下那半张，替她把记录交出去', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1, loyalty: -1 } },
+          after: '你接了那半张。名字交出去，人留下，系统中那份记录挂在你的操作编号上。她第二天照常开诊，门口那盏灯换了新的。诊所靠里那张床空了很久，被单叠得很齐。那份记录挂在你的操作编号底下，到了年底才被归档，归档时没人问过一句是什么。' },
+        { label: '把两半都交给对方', relation: -2, run: { track: { loyalty: 2, renown: -1 } },
+          after: '两半都交了出去，人被带走，诊所当天下锁。她走之前把那张拼过的纸撕成四条扔进不同的垃圾桶，一条一个。你在巷口看见她拎着药箱往下层去，一路上没有回头。诊所锁了以后有人来敲过几次门，敲三下就停，停了很久也没人开，就再没敲过。' },
+        { label: '两半都烧了，谁也别要', relation: 0, run: { track: { sin: 1, renown: 1 } },
+          after: '你在楼道拐角把两张纸烧了，纸灰被风卷上来一层。那两个人第四天再来的时候什么也没拿到，只在巷口站了一会儿就走。她照旧开诊，见你的时候只点了一下头。巷口那两个人再没出现过，巷子里的人问起这件事，谁都说那天晚上很安静。' },
+      ],
+    },
+
+  ];
+})();
+
+/* ===== game/story-npc-b2.js ===== */
+/* NPC 个人支线 B 组·续：每人新增三幕（第 4-6 幕）。 */
+(function () {
+  'use strict';
+
+  window.STORY_NPC_B2 = [
+
+    {
+      id: 'tg-4',
+      npc: 'tie-gui',
+      stage: 4,
+      act: 3,
+      district: 'docks',
+      title: '铁贵：九个街口',
+      text: '封锁令是周一凌晨贴出来的，铁贵把九个街口用集装箱横着堵了一排，箱门上刷的还是货号，不是标语。你到的时候雨正大，积水没到鞋帮，挡板上挂着那盏玻璃罩裂了的警报灯，裂口缠了两圈胶带，就是上次从吊机上拆下来的那一盏。铁贵站在箱门后面，没戴安全帽，左手那道伤还缠着绷带。他说上面给了清场时限，七十小时，到点就进场。「今晚有条船靠港，船上装的是拆了编号的义体件，要人进舱搬。这活不该做，做了工会就完了。我要你一句话，做还是不做。」说完他把一副手套放在你脚边，转身去点数。点到一半他又回头：「你不点头，我自己带人下去，出了事跟你没关系。」雨顺着箱门往下流，把那排货号冲得发亮。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '接下这趟活，跟他进舱', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'tg4_night_shift',
+          after: '你把手套捡了起来。船凌晨两点靠港，四十个人贴着跳板下去，货一箱箱抬上来，没有一张单子。铁贵在跳板上站到天亮，天光泛白时把那盏警报灯取下来交给你，说这盏灯往后归你记着。工会账上当晚多出一笔谁也说不清的进项，第二天巡检来问，谁都说没听过那条船。' },
+        { label: '拒绝，说这活不能做', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不做。他点了点头，把手套收回去，没再劝，转身去点数。第二天夜里船还是靠了，人少了一半，货抬到一半探照灯扫过来，带走六个人。铁贵没提你的名字，工会上也没人提，那六个人的工位空了三天。那盏警报灯后来被人从挡板上摘下去，扔进了集装箱的夹缝里。' },
+        { label: '让他只派自愿的人，你不出面', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你说人自己报，你不出面。他答应了，挑了十九个自愿的，抄了一份名单压在抽屉里。船比说好的晚来两个小时，活干完天已经亮了。他把名单从抽屉里取出来撕了，说这一份不算数，剩下的都算他一个人的。那晚进舱的人后来各自领了一笔钱，谁也不知道钱从哪儿出。' },
+      ],
+    },
+
+    {
+      id: 'tg-5',
+      npc: 'tie-gui',
+      stage: 5,
+      act: 4,
+      district: 'docks',
+      title: '铁贵：要落在一个人头上的那本日志',
+      text: '那艘船的事过了六天，巡检把九个街口的封条全换成新版，箱门上多了一排编码，谁进过场都要留指纹。铁贵把你叫到冷库后面，左手绷带拆了，伤口边上发青。他说巡检要找人签一份装卸日志，那晚进舱的记录得落在一个人头上，签了就是一个人扛，别人干净。「我原本想自己签。」他把一支笔塞进你手里，「可我一签，印章就得跟着走，工会上下一百多号全得陪绑。你签，走你部门的流程，落在你名下，别人干净。」他低头从裤兜里摸出工会那枚旧印章，放在你手心里，章面上缺了一角。冷库门一开一关，白汽往外翻，翻过他的脚面。他没催你，把手插回兜里，站在白汽里等，等到眉毛上结了霜。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '签下装卸日志，落自己名下', relation: 3, run: { intel: 2, track: { sin: 2, power: 1 } }, flag: 'tg5_signed',
+          after: '你在日志上签了名，四十六个进舱记录全挂在你名下。铁贵把印章收回去，说这份人情他记着。三天后你部门的内部件里多了一条备注，写着该次作业系员工个人行为。冷库后面的白汽照常往外翻，他见你时不再提签字的事，只在递烟时多停半秒。' },
+        { label: '拒绝签字，也不接那枚印章', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你把笔和印章都推了回去。他没伸手接，笔滚到冷库门槛边上。第二天巡检进场，四十六个人挨个过了一遍，七个被带走。铁贵站在门口，谁问都说不知道。他后来托人把你落下那支笔还了回来，笔帽是新换的，笔身还带着冻库的凉。' },
+        { label: '签，但要求日志先过一遍他的章', relation: 1, run: { intel: 3, track: { sin: 1 } },
+          after: '你签了，条件是他先盖章。他当着你的面把缺角的印章按在页脚，按下去那一下用了很大的力。那份日志被拆成两份归档，一份进你部门，一份留在工会。之后两个星期巡检来过两次，两次都只看页脚，别的地方一页没翻。' },
+      ],
+    },
+
+    /* ============ 银面 · 女术士的代理人 · docks ============ */
+
+    {
+      id: 'tg-6',
+      npc: 'tie-gui',
+      stage: 6,
+      act: 5,
+      district: 'docks',
+      title: '铁贵：那盏灯最后挂在哪儿',
+      text: '三个星期后封条撤了，九个街口的集装箱一箱一箱吊走，露出底下压平的路面，工会的木牌摘了，挂在门房墙上。铁贵没被带走，也没来上过班。他在吊机底下等你，脚边放着那盏裂了口的警报灯和一枚缺角的印章，胶带还是他缠的那两圈。清场追责的单子下来了，上面两个编号，一个是他的，一个是你部门那串。「有人找过我。」他蹲下去，把灯罩上松掉的那圈胶带重新缠紧，「交上去，我这边干干净净，单子上就剩你一个。」缠完他才抬头，「交不交，我等你来听一句。」吊机顶上积的水一滴一滴落下来，砸在灯罩上，声音很闷。吊机顶上的水积了一夜，落到天快亮才停，档位灯也灭了。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '让他别交，单子上的名字我来担', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'tg6_stood_by_him',
+          after: '你让他别交。他把胶带那圈按平，站起来说了声行，把印章塞回裤兜。追责单最后只落了你那串编号，处理意见写着流程失当。他第二天回来上了工，警报灯重新挂上吊机，裂口还是缠着那两圈胶带，谁也没换。，胶带那两圈他缠得比原来紧。' },
+        { label: '让他照实交名单，你去自证', relation: -2, run: { money: 50, track: { loyalty: 2 } },
+          after: '你让他交。他交了，四十六个名字一个不落，工会彻底解散。你的编号排在第一位，处理结果是调岗降一级，工号后面挂了一条记录。他领了遣散费走的，走那天没来找你，门房里那盏灯归了下一任领班，胶带被人拆了换新的。' },
+        { label: '把灯拿走，谁也别提这回事', relation: 0, run: { intel: 2, chips: 1, track: { sin: 1 } },
+          after: '你把灯提走了，什么也没答，也没让他交。他在吊机下面站了一会儿，自己走了。追责单最后按证据不足搁下，两个编号都空着。那盏灯后来在你家阳台上放了很久，裂口对着墙角，胶带一直没拆，灯罩上落的灰像一层薄霜。' },
+      ],
+    },
+
+    /* ============ 银面 · 终局 ============ */
+
+    {
+      id: 'ym-4',
+      npc: 'yin-mian',
+      stage: 4,
+      act: 3,
+      district: 'docks',
+      title: '银面：她不记得的那一天',
+      text: '售票亭改成了杂物间，停用牌子换成白底黑字的登记牌，牌子上的名字不是她的。银面还坐在里面，桌上那只凉茶杯也在，杯底那个圈被人擦过，没擦干净，木头颜色浅了一块。她把一张手写单推过来，单子上是三个日期，第三个日期旁边画了个问号。「这三天里有一天是银面在班，有一天不是你见到的那个银面。」她抬起手把袖子往上拉了拉，露出腕上一道旧编号，最后一位被磨掉了。「你替银面说一句：上周四下午，是谁坐在这个位置上的。」她问完闭上眼，像在等一句从很远的地方回来的话。杯子里的水一直是凉的，一口没动，杯壁上那道水痕也一直停在原处。登记簿压在桌角上，边角卷起。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '替她确认那一天的班次', relation: 2, run: { intel: 3, track: { sin: 1 } }, flag: 'ym4_confirmed',
+          after: '你答了上周四下午是她。她睁开眼，把手写单上的问号划掉，改成一行很小的日期。她说这三天里有一天归你记得。你走的时候她还在擦杯底那个圈，擦了很久，圈没擦掉，反而清楚了一点。第二天杂物间的钥匙换了人拿，登记牌倒是一直没换。' },
+        { label: '不答，先问她是谁', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '你反问她是哪一个。她想了很久，把袖子放下来盖住那道旧编号，说这个问题她也问过自己，问到第三个答案就停了。她把三个日期里最后那个划掉，说那一天不算。当天晚些时候，登记牌上那个不属于她的名字被人撕了下去，胶还留在漆面上。' },
+        { label: '说这不该问我，起身走', relation: -2, run: { track: { loyalty: 1 } },
+          after: '你起身走了，杂物间里没有追出来的脚步声。第二天门锁换了，登记牌上换成一个更整齐的打印名字。桌角那只凉茶杯被人端走，杯底那个圈留在桌上，过了一天也被人擦干净了。那间屋子从此再没挂过手写的东西。' },
+      ],
+    },
+
+    {
+      id: 'ym-5',
+      npc: 'yin-mian',
+      stage: 5,
+      act: 4,
+      district: 'docks',
+      title: '银面：她要你抄回一个年份',
+      text: '委托人自己来过一趟，站在售票亭外面没进门，只把一张解约函从门缝里塞进去。银面把那张函读了四遍，读到第四遍才抬头，抬头的动作比前三次慢。她把手腕上那道旧编号抄在一张手写单上，推给你：「这行字不是我写的。」她停了停，又改口，「也不全是。」她要你替她跑一趟委托人的档案室，把编号对应的入职年份调出来，只要年份，不要档案，也不要复印件。「这一年你先替我记着。」她说，「往后我自己记不住的那天，你就照着念给我听。」凉茶杯里的水少了一指，杯壁上留着一道很浅的水痕。她把杯子往里挪了挪，挪到灯照不到的那半边，一直没再动。窗外的雨声一直没停。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '替她跑一趟档案室，抄回年份', relation: 3, run: { money: 30, intel: 3, track: { sin: 1 } },
+          after: '你去了委托人那间档案室，只抄了入职年份，一页纸没动。回来时她还坐在原位，接过抄条读了两遍，把年份念出了声。她说往后再记不住，你就照着这一条念给她听。杯子里的水又少了一指，她把杯子挪到灯照不到的地方，一直没换水。' },
+        { label: '拒绝，说那份档案我不能动', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不动。她把抄条拿回去，对折两次，塞进风衣内袋，说那就按解约函办。解约函交上去的第三天，售票亭门口那块登记牌被摘了。她照旧坐在里面，桌上多了一张空白手写单，谁也没再提编号的事，也没人再来查过班。' },
+        { label: '帮她跑，但年份改早两年', relation: 0, run: { intel: 3, track: { sin: 2 } },
+          after: '你抄回来的年份比档案里早了两年。她读完没有问，只把抄条压在杯底下面，说差两年，往后有人查起来，她就多两年可以待在这儿。那张抄条后来一直压在杯子底下没拿走，纸边被水汽泡软，字还看得清。杯子一直压着那张抄条，谁也没掀开过。' },
+      ],
+    },
+
+    /* ============ 温仕成 · 引航票务掮客 · orbit ============ */
+
+    {
+      id: 'ym-6',
+      npc: 'yin-mian',
+      stage: 6,
+      act: 5,
+      district: 'docks',
+      title: '银面：柜台后面那个位置',
+      text: '杂物间的登记牌又换了，这回是空白一块，漆面新得反光，什么也没写。银面把那只凉茶杯端到桌面正中，杯底那个圈在木头上印出一道深痕，怎么擦都在。她说委托人已经把她从合同里划掉了，柜台后面这个位置下周归别人，「除非有人坐进来，用这个编号登记，银面就不用登记了。」她把腕上那道磨掉一位的编号抄在一张手写单上，连同杯子一起推过来。「你坐进来，银面明天就不在了。你不坐，银面自己走，走了也不会有人查。」码头外沿的汽笛长鸣了一声，登记牌上那块空白被灯照得发亮，木桌上那道圈印也亮了一下。她把手收回袖子里，坐着没动，汽笛隔一会儿又响了一声。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '替她坐进去，用她抄下的那个编号登记', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'ym6_took_seat',
+          after: '你在登记牌上填了那串编号。她把凉茶杯往你手边推了推，说你留个东西在这儿，往后来人问起银面，你就说她在。她走的时候没关门，门一直开着。第二天柜台上只剩那只杯子，杯底那个圈在木头里印得更深。，木头那道圈比昨天又深了一点。' },
+        { label: '让她自己消失，登记牌交上去', relation: -2, run: { money: 45, track: { loyalty: 2 } },
+          after: '你把空白登记牌交了上去，编号栏照实填了待核。她第二天没来，第三天杂物间的门上贴了新牌，编号是别人的。桌角那只凉茶杯被人收走，杯底那个圈过了两天也擦干净了，木头颜色浅了一块，比周围淡一档。，柜台上再没留过手写的东西。' },
+        { label: '杯子留下，编号谁都不填', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你只把杯子留下了，编号那栏空着。她看了很久，把抄条对折收进风衣内袋，说空着也好。这间杂物间一直是空的，登记牌上那块空白漆从年头到年尾没填过，杯子就摆在桌上没人动，落了一层灰，杯口朝上。，登记牌上那块空白一直空到年底。' },
+      ],
+    },
+
+    /* ============ 温仕成 · 终局 ============ */
+
+    {
+      id: 'ws-4',
+      npc: 'wen-shicheng',
+      stage: 4,
+      act: 3,
+      district: 'orbit',
+      title: '温仕成：第十九行',
+      text: '候船厅的大屏又亮起延误信息，红色数字滚了半小时，谁也没被通知上船。温仕成把名单折成四折，压在投诉台的玻璃底下，第十九行写的是他自己，工号后四位正好是生日，备注栏写着随行一人。他说这份名单用的还是上次那个模板，连错别字都没改，改名单的人显然不打算藏。「我要你帮我改一行。」他把钢笔帽拧开又拧回去，「把随行一人划掉。我不带人走，我这一走，我妹妹还在环带。」窗外一艘空船正在离港，梯子收上去的声音隔着玻璃也听得见。他把手按在玻璃上，指尖压着折痕那一处，压了很久，指腹都压白了。大屏上的红色数字又滚过一轮，他这才把手从玻璃上拿开。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '替他把随行一人划掉', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'ws4_struck',
+          after: '你划掉了那四个字，笔迹尽量压平。他把名单重新折成四折，压回玻璃底下。三天后那班船靠港，闸口放行时他一个人上的梯，背包很轻。他在梯口回头看了一眼候船厅，广播正好开始报下一班船号，他没再看第二眼。' },
+        { label: '拒绝，让他自己处理', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说这一行我不动。他把钢笔帽拧回去收进衣袋，什么也没讲。第二天名单被投诉台清掉，他那一行还在，随行一人四个字也没划。那班船他上了，两个人一起走的，闸口记录里第二个人的名字签的是空名。，闸口的记录当天被人抄走了一份。' },
+        { label: '先问他妹妹的工号', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '你没动笔，先问了工号。他报出来，报完又重复了一遍，像怕你没记住。他把名单往你这边推了半寸，说这行字你随时可以改，改之前先记着那个号。那份名单从此一直压在投诉台的玻璃下面，谁都没再动过，连清台的人都绕开了那一格。' },
+      ],
+    },
+
+    {
+      id: 'ws-5',
+      npc: 'wen-shicheng',
+      stage: 5,
+      act: 4,
+      district: 'orbit',
+      title: '温仕成：横线下面留空的那一行',
+      text: '候船厅当天清场，广播停了，只剩行李车滚过地面的声音。温仕成坐在最后一排，名单摊在膝上，第十九行下面空出一行，他用尺子比着画了一条横线。他说名单要重抄一份报进系统，报进去就查得到是谁抄的。「我抄不了，我的字他们认得。」他把钢笔递过来，「你照着抄，横线那行留空。留空的意思是他们知道有人要补上去；不空，就补不上。」讲到一半他抬头看登船口，那里正在放下下一班船的梯子，梯子落地的声音很钝。他把妹妹的工号写在纸角上，又用手掌按住了，一直没松开，笔在另一只手里转了两圈。清场的时限快到了，广播里开始放预备登船的提示，他一个字也没听进去。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '按他说的抄，横线留空', relation: 3, run: { intel: 2, money: 40, track: { sin: 2 } },
+          after: '你照抄了一份，横线那一行空着。两天后系统里出现第十八行，补的是一个化名，工号对不上任何人。温仕成把原件收进内袋，说空着那一行就是留给查的人看的。候船厅的大屏当天恢复运行，登船号照常滚动，他站在最后一排看了一会儿才走。' },
+        { label: '明确拒绝，说这一行不能空', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不抄，也不留空。他把纸收回内袋，坐着看了一会儿登船口，然后起身走了。三天后系统里第十九行被补全，随行一人划掉，备注改成单人出行。他没再约过你，闸口的梯子照样每天放下三次，候船厅里那张投诉台换成了金属的。' },
+        { label: '不抄，把名单拍下来留底', relation: 0, run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '你没抄，只把那份名单拍了下来，两半都拍。他看了一眼，说拍了好，拍的比抄的准。名单原件当晚被他投进候船厅的意见箱，第二天清早箱子就清空了。你手里那份替你把这一行留了下来，后来他再没提过那张纸。' },
+      ],
+    },
+
+    /* ============ 雨客 · 潮的接触人 · orbit ============ */
+
+    {
+      id: 'ws-6',
+      npc: 'wen-shicheng',
+      stage: 6,
+      act: 5,
+      district: 'orbit',
+      title: '温仕成：只剩一张的过闸票',
+      text: '港区开始查名单，逐行核对，候船厅第一次坐了人，广播压得很低，报号的声音短了一截。温仕成等在闸口内侧，手里两样东西：一张过闸票，边角对折过；半张名单，就是上次撕开的那半，边上是毛的。他说第十九行被找出来了，查的人认得他的字，这一班船是最后一班不查的。「票只有一张。」他把票和那半张纸并排放着，「我上，名单就是物证；你上，我留在这儿把话讲完。你点哪一个。」闸机每隔一会儿响一声，红灯把地面照成一条一条的，正好从他鞋边切过去。他把钢笔也从内袋抽出来，搁在那半张名单上，笔帽没拧。闸机的红灯又扫过一遍，把两个人照在同一条光里。闸口外面那盏吊灯一直在晃。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '送他上船，撕掉半张名单', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'ws6_sent_him',
+          after: '你把票推给他，半张名单当场撕了，碎片分两次扔进两边的垃圾桶。闸机放行，他一个人上的梯，背包里装着一件换洗衣服。那半张纸进了回收，查名单的人只找到第十八行，结案写着化名无实人，名单从此按十八行归档。' },
+        { label: '让他留下作证，票交回窗口', relation: -2, run: { money: 55, track: { loyalty: 2 } },
+          after: '你把票交回窗口，票款当场退进公司账。他把钢笔收进内袋，留在候船厅把话讲了一遍，讲了三个小时，笔录写到第九页。名单第十九行被核实，他领了两个月的行政处理，工牌没被收。那班船他后来再没上过，闸口的梯子照旧每天放三次。' },
+        { label: '两样都不接，让他自己定', relation: 0, run: { intel: 3, chips: 1, track: { sin: 1 } },
+          after: '票和名单都留在他手里，你一句没选。他在闸口坐到夜里，最后把票撕了、名单也撕了，两样一起投进意见箱。那一班船照常开走，他没上。后来他还在候船厅卖票，字写得比从前慢，卖完票会把票根压平再递出去。' },
+      ],
+    },
+
+    /* ============ 雨客 · 终局 ============ */
+
+    {
+      id: 'yk-4',
+      npc: 'yu-ke',
+      stage: 4,
+      act: 3,
+      district: 'orbit',
+      title: '雨客：他要进去一次',
+      text: '第七接缝外沿结了冰，他那件雨衣的下摆冻得发硬，走一步响一下。雨客蹲在配电箱后面，把密封袋放在膝盖上，袋子外面又缠了三层胶带，结打在同一个位置。他说潮这次要人进去，进到接缝里面把一段线换掉，换完门就封，人人都知道封了就出不来。「我报了名。」他说这话时没抬眼看你，「袋子里的东西你先拿着，等我出不来那天，你替我送到环带第三水塔。」他报了一个工号，又报了一个名字，报完把袋子往前递了一半。缝口那里有风过来，把他额前的头发全吹到一边。他站起来把帽子扣上，往缝口走，走了几步又停下，等你伸手。缝口的冰在他脚下裂开一道，风把裂缝里的水吹出来。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '接下袋子，答应送到水塔', relation: 3, run: { intel: 3, track: { sin: 1, renown: 1 } }, flag: 'yk4_took_bag',
+          after: '你把袋子接了过来，他又把袋口的胶带按紧了一下才松手。他报的工号和名字你都记住了。他走进缝口时没有回头，门在里面合上的声音很轻。第三天缝口封上，链条挂了一道铅封，铅封编号就是他进去那天登记的号。' },
+        { label: '拒绝，让他自己留着', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不接。他把袋子抱回怀里，两只手抱着，站了一会儿才转身。他进去以后门封了，袋子的事潮那边找过你两回，你都说不知道。后来那个袋子被人从缝口推出来过一次，又推了回去，谁也没有拆开，封口的胶带一直没换。' },
+        { label: '接下袋子，但要求先看一眼', relation: 1, run: { intel: 4, track: { sin: 1 } },
+          after: '你说可以接，但要先看。他犹豫了几秒，拆开最外面那层胶带，让你看见袋子里的一块工牌和一张写坏的手写条。他说看过了就等于认了。你把胶带重新缠好，缠得比原来紧。他走的时候脚步比来时快，走到缝口才回头看了一眼。' },
+      ],
+    },
+
+    {
+      id: 'yk-5',
+      npc: 'yu-ke',
+      stage: 5,
+      act: 4,
+      district: 'orbit',
+      title: '雨客：从缝口推出来的袋子',
+      text: '进缝第三天，里面递出来一张条子，字是雨客的，只有六个字：门关上了，别等。第四天那个密封袋被人从缝口推出来，外面三层胶带少了两层，重新缠过，缠得很松，结打在侧面。你拆开看，里面多了一块工牌，是环带第三水塔的检修牌，牌子边缘涂着一小块蓝漆，和他那件雨衣上的补丁一个颜色。袋子里还有一张手写条，托你把工牌送到水塔第三格，收件人那一栏被水汽泡开，只剩一个字。潮那边当天又来问袋子在哪，问话的人站在你侧后方，一直盯着你的手，直到你把外套扣上，他才往缝口那边走。袋子最外面那个结你一直没解开，绳头留着他缠的那一段，摸上去还是硬的。缝口外沿的冰又开始结。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '按他说的，把牌子送到水塔第三格', relation: 3, run: { intel: 3, track: { sin: 1, renown: 1 } },
+          after: '你去了第三水塔，第三格的管路归一个上了年纪的检修工管。他看了牌子一眼，什么都没问，把牌子塞进工具箱最底层，说这个人他记得。回来的路上你把剩下两层胶带拆了收好，袋子空着带回家，放在抽屉里，一直没扔。' },
+        { label: '拒绝，把袋子交给潮那边', relation: -2, run: { money: 45, track: { loyalty: 2, renown: -1 } },
+          after: '你把袋子交了出去。潮那边的人当着你的面拆开，看了工牌，把牌子留在自己手里，手写条撕成了两半。当天缝口的铅封换了一次号，旧号的记录被涂掉了。水塔第三格那天没等到任何人，值班表上那一栏也空着。，老检修工后来问过一次。' },
+        { label: '先自己保管，谁也不交', relation: 0, run: { intel: 3, chips: 1, track: { sin: 2 } },
+          after: '你把袋子压进抽屉最里面，谁也不交。潮那边来了三次，来了三次你都说不清楚。那块涂蓝漆的工牌一直没送出去，半年后它的边角锈出一层壳，锈迹从蓝漆边缘往里长。你后来再没打开过那个袋子。，袋子外面那层胶带你也收着。' },
+      ],
+    },
+
+    /* ============ 荀戒 · 环带巡检员 · ring ============ */
+
+    {
+      id: 'yk-6',
+      npc: 'yu-ke',
+      stage: 6,
+      act: 5,
+      district: 'orbit',
+      title: '雨客：只剩一个人认得的牌子',
+      text: '接缝那道铅封挂了一个月，潮的人不再出现，缝口结的冰开始化，顺着外沿往下淌水。你把袋子里的工牌取出来，边角锈了一圈，蓝漆还剩一角，颜色比原来深。水塔第三格那位老检修工来找过你一趟，问你认不认得这块牌子，「认得他的人一个都没了。」他把牌子放在桌上，说水塔下个月拆第三格，拆之前得有人先认人，认完再拆，拆完牌子跟着管走。牌子边上那点蓝漆在灯下反光，像一小块没干的漆。他等你一句话：认，还是不认。窗外有车从港区开过去，灯扫了一层又灭了。桌角那块牌子摆了一晚，锈色在灯下看得更清，谁也没来收，值班室的钟走到两点，老检修工坐在椅子上睡着了。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '认下这块牌子，替他记着', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'yk6_remembered',
+          after: '你在登记表上填了那个名字，工号是他报给你的那串。老检修工把牌子收回工具箱，说拆格的时候这块牌子会跟着走。你拿回那张写坏的手写条，一直夹在工作证后面，条子上的字被水汽泡过，还能看清，字迹拐得很急。' },
+        { label: '不认，把牌子交回潮的档案', relation: -2, run: { money: 40, track: { loyalty: 2 } },
+          after: '你把牌子交了上去，潮的档案收件栏盖了一个章，没写收件人。水塔第三格按计划拆了，那段管路换了新管，锈迹洗得干干净净。那块牌子进了档案库，编号后面一直空着归宿人，谁也没再动过那一格。，拆格那天谁也没去看那一格。' },
+        { label: '把名字记在纸上，不签自己的名', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你把名字抄在一张白纸上，压在水塔的值班记录里，落款那栏空着，谁也不知道是谁写的。第三格拆完，那张纸被人扫出来过一次，又被人塞回原位。名字在纸上，牌子在箱底，两样对不上，也谁都没去对。，值班记录后来换过一本。' },
+      ],
+    },
+
+    /* ============ 荀戒 · 终局 ============ */
+
+    {
+      id: 'xj-4',
+      npc: 'xun-jie',
+      stage: 4,
+      act: 3,
+      district: 'ring',
+      title: '荀戒：影印件上的日期',
+      text: '复核科的人昨天下午来过，把巡检本从一个铁柜里整本抱走，抱走前当着荀戒的面对了页码和页数，连装订线的松紧都核过。今天他约你在长廊尽头说话，手电没开，就着应急灯那点白光。他把一张纸摊在管线保温层上，是第三十一格那一页的影印件，页脚印着复印日期，比他的改动早三个月。「我动的那一页，是在复印之后写的。」他声音很平，「他们现在要我签字承认改动发生在原件上，签了这三十年就都不算了。你只要说一句：这份影印件你见过，见过它在我动手之前。」应急灯灭了一格，管线里的水声一直在响，顺着墙面往下走，墙根积了一小汪。他把影印件折好收进口袋。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '作证，说这份影印件我见过', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'xj4_saw_copy',
+          after: '你说了那句话，复核科的人把影印件收进证物袋，页脚那行日期记进了笔录。荀戒当天没有被带走，第二天照常开工。他把手电重新打开，照在第三十一格上照了很久，说这一格往后按新的编号排。那天环带没停水，巡检本也照常归位。' },
+        { label: '拒绝作证，让他按流程认', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不掺和。他没再讲什么，把影印件折起来塞进工装口袋，连夜去复核科签了字。第三十一格从此按改动后的记录归档，那页影印件从档案里消失。他后来在长廊上遇见你，只点了一下头，手电照在你脚边的霜上。' },
+        { label: '先去查原件的借阅记录', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '你先去查了借阅记录，原件在两个月前被人调走过一次，签名栏空着。你把记录抄给荀戒，他看了一遍，说这一趟还是得他自己签。他把抄条折小塞进手电后盖，说留着以后能验。复核科那边，他当天没有签，本子也没交。' },
+      ],
+    },
+
+    {
+      id: 'xj-5',
+      npc: 'xun-jie',
+      stage: 5,
+      act: 4,
+      district: 'ring',
+      title: '荀戒：中控室里的三样东西',
+      text: '听证排在周四上午，地点是环带中控室。长桌上摆着三样东西：巡检本原件、那页影印件、一支手电，手电是荀戒那支，灯罩上有磕痕。他要你当证人，说的只有一句话：那页抄写发生在复印之后。他站在桌边，把巡检本翻到第三十一格，翻的时候手指避开了页脚，像怕碰坏什么。他说这一句出口，他工号后面会挂上一条记录，你的名字会跟他排在同一行。「你要是不来。」他把手电推到桌子中间，「我就照他们写的签，签完这三十年就都不算了。」中控室的风机一直响，台下坐了七个环带的人，谁都没说话，笔录员的手停在纸上。手电就摆在桌子正中间，灯一直没开，谁也没去碰。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '到场作证，跟他排在同一行', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } },
+          after: '你到场把那一句说了，笔录记了两页。结论下来，改动属实但非法，处罚折半，荀戒保留了巡检岗。他把手电从桌上拿回来，灯罩上那道磕痕对着你这一侧。环带那天没停水，七个旁听的人散场时都看了你一眼。，笔录员把本子合上时手一直在抖。' },
+        { label: '拒绝作证，也不去现场', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你没去。听证照常开，他一个人把话讲完，讲到最后一句时停了很久。结局是工号后面挂上一条改动记录，巡检岗调去仓库点料，手电交了回来。他把手电放在操作台上，说这支灯以后只照焊缝，不照页码。，仓库点料那间屋子没有窗。' },
+        { label: '到场，但只说影印件的日期', relation: 1, run: { intel: 4 },
+          after: '你到场只讲了影印件页脚那行日期，没有替他的动机作保。复核科把日期核了一遍，结论写着日期属实、动机不明。他点点头，说这一句也够了。回环带的路上他把手电的开关拨了两下，灯亮了一下就灭，他也没再拨第三次。' },
+      ],
+    },
+
+    /* ============ 萨尔 · 潮的拾荒者 · outside ============ */
+
+    {
+      id: 'xj-6',
+      npc: 'xun-jie',
+      stage: 6,
+      act: 5,
+      district: 'ring',
+      title: '荀戒：最后一班的那本记录',
+      text: '环带整体换管，旧巡检本要归档封存，封存前有一道核对，三十年里所有改动都得报一次。荀戒值最后一班，把巡检本摞在操作台上，最上面那本翻在第三十一格。他说仓库点料的日子比巡检松，他有时间把那三十年抄一遍，「抄出来公开，环带得停；不抄，这本子明天进库，往后谁都看不见。」他把那支手电从抽屉里拿出来，灯罩上的磕痕朝上，灯泡是新的。「你要我把它照完，还是要我把它关掉。」操作台底下的地面在轻轻抖，是水泵在换班。长廊尽头结了新霜，白的一片，从墙根一直铺到脚边，走一步响一下。操作台边上还搁着他那本没合上的巡检本，页码停在第三十一格，纸角翘着。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '让他抄，把三十年的记录公开', relation: 3, run: { intel: 4, track: { renown: 2, sin: 1 } }, flag: 'xj6_published',
+          after: '他抄了四十一页，按段编号，交去环带工会公开栏贴了三天。环带停了四十八小时换管，三千人领了配给水，没有出事。他把手电留给你，说这支灯以后照哪一格都行，不用再对着页码。贴过的那几页被风吹卷了边，谁也没去揭。' },
+        { label: '让他把本子原样交上去', relation: -2, run: { money: 45, track: { loyalty: 2 } },
+          after: '本子第二天进了库，第三十一格那页压在封条底下。核对结论写着历年记录完整，无一例改动。他照常点料，点完就去长廊尽头站一会儿。手电交回了工具间，和别人的一排灯挂在一起，磕痕朝里，谁也没认出那一支。' },
+        { label: '手电收下，抄不抄他自己定', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你把手电收下了，没让他抄，也没让他交。他把本子摞回去，第二天照常送进库。那三十年他到底报了多少改动，没人知道。手电在你家里放着，隔一阵你拨一下开关，灯还亮，光比原来暗一些，照在墙上是个圆。，墙上那道圆比原来小。' },
+      ],
+    },
+
+    /* ============ 萨尔 · 终局 ============ */
+
+    {
+      id: 'se-4',
+      npc: 'sa-er',
+      stage: 4,
+      act: 3,
+      district: 'outside',
+      title: '萨尔：她要一次开门',
+      text: '穹顶侧门的检修口一共只开过几次，铰链上的漆早掉光了，露出底下的锈。萨尔带着三个人等在口子外头，都用废帆布裹着，其中一个女孩的手上还有没拆的针脚，线头露在袖口外面。她把滤水泵塞回你怀里，泵壳上的划痕比上次又多了几道。「潮里泡过的人活不过两个冬天。」她说，「门开十一分钟，人进去，门关上。你在里面按开关，剩下的我来。」说完她从怀里掏出十几块编号牌，一块一块摆在脚边，像在数人头。「他们进去以后，牌子归你。往后要认人，你只能认牌子。」她把手按在铰链上，等你答话，掌心压着那道掉漆的边。外面的风把帆布吹得贴在身上，三个人的脸都蒙着。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '按她说的，按下开关', relation: 3, run: { intel: 2, track: { sin: 2, renown: 1 } }, flag: 'se4_opened',
+          after: '你按了十一分钟。门内侧的灯灭了两回又亮回来，三个人贴着你身后走过，鞋底带进来的水在地上拖了一长道。门合上以后，萨尔把地上的编号牌推给你，一共十四块，都有拆过的印子。她说明年起，认人只能靠这些牌子。' },
+        { label: '拒绝，说这道门我不能开', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不开。她盯着你看了几秒，把滤水泵收回怀里，领着那三个人沿穹顶外沿走了，走很远还能看见帆布下面那双没拆针脚的手。第二天侧门的铰链被人浇了焊，检修口的漆面盖住了原本的划痕。那十几块编号牌一块也没留在原地。' },
+        { label: '开门，但只放一个进来', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你只按了一小会儿，门缝开出一个人的宽度，进去的是那个女孩。萨尔在门外没有进来，把剩下的帆布裹紧了。门合上后她在外面站到天黑，脚的印子留在潮水压平的沙地上，第二天还在，第三天被雨冲平了。，门的铰链上留了一道新的磨痕。' },
+      ],
+    },
+
+    {
+      id: 'se-5',
+      npc: 'sa-er',
+      stage: 5,
+      act: 4,
+      district: 'outside',
+      title: '萨尔：门开过以后',
+      text: '门开过那次，进来三个人，走了两个，那个手上有针脚的女孩留在检修口内侧蹲着，一直没起来。萨尔没进来，站在口子外面，一只手按着铰链。巡检来得比预想快，先量铰链的磨损，再数地上的脚印，一个人数了两遍。「三个人。」她先开口，「两个是路过的，一个是我。」这句话说完她看着你，等你接。她脚边那十几块编号牌还摆着，分成了三摞，其中一摞少了一块，空出来的印子还很清楚。她把滤水泵从怀里取出来，泵身上多了一道很新的划痕，划痕里嵌着一点红锈，她没去擦，就那么举着等你回话。巡检的人把本子翻开一页，笔尖悬在上面没落，风把纸角吹得直响，谁也没先写字。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '替她把那一个人认下来', relation: 3, run: { intel: 3, track: { sin: 2 } },
+          after: '你说进去的是她。巡检记完脚印走了，铰链加了一道封条。她把泵塞回你手里，说这份算她的。那个女孩当晚被送进城里，登记用的是你部门的一张临时卡，卡上的名字是空的，三天后那张卡被注销，注销单压在抽屉里。' },
+        { label: '拒绝替她担，照实说三个人', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你照实讲了。巡检把两个人带走登记，铰链的封条当场焊死，检修口这一季再没开过。萨尔把编号牌一块块收回怀里，收完站在口子外面看了很久，然后沿穹顶外沿走，没回头。那块滤水泵她带走了，泵壳上的划痕一直没补。' },
+        { label: '只认一半，说进去的是两个人', relation: 0, run: { intel: 2, track: { sin: 1 } },
+          after: '你说进去的是两个，另一个是自己钻进来的。巡检按两个人的口径登记，留了一页待核。萨尔把剩下那摞牌子分成两半，一半塞给你，说这一半往后你替他们记着，别当没发生过。那页待核的记录后来一直空着。，第一页的边角被翻得起了毛。' },
+      ],
+    },
+  
+/* ============ 班头 · 回收场领班 · salvage ============ */
+
+    {
+      id: 'se-6',
+      npc: 'sa-er',
+      stage: 6,
+      act: 5,
+      district: 'outside',
+      title: '萨尔：清口子外面那两百步',
+      text: '侧门那圈焊过的封条起了壳，巡检走后没人再补，缝里塞了沙。萨尔等在口子外面的沙地上，帆布收了，脚边十四块编号牌码成两摞，压着那块滤水泵，泵壳上的划痕朝上。她说巡检要清口子外两百步，清完这一带就再没人待得下。「三条路。」她把泵拎起来晃了晃，泵壳里的水响了一下，「我跟你进去，牌子归你，我算你部门的人；我留在这儿，门我自己焊上，谁都别来；你把这摞牌子带走，就当没见过我。」潮水正往上涨，沙地上先前那些脚印一个一个被填平，边上的义体壳子被水泡得发白。她把泵放回两摞牌子中间，站着没动。口子里的灯灭了一格，铰链的影子在沙地上拉长了一截。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '带她进城，牌子一起带走', relation: 3, run: { intel: 2, money: 30, track: { sin: 1, renown: 1 } }, flag: 'se6_brought_her_in',
+          after: '她跟着你进了侧门，登记用的是一张临时卡，编号空着。十四块牌子你带回城里，装进一个铁盒。她在城里住了三天，第四天自己搬去了环带的旧宿舍，说那儿离水塔近，心里踏实。泵留给了你，泵壳上的划痕一直没补。' },
+        { label: '按流程办，把牌子交上去清场', relation: -2, run: { money: 50, track: { loyalty: 2 } },
+          after: '牌子交了上去，清场按通知执行，口子外两百步整平了。萨尔当天就没了踪影，谁也没再见过她。巡检在沙地上找到一块拆到一半的义体，编号磨得看不清，登记单上归了失物。你的处理结果写着流程合规，那一栏下面没有备注。' },
+        { label: '把牌子带走，谁也不带走', relation: 0, run: { intel: 3, gear: 1, track: { sin: 2 } },
+          after: '你把牌子收进包里走了，她也没跟来。门当天晚上被焊上，焊口的颜色比旧漆亮。半年后你在城里认出一块牌子上的编号，对上了环带一张旧档案。你把铁盒从柜子里取出来，重新数了一遍，十四块还在，一块没少。' },
+      ],
+    },
+
+    {
+      id: 'bt-4',
+      npc: 'ban-tou',
+      stage: 4,
+      act: 3,
+      district: 'salvage',
+      title: '班头：停线通知',
+      text: '拆解线的停线通知上午十点挂上去，红纸黑字，贴在闸门上，下面署着你部门的章。班头把线停了，可传送带没清，十二个货箱原封不动码在尽头，箱口的封条写着入库日期，其中四个是三天前的。他把你领到箱前，那副磨白的皮手套在第三个箱子上敲了两下，里面闷闷地回了两下，停了一会儿，又回了一下。「这批货没拆完。」他往下压了压嗓子，「有个箱子里的人在敲，敲了两天。照单走，我明天就得开线，开线就是往里送水。」他说完把手套的指尖捏了捏，指尖那一圈已经磨得透光。仓房另一头的制冷机一直在响，谁也没去关，货箱表面的白霜一层一层往外长。他的手套一直没摘。',
+      when: { minFolded: 7 },
+      options: [
+        { label: '撕开封条，先看第三个箱子', relation: 2, run: { intel: 3, track: { sin: 2 } }, flag: 'bt4_opened_box',
+          after: '你和班头一起撕的封条。箱子里面蜷着一个人，嘴唇发青，手指还在动。班头把手套摘下来盖在他脸上挡光，说拆解线今晚不能开。那个人后来被抬进值班室，登记簿上第三箱那一行写的是空箱，页脚压着一个他自己的手印。' },
+        { label: '拒绝开箱，让他照单办', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说照单办。班头戴上手套，把第三个箱子推上传送带，箱子进水槽的时候他背过身去。当晚十二个箱子全部拆完，交接单上落的是他的编号。第二天他照常来接早班，手套换了一副新的，旧的那副塞在抽屉最底下没扔。' },
+        { label: '让他先把箱子挪进冻库', relation: 1, run: { intel: 2, track: { sin: 1 } },
+          after: '箱子被挪进冻库最里面那格，班头自己搬的，没让人搭手。挪动记录写成设备检修，签了他的名字。停线的日子一天天过去，他每天去冻库待十几分钟，出来时手上都是霜，谁也不问他在里面做什么。，白汽每天都在同一个时间往外涌。' },
+      ],
+    },
+
+    {
+      id: 'bt-5',
+      npc: 'ban-tou',
+      stage: 5,
+      act: 4,
+      district: 'salvage',
+      title: '班头：那张挪动记录',
+      text: '冻库第三格那个箱子被人翻出来了，箱口的封条重新贴过，日期和巡检的台账对不上。班头戴着新换的皮手套站在库门口，说巡检已经问过两回，问的是谁挪的箱子、谁把检修记录改成设备故障。「单子上签的是我的编号。」他把手套摘下来，搭在冻库的把手上，「我认，最多调岗；你要是现在把那张挪动记录从你部门的单据里抽出来，这事就落我一个人身上，我认得更省事。你抽不抽。」冻库里的白汽一阵一阵往外涌，贴着地面散开，把门槛边上那副旧手套的印子盖住了，又露出来，白汽里带着一股铁锈的味。他没再说话，就那么看着你。他没再说话，就那么看着你，手套边的霜化成一圈水。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '抽走那张挪动记录，替他兜下', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'bt5_pulled_slip',
+          after: '你把那张记录抽了出来，单据里留了一道裁口，谁也没追问。巡检结案写着设备故障检修，班头记了一次警告。他照旧戴那副新手套来上班，旧手套一直放在把手边上，谁也没扔。冻库第三格那箱子的记录再没被翻起来。' },
+        { label: '拒绝，把记录留在单据里', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不抽。他把手套戴回去，什么也没讲，转身在账上签了自己那串编号。三天后调岗通知下来，他去点料，不进拆解线了。那张挪动记录留在你部门，稽查科来借阅过一次，看完还了回来，纸角多了一道折痕。，那副旧手套一直压在抽屉最底下。' },
+        { label: '不抽，替他跑一趟申诉', relation: 1, run: { money: 40, intel: 2, track: { sin: 1 } },
+          after: '你没抽，转去替他跑了一趟申诉，走的是工伤认定的口子。申诉上到第二级被驳回，好在调岗没降薪。他把酬谢塞给你，是一副旧手套，掌心那两块磨得发亮，说这副才是他真正戴了六年的，让你收着。，你收进抽屉，一直没舍得戴。' },
+      ],
+    },
+
+    {
+      id: 'bt-6',
+      npc: 'ban-tou',
+      stage: 6,
+      act: 5,
+      district: 'salvage',
+      title: '班头：钥匙搁在登记簿上',
+      text: '值班室那张登记簿翻到第三箱那页，上面写着空箱。人抬走以后在城里活了六天，第六天名字又被人从名单里划掉。班头把登记簿推到桌子中间，抽屉里那副旧手套和那只接管都在，接管上的编号被磨掉了一半。他说巡检已经拿到冻库的钥匙，明天开库，箱子里剩的那点痕迹一看就知道不是空箱。「三条道。」他把钥匙搁在簿子上，「我把它藏起来，明天说库锁坏了；我把簿子交上去，人名写我的；我把钥匙给你，剩下的你自己写。」值班室的暖气管在响，一下一下，像有人在里面敲。他两只手都放在桌上，没有去碰那把钥匙。钥匙上那根皮绳磨得起了毛，绳结打得很旧，谁也没动过。',
+      when: { minFolded: 11 },
+      options: [
+        { label: '帮他藏，对外说库锁坏了', relation: 3, run: { intel: 2, track: { sin: 2, renown: 1 } }, flag: 'bt6_hid_box',
+          after: '你们把第三格那点痕迹清了，报的是锁芯锈死、开库延期。巡检来过一次，量了锁孔就走了。班头把那副旧手套和接管一起锁进抽屉最里面，说这两样留着，往后认人用。拆解线第二天重新开，传送带的声音跟以前一样。' },
+        { label: '把钥匙和簿子交上去', relation: -2, run: { money: 55, track: { loyalty: 2 } },
+          after: '你把钥匙和登记簿一起交了上去，第三箱那页抄了一遍附在后面。巡检结案写着违规作业，班头记过一次，扣三个月绩效。他照常来接早班，只是不再戴手套碰箱子，手冻得发红也空着手。那副旧手套一直躺在抽屉里。' },
+        { label: '钥匙收下，簿子留在原处', relation: 0, run: { intel: 3, track: { sin: 1 } },
+          after: '你把钥匙收进兜里，簿子留在桌上，什么也没说。第二天巡检开库，锁没坏，箱子里是空的。班头说可能是他记错了页数，结论按记录误差结案。那把钥匙一直在你手里，后来你也忘了它是哪一年配的。，巡检那边也没再来查过库。' },
+      ],
+    },
+
+    /* ============ 无面 · 记忆银行柜员 · memory ============ */
+
+    {
+      id: 'wm-4',
+      npc: 'wu-mian',
+      stage: 4,
+      act: 3,
+      district: 'memory',
+      title: '无面：多出来的第三班',
+      text: '记忆银行这周换了排班表，柜员那一栏只剩一个编号，班次从两班压成一班。无面翻着表看了很久，把表推给你，指着一栏空白：「第三班是它上的，可它不记得上过。」它把号单翻过来，背面又是那行字，字迹比上次清楚了一些，笔画也整齐了一些。「这段记忆先出现在调阅记录里，昨天开始出现在别人的排班表上。」它说这话时用了第三人称，一只手一直按在表格那一栏上，「无面想知道，如果它从这里走出去，登记栏上还剩什么。」斜面灯有一格是坏的，光落在柜台上断成两截，它把表挪到亮的那半边，空白那一栏正好在光里。柜台外的号单压在窗口下面，一张没少，号码排到四十九。',
+      when: { minFolded: 8 },
+      options: [
+        { label: '替它把第三班记下来', relation: 2, run: { intel: 3, track: { sin: 1 } }, flag: 'wm4_third_shift',
+          after: '你在排班表那栏空白里补了一行，笔迹尽量写得平。它把表收回去，压在斜面灯下，说这一班往后就算有过了。第二天调阅记录里那行字淡了一些，排班表上第三班还在，签的是它自己的编号，谁也没来问过。，它把那页表折了个角。' },
+        { label: '要求先调那一班的操作日志', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+          after: '你要求先看日志。日志调出来了，第三班那两小时里只有一条操作记录：调阅三十七号，用途写着核对。它读完把日志合上，说核对这两个字不是它写的。那天之后它开始自己抄每一班的流水，抄得很慢，一页要写很久。' },
+        { label: '说这不是我该确认的事', relation: -2, run: { track: { loyalty: 1 } },
+          after: '你说不确认。它把手写单翻回去，号单照原样还给你，背面那行字还在。这周排班表第三栏的空白一直没补，柜员名录的核对被报到了复核科。它照常坐在柜台后面读号、翻单、盖章，速度比上个月慢，盖章的位置却没偏过一次。' },
+      ],
+    },
+
+    {
+      id: 'wm-5',
+      npc: 'wu-mian',
+      stage: 5,
+      act: 4,
+      district: 'memory',
+      title: '无面：担保栏',
+      text: '清柜通知下来那天，无面把柜台后面的抽屉一个个清空，只剩那张号单，背面那行字已经能被灯照得看清。它说这段记忆取出来，它就得从柜台后面走出来，走出来的那个不叫无面。取件单已经报了上去，主审要一个担保人，担保栏得填一个在职编号，出了问题由担保人接。「无面填不了自己。」它把笔放在单子边上，笔杆朝你，「名字落上去，无面就取；不落，这份单明天作废，那段记忆归档案，归进去就再没人认领。」柜台上那盏斜面灯换了新灯泡，光落在担保栏那一格上，一格一格很整齐。它把手放在单子上，没有翻页，一直没翻。窗口外的号码牌翻到了下一号，叫了两声没人应。',
+      when: { minFolded: 10 },
+      options: [
+        { label: '在担保栏填上自己的编号', relation: 3, run: { intel: 3, track: { sin: 2, power: 1 } }, flag: 'wm5_guaranteed',
+          after: '你填了编号，落款压得很实。取件单当夜进了主审，两天后批下来。无面把号单收进内袋，说这一笔它记着。清柜那天柜台后面空了半格，斜面灯照在空处，比平时亮一点，也照得更远一点。，柜台后面的抽屉空了一格，灯照进去。' },
+        { label: '拒绝担保，让它走档案', relation: -2, run: { track: { loyalty: 2 } },
+          after: '你说不担保。它把笔收回笔筒，把取件单对折两次，送进了作废格。那段记忆当天归档，归属栏写着待认领。它照旧坐在柜台后面读号、翻单、盖章，速度跟从前一样，只是不再用第三人称说自己。，它把号单背面那行字又抄了一遍。' },
+        { label: '填，但要求先看那段记忆', relation: 1, run: { intel: 4, track: { sin: 1 } },
+          after: '你说可以填，但要先看。它调出那段记忆，只放了一小段：一个下雨的门口，一只手按在把手上，指尖压得很紧。它说你看到的就是这些，后面的连它也认不出。你填了编号，它把号单叠好塞进内袋，说这一笔往后你还得替它作证一次。' },
+      ],
+    },
+
+    {
+      id: 'wm-6',
+      npc: 'wu-mian',
+      stage: 6,
+      act: 5,
+      district: 'memory',
+      title: '无面：两张单子',
+      text: '记忆银行这个月清柜，柜员名录重排，三十七号那一栏从名录里被划掉，编号空着，划痕比别的栏深。无面把斜面灯修好了，灯全亮，柜台第一次照得没有影子。它推过来两张单：一张取件单，取的是三十七号那段不属于它的记忆，取完柜台后面这个编号就空着没人补；一张注销单，注销的是它自己。「无面只能签一张。」它说这话时头一次用了第一人称，说完又改了回去，「你替无面看，签哪张。」两张单子并排摊在灯下，纸面压得很平，边角一个折痕都没有。它把手放在两张单子中间那道缝上，等你开口，指节一直没动。灯下没有影子，柜台前后都很亮，连柜员那一栏的名字也照得出来。',
+      when: { minFolded: 12 },
+      options: [
+        { label: '让它签取件，记忆你带走', relation: 3, run: { intel: 4, chips: 1, track: { sin: 2, renown: 1 } }, flag: 'wm6_extracted',
+          after: '它签了取件单，凭证是一张薄薄的载体，你用内袋装好。柜台后面那个编号当天注销，名录上留了一格空。你走的时候灯还全亮着，它说这一段往后归你拿着，别再送回来。载体在你抽屉里放了很久，纸边一直没黄。' },
+        { label: '让它签注销单，编号归档案', relation: -2, run: { money: 45, track: { loyalty: 2 } },
+          after: '它签了注销单，签名栏写得比平时慢。柜员名录上三十七号正式注销，那段记忆按无主件封存。它最后一班照常坐到收柜，灯一格一格关掉。你出门时回了一次头，柜台后面已经没有人了，斜面灯是灭的，柜台上那张号单也不在。' },
+        { label: '两张都不签，把单子退回去', relation: 1, run: { intel: 2, track: { sin: -1 } },
+          after: '你把两张单子都推了回去，说它自己定。它把单子收进抽屉，压在号单下面，什么也没签。清柜那天它是最后一个走的，灯关了才出来。三十七号那一栏整年空着，编号没补，也没注销，谁来问都答还在核对。，那格空着的编号一直没补。' },
+      ],
+    },
+/* ============ 铁贵 · 终局 ============ */
   ];
 })();
 
@@ -3817,6 +5306,1715 @@ window.GAME_DATA = (function () {
   };
 })();
 
+/* ===== game/card-sources.js ===== */
+/* 卡牌获取来源库：牌不是发全的，靠这些来源逐张挣来。 */
+(function () {
+  'use strict';
+  window.CARD_SOURCES = [
+    { id: 'cs1', kind: 'npc', npc: 'wen-duo', need: 3, n: 1, path: 'control', tier: 2, once: true,
+      hint: '闻铎在简报会上替你压下一次问责，散会后把一张没用过的指令塞进你的文件夹。' },
+    { id: 'cs2', kind: 'npc', npc: 'su-wen', need: 2, n: 1, path: 'capital', tier: 1, once: true,
+      hint: '苏纹把你的日程挪到董事会之前，顺手把日程表背面那页空白撕给了你。' },
+    { id: 'cs3', kind: 'npc', npc: 'yu-nanzhi', need: 4, n: 1, path: 'capital', tier: 3, once: true,
+      hint: '郁南枝核完你的账，把一份无人认领的抵押清单推过来，编号栏是空的。' },
+    { id: 'cs4', kind: 'npc', npc: 'dai-siyuan', need: 3, n: 1, path: 'control', tier: 2, once: true,
+      hint: '戴思远在审查结论上写了「无异常」，然后把整份附件单独留给了你。' },
+    { id: 'cs5', kind: 'npc', npc: 'cheng-yan', need: 4, n: 1, path: 'expand', tier: 3, once: true,
+      hint: '程砚把实验记录的第 41 页抽出来交给你，那一页在系统里从来不存在。' },
+    { id: 'cs6', kind: 'npc', npc: 'peng-jian', need: 3, n: 1, path: 'purge', tier: 2, once: true,
+      hint: '彭戬批准你走一次旧货梯，条件是用完那张通行条必须当场烧掉。' },
+    { id: 'cs7', kind: 'npc', npc: 'lao-ya', need: 5, n: 2, path: 'purge', tier: 3, once: true,
+      hint: '老鸦欠你一次人情，他在灰市冷库里交给你两张没签过名的指令，纸还是潮的。' },
+    { id: 'cs8', kind: 'npc', npc: 'lu-wan', need: 3, n: 1, path: 'control', tier: 2, once: true,
+      hint: '陆晚给你缝好伤口，把一张写满编号的处方单叠进你的袖口，说这是诊金。' },
+    { id: 'cs9', kind: 'npc', npc: 'tie-gui', need: 4, n: 1, path: 'expand', tier: 2, once: true,
+      hint: '铁贵让工会的人替你封住三号泊位两小时，交接时把一张指令压在装卸单底下。' },
+    { id: 'cs10', kind: 'npc', npc: 'yin-mian', need: 4, n: 1, path: 'control', tier: 3, once: true,
+      hint: '银面用第三人称讲完你的下一步，然后把一张牌放在桌上，说这局她已经替你开过了。' },
+    { id: 'cs11', kind: 'npc', npc: 'wen-shicheng', need: 3, n: 1, path: 'capital', tier: 2, once: true,
+      hint: '温仕成把引航票价的空档告诉你，作为交换，你收下他名下最后一张指令额度。' },
+    { id: 'cs12', kind: 'npc', npc: 'yu-ke', need: 5, n: 1, path: 'purge', tier: 3, once: true,
+      hint: '雨客从穹顶外带回来一张被酸雨泡软的纸片，展开后上面是指令卡该有的编号。' },
+    { id: 'cs13', kind: 'npc', npc: 'xun-jie', need: 3, n: 1, path: 'expand', tier: 2, once: true,
+      hint: '荀戒巡检到环带第七段，把一张盖过章的空白指令夹进值班记录还给你签收。' },
+    { id: 'cs14', kind: 'npc', npc: 'sa-er', need: 3, n: 1, path: 'purge', tier: 2, once: true,
+      hint: '萨尔在堆里翻出一块没被熔掉的牌，掰开外壳后里面的编号还能认。' },
+    { id: 'cs15', kind: 'npc', npc: 'ban-tou', need: 4, n: 1, path: 'purge', tier: 3, once: true,
+      hint: '班头把当天的回收清单给你看了一页，夹在中间的那张指令已经被登记为已销毁。' },
+    { id: 'cs16', kind: 'npc', npc: 'wu-mian', need: 5, n: 1, path: 'control', tier: 3, once: true,
+      hint: '无面问你借了一段记忆做抵押，还回来的除记忆之外还有一张没人取走的指令。' },
+    { id: 'cs17', kind: 'district', district: 'tower', need: 3, n: 1, path: 'control', tier: 2, once: false,
+      hint: '你在高塔商业区跑满三趟简报，董事会把一张新指令挂在你的编号下。' },
+    { id: 'cs18', kind: 'district', district: 'exchange', need: 3, n: 1, path: 'capital', tier: 2, once: false,
+      hint: '交易所广场连做三次交割，清算行按惯例给你追加一张吞并用的指令。' },
+    { id: 'cs19', kind: 'district', district: 'lab', need: 3, n: 1, path: 'expand', tier: 2, once: false,
+      hint: '研究所园区三次夜间权限记录里都有你的编号，安保科按流程补发一张进场牌。' },
+    { id: 'cs20', kind: 'district', district: 'slum', need: 3, n: 1, path: 'control', tier: 2, once: false,
+      hint: '下层居住区三栋楼的人替你签了联名，灰市收下这份人情，回你一张笼络人的牌。' },
+    { id: 'cs21', kind: 'district', district: 'docks', need: 3, n: 1, path: 'expand', tier: 2, once: false,
+      hint: '工业港区三班货都经你手放行，工会把一张占地用的指令压在交接单下面。' },
+    { id: 'cs22', kind: 'district', district: 'orbit', need: 3, n: 1, path: 'capital', tier: 3, once: false,
+      hint: '轨道港三次过境申报都盖了你的章，票务那条线开始主动往你手里塞额度。' },
+    { id: 'cs23', kind: 'district', district: 'ring', need: 3, n: 1, path: 'purge', tier: 2, once: false,
+      hint: '环带维修层三处巡检都由你签收，值班室里那张没人认领的指令换到了你名下。' },
+    { id: 'cs24', kind: 'district', district: 'memory', need: 3, n: 1, path: 'control', tier: 3, once: false,
+      hint: '记忆银行连续三次给你开了加急窗口，柜员顺手把一张逾期未取的指令转给你。' },
+    { id: 'cs25', kind: 'stat', stat: 'intellect', need: 9, n: 1, path: 'capital', tier: 2, once: true,
+      hint: '你把三份互相矛盾的报表拼成一条线索，清算行认定你够格接下一张资本牌。' },
+    { id: 'cs26', kind: 'stat', stat: 'charm', need: 8, n: 1, path: 'control', tier: 2, once: true,
+      hint: '你在走廊里让两个不肯说话的人同时开了口，董事会据此给你补一张笼络牌。' },
+    { id: 'cs27', kind: 'stat', stat: 'force', need: 8, n: 1, path: 'expand', tier: 2, once: true,
+      hint: '装卸区的冲突里你站在最前面没退，工会认这个人情，回你一张占地牌。' },
+    { id: 'cs28', kind: 'stat', stat: 'stealth', need: 11, n: 1, path: 'purge', tier: 3, once: true,
+      hint: '连续十一天没人能说清你昨天在哪，这份干净的被遗忘本身换到一张清洗牌。' },
+    { id: 'cs29', kind: 'track', track: 'power', need: 7, n: 1, path: 'purge', tier: 3, once: true,
+      hint: '权柄涨到七分，董事会开始把最难的那类指令交到你手上，一张盖了最高编号的牌。' },
+    { id: 'cs30', kind: 'track', track: 'renown', need: 6, n: 1, path: 'control', tier: 2, once: true,
+      hint: '声望到六分，下层开始有人替你传话，灰市把一张笼络牌当贺礼送了来。' },
+    { id: 'cs31', kind: 'day', need: 5, n: 1, tier: 2, once: true,
+      hint: '活到第五天，董事会按惯例给撑过第一轮的人补一张牌，附信只有一行编号。' },
+    { id: 'cs32', kind: 'day', need: 10, n: 2, tier: 3, once: true,
+      hint: '活到第十天，日程官把你的名字从待处理名单划掉，随信补两张没写目标的指令。' },
+  ];
+
+  window.EVENTS_V5 = [
+    { id: 'v1', portrait: 'portrait-monitor', district: 'tower', title: '三十三层电梯里的第二张工牌',
+      text: '电梯在三十三层停住，灯灭两秒。门开时走廊上站着两个人，胸牌编号和你的一模一样，照片却不是你。其中一个先开口，说系统今天多印了一张，问你要不要认领。你手里那份简报还夹着没签完的问责单，走廊尽头的通风口一直在响，像有人在里面数数。',
+      options: [
+        { label: '认领这张工牌，先去查打印记录',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '你查到打印指令来自排版室，发起人一栏是空的。工牌收进内袋时卡角还有点毛。第二天有一个陌生工号替你签收了两份文件，签名栏写的是你的名字。' },
+        { label: '当场注销，写进异常报告',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '异常报告进了系统，当天这条记录被同一个工号翻过三次。第三次之后，走廊上那两个人当中的一个调去了别的楼层，工牌也换了新的，编号尾数改了。' },
+        { label: '什么也不认，把工牌留在原地',
+          run: { intel: 1, vitality: -1 },
+          after: '你走了三层楼才想起更衣箱里少了一件外套。折回去看时工牌还在原地，编号被磨掉了一位，照片那半张脸成了白板。你捡起来，又放回了原位。' },
+      ] },
+    { id: 'v2', portrait: 'portrait-su', district: 'tower', title: '苏纹递来的日程表背面有一行字',
+      text: '苏纹把明天的日程折好递给你，背面有一行手写的字，写着十点四十分，二楼小会议室，不要带记录仪。她没提这行字，也没看你的眼睛。你注意到她指甲缝里有干掉的墨，像刚改过谁的排程。走廊的灯每隔八秒闪一次，闪到第三次时她侧身让你先走。',
+      options: [
+        { label: '按时去，不带记录仪',
+          run: { intel: 4, track: { power: 1 }, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '小会议室里坐着苏纹和郁南枝，桌上只摆了三杯水。出门时苏纹递给你一张笼络类指令牌，说这是排程之外的空档，登记在她名下，别去系统里查。' },
+        { label: '带记录仪，把过程全存下来',
+          run: { intel: 2, chips: 1, track: { sin: 1 } },
+          after: '录音存了四十分钟，回放时中段全是白噪音，只剩翻纸的声音。文件里多出一条不知道谁加的批注，写着「此处删去」，署名是一个你不认识的工号。' },
+        { label: '不去，也不问这行字',
+          run: { track: { loyalty: 1, renown: -1 } },
+          after: '第二天你的日程整体后移两小时。苏纹照旧递来新表，背面干净，一个字也没有。你问起昨天那行字，她说昨天的表她没有留底，顺手把旧表收走了。' },
+      ] },
+    { id: 'v3', portrait: 'portrait-dai', district: 'tower', title: '合规部送来的附件多出来一页',
+      text: '戴思远让你签收一份审查附件，一共十七页，目录只列了十六页。多出来的那页没有标题，是一张电梯停梯记录，时间正好是昨晚十点四十分。他站在旁边没有解释，也没有催你签。窗外正在下酸雨，玻璃上留着一道擦不掉的痕。他把笔帽拧上又拧开，说这一页可以不签，但要记在你名下。',
+      options: [
+        { label: '签收，但先翻到第十七页',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '第十七页背面有手写批注，写着「此件不入档」。你把那页的纸角折了个记号，附件当晚就被系统标成已归档。第二天你再翻开，折角是平的，像被人熨过一遍。' },
+        { label: '当场问这页从哪来',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '戴思远说他也想找人问这个问题，然后让你先走。当天下午他被叫去了监事会，回来时手里没有那十七页，随身的记录册也换成了一本新的，封皮是空的。' },
+        { label: '拒签，把附件整份退回',
+          run: { intel: 1, track: { sin: -1, loyalty: -1 } },
+          after: '三天后附件重新送达，页数变成了十六页，目录和内容终于对上。缺的那一页再没人提起，退件登记上的经办人也不是他的名字，日期戳却是当天的。' },
+      ] },
+    { id: 'v4', portrait: 'portrait-monitor', district: 'tower', title: '季度通报会上被空掉的一栏名次',
+      text: '季度通报会念到第三名时停了半秒。投影上那一行是空白的，编号还在。台上的人翻过这一页，继续念第四名。散会时每个人手里都拿到一页补充说明，关于第三名一个字也没有，纸却比别的页厚。你把它对着灯看，背面有压痕，像一个被划掉又重新描过的编号，描的方向和你写字的手势一样。',
+      options: [
+        { label: '去问排行榜的算法',
+          run: { intel: 3, chips: 1 },
+          after: '算法组给了你一份参数表，权重那一栏被人改过，改动日期是上周五。签名栏只有一个已经离职的工号，尾数四位和你的一样。你把参数表抄了一份收好，第二天这一栏又改回了原值。' },
+        { label: '主动申请把自己的名次往后挪',
+          run: { track: { loyalty: 2, sin: 1 }, grantCard: { n: 1, path: 'capital', tier: 2 } },
+          after: '调位申请当天通过。第二天你收到一张资本类指令牌，随附的纸条上只有「祝贺」两个字，苏纹说这是上头的意思，牌先记在你名下，出不出手由你。' },
+        { label: '什么都不问，把补充说明收好',
+          run: { intel: 1 },
+          after: '你把那张纸夹进了没归档的那叠文件里。第二天这叠文件被人从头到尾翻过一次，压痕还在，顺序全变了，页码却一张没少，多出来的一页被人抽走了。' },
+      ] },
+    { id: 'v5', portrait: 'portrait-monitor', district: 'tower', title: '四十层连廊上的一张临时封条',
+      text: '四十层的连廊被贴了封条，理由是设备检修，检修单上却没有工程编号。封条后面能听见有人在搬东西，金属擦着地面。保安站在楼梯口，只拦你一个人，说这条道今天不开放，语气像在背一段写好很久的话。他手里的登记板夹着一张白纸，上面已经写好了你的工号。',
+      options: [
+        { label: '绕到四十一层，从通风井往下看',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你看到他们把一台机柜推向货梯，机柜侧面贴着一张标签，上面的编号是你的。保安第二天调离了这条道，登记板上那张白纸也不见了。' },
+        { label: '出示权限，要求当场撕封条',
+          run: { track: { power: 2, loyalty: -1 } },
+          after: '封条撕开，里面已经空了，地上一层新打的蜡。第二天的交接记录上写着那位保安自愿调岗，检修单也补上了工程编号，申请人一栏是你的部门。' },
+        { label: '退回去，把封条编号拍照存档',
+          run: { intel: 2 },
+          after: '照片存进私人空间，编号一共十一位。三天后这条封条的编号在系统里查不到，检修申请也一并消失，保安换成了一个没见过你的新面孔。' },
+      ] },
+    { id: 'v6', portrait: 'portrait-ghost', district: 'tower', title: '休息室里自己亮起来的那盏灯',
+      text: '休息室的感应灯会自己亮，亮的位置总在同一把椅子上。清洁记录显示这把椅子每天被擦两次，比别的椅子多一次。今天早上你坐上那把椅子，桌面上有一圈没干的水痕，形状像一枚工牌，边缘比工牌圆一点。你翻开门禁日志，这一层昨晚的进出记录比平时干净。',
+      options: [
+        { label: '调取这一层的门禁日志',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '日志里有个工号每天出现两次，查不到姓名和照片。你把那串数字抄在鞋盒内侧的纸上，三天后这串工号从日志里改成了一条设备记录。' },
+        { label: '换个位置坐，不去动那摊水',
+          run: { track: { sin: -1 }, vitality: 1 },
+          after: '你换了位置，感应灯整晚没有亮。第二天那个工号的日志一起消失了，清洁记录还是每天两次。那把椅子的椅面一直没干过，你伸手摸过，是凉的，没有味道。' },
+        { label: '往上调这一层的清洁频次',
+          run: { track: { loyalty: 1, renown: 1 }, money: -15 },
+          after: '你多付了十五点把这一层改成每天三次清洁。保洁换了人，新来的把椅子搬到角落，擦完之后又搬回原位，位置分毫不差，连朝向都没改。' },
+        { label: '按水痕的轮廓等一个人',
+          run: { intel: 2, vitality: -1, grantCard: { n: 1 } },
+          after: '十分钟后无面推门进来，把一张没人认领的指令牌放在桌上，说这局的登记人写的是你的编号，牌先放你这里，取不取随你。' },
+      ] },
+    { id: 'v7', portrait: 'portrait-yu', district: 'exchange', title: '收盘前九十秒多出来的一笔保证金',
+      text: '收盘前九十秒，你的账户里多出一笔不属于你的保证金，金额不大，刚好够买下一个人的忠诚，也刚好够你被追责。清算行的回执打出来时纸还是热的。交易大厅的电子屏闪了两下，那一行的数字又跳了一次，跳完之后就没有再动。柜台那边有人在数收据，数到一半停下来看了你一眼。',
+      options: [
+        { label: '原路退回，附上回执编号',
+          run: { track: { loyalty: 2, renown: 1 }, money: -15 },
+          after: '退单第二天，另一个部门的账户被查。你那份回执编号在系统里留着，审查员看过一次，把编号抄走之后就没有再来找你，退单手续费扣了十五点，账上写着正常调账。' },
+        { label: '用它做一笔短线，赚完就撤',
+          run: { money: 60, track: { sin: 2 } },
+          after: '赚了六十点信用点，第三天这笔流水被标了黄标。你把钱拆成七笔转出，每笔都踩在审核线下面。第七笔到账的当天下午，清算行给这批流水补了一个备注，写着来源已核实。' },
+        { label: '不动，观察谁来认领',
+          run: { intel: 3, chips: 1 },
+          after: '第四天深夜有人用外网端口试图平掉这笔仓位，操作记录里留了一个你在简报会上见过的签名缩写。你把缩写和当天到会名单比了一遍，只有一个人对得上，那个人当天没有签到。' },
+      ] },
+    { id: 'v8', portrait: 'portrait-scientist', district: 'exchange', title: '一份签名栏空着的抵押单',
+      text: '郁南枝让助理送来一份抵押单，标的写着「某实验室的设备残值」，签名栏空着，备注里只有一行，说这单不急，等你有空再签。抵押单的边角有咖啡渍，渍形的边缘整齐，像被人用尺子压着画过。助理把单子放下就走，没让你签收，也没留回执单的副本。',
+      options: [
+        { label: '签，先问清残值归谁',
+          run: { money: 45, track: { sin: 1, loyalty: -1 } },
+          after: '残值四十五点当天到账，归属一栏写的是研究所。三天后程砚在走廊遇见你，只看了一眼你袖口的墨迹，说这单的标的三个月前就已经报废过一次了。' },
+        { label: '不签，把抵押单退回去',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '退回的当天下午，这份抵押单出现在另一个部门的进度表里。郁南枝的助理再没上门，咖啡渍却印在了你桌垫上，形状和那张单子一对，位置也差点对上。' },
+        { label: '签，但把标的改成设备清单里没有的那一项',
+          run: { intel: 3, money: 15, grantCard: { n: 1, path: 'capital', tier: 2 } },
+          after: '改标的的过程走了两个小时，郁南枝最后放行，并附了一张资本类指令牌。她说这单本来就该由你来结，残值算十五点，剩下的走她自己的额度。' },
+      ] },
+    { id: 'v9', portrait: 'portrait-dai', district: 'exchange', title: '慈善晚宴上最后一件被拍卖的标的',
+      text: '晚宴拍卖的最后一件标的，是「一条不会被记录的下水道」，起拍价不高，加价幅度却被人临时改小。举牌的人里有董事会的人，也有下层来的人，两拨人坐得不远，却互相不看。台上那把木槌敲了三次才落下，槌头有一道旧裂痕，裂痕里嵌着一小片金漆。',
+      options: [
+        { label: '举牌，买下来还给下层',
+          run: { money: -60, track: { renown: 3, loyalty: -1 } },
+          after: '成交单上你的名字排在第二行，第一行是空号。第二天那条下水道口被人挂上了一块手写的牌子，写着一个巷子的名字。你付的六十点走的慈善科目，账面看起来合规。' },
+        { label: '举牌，转手卖给出价更高的人',
+          run: { money: 75, track: { sin: 2, renown: -1 } },
+          after: '转手赚了七十五点，买家走的是侧门，没有登记姓名。一周后那条下水道被正式登记为集团资产，编号末尾加了一个字母，拍卖记录里那一行也改了措辞。' },
+        { label: '不举牌，把整份拍卖名单拍下来',
+          run: { intel: 3, chips: 1 },
+          after: '名单上有一半的名字你查不到任职记录，另一半里有三位是研究所的在编。照片存在私人目录下，没有备份。晚宴结束后名单的原件被收走，收走的人没有当场清点页数。' },
+      ] },
+    { id: 'v10', portrait: 'portrait-ghost', district: 'exchange', title: '邻座交易员桌上那杯没动过的咖啡',
+      text: '邻座的交易员今天没来，桌上那杯咖啡还是满的，杯壁上的水珠已经干了。系统里他的工位状态是「在岗」，下单记录停在前天下午三点，最后一笔是卖空自己的部门。保洁绕过了那张桌子，像有人交代过。他椅背上搭着一件外套，袖口别着工牌，工牌的照片被磨得看不清了。',
+      options: [
+        { label: '替他平掉那笔空单',
+          run: { money: -30, track: { loyalty: 2, renown: 1 } },
+          after: '平仓花了三十点，亏损记在部门公共账上。三天后那位交易员的工位状态改成了「外派」，咖啡杯被收走了，外套还挂在椅背上，谁也没有去动它。' },
+        { label: '照他的记录跟着做一笔',
+          run: { money: 50, track: { sin: 2 } },
+          after: '你跟进的仓位两天后翻了一倍。结算时清算行多收了一笔解释不清的手续费，账单上写着你的部门编号。第三天你那张椅子旁的外套不见了，工位也被清空。' },
+        { label: '把他的键鼠拆下来，翻一遍本地日志',
+          run: { intel: 4, vitality: -1 },
+          after: '本地日志里最后一条是导出操作，导出的对象是整层楼的门禁名单。文件落地在交易所的一台公用终端上，那台终端的摄像头正好坏了一整个下午。' },
+      ] },
+    { id: 'v11', portrait: 'portrait-su', district: 'exchange', title: '交易大厅电子屏上闪过的乱码',
+      text: '下午两点整，大厅最大的那块电子屏闪出一行乱码，持续四秒，随后恢复成正常的报价流。四个人抬头看了一眼，又低下头。值班工程师说这是信号干扰。你在乱码里认出了自己的工号，数字顺序被打乱过，打乱的规律像按了某种排程。屏幕侧面贴着一张已经过期的检修标签，日期是上周三。',
+      options: [
+        { label: '找值班工程师要原始日志',
+          run: { intel: 3, chips: 1 },
+          after: '日志里那四秒被标成校验失败，来源端口指向研究所园区。你抄下端口号，工程师当天申请了换岗，换岗理由写的是身体不适，第二天他没有来上班。' },
+        { label: '上报为设备故障，不深究',
+          run: { track: { loyalty: 2 }, money: 15 },
+          after: '故障报告批下来时附带了一笔十五点的绩效补贴。第二天那块屏换了一块新的，位置也挪了，挪到了大厅另一侧，看报价要转身，多走七步。' },
+        { label: '把乱码抄下来，找苏纹对一遍排程',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '苏纹看了一眼就明白，说这是排程系统在提示名字被移出名单。她给了你一张笼络类指令牌，说牌比名单管用，名单上的人她管不了，牌给谁她还能定。' },
+      ] },
+    { id: 'v12', portrait: 'portrait-yu', district: 'exchange', title: '清算行走廊里一个从没被叫到的号码',
+      text: '清算行的叫号屏今天坏了一半，只显示单数。你拿到的是四十七号，前面的四十六号从上午九点坐到下午两点，一次也没被叫到。她手里那叠材料最上面一格是空的，只有装订线勒出的印子。保安换了三次岗，每次换岗都在看她。走廊尽头的饮水机空了，没人来换。',
+      options: [
+        { label: '把自己的号让给她，替她进去问',
+          run: { track: { renown: 2, loyalty: -1 }, money: -20 },
+          after: '柜台查不到她的登记记录，材料等于不存在。你垫了二十点帮她把手续补了一遍，回执上她写的是另一个姓氏。她把最上面那页抽走，剩下的留给了你。' },
+        { label: '不动，只记下她的排队号码和材料规格',
+          run: { intel: 3 },
+          after: '你记下号码，两天后这串数字出现在一份内部涉密清单里。那位女士再没出现在清算行走廊，保安也从三班改成了两班，中午那一班撤掉了。' },
+        { label: '找郁南枝的助理插一次队',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'capital', tier: 3 } },
+          after: '助理直接把你带到三楼。出来时郁南枝让助理塞给你一张资本类指令牌，说插队这件事按集团规矩要付利息，牌就是利息，她还让你别把号给别人。' },
+      ] },
+    { id: 'v13', portrait: 'portrait-scientist', district: 'lab', title: '研究所三号门禁空掉的十一分钟',
+      text: '三号门禁在凌晨出现十一分钟空档，监控显示这段时间没有人进出。但你能闻到一股不属于这里的消毒水味，比平时那种淡，带一点铁锈。走廊尽头的液氮管结了一层白霜，霜上有一枚很浅的鞋印，尺码比你的小。值班记录上这十一分钟被人用竖线划成了两段，划得很匀。',
+      options: [
+        { label: '进去看那十一分钟里有什么',
+          run: { intel: 4, vitality: -2, track: { sin: 1 } },
+          after: '里面一间小样本间的门虚掩着，架上空了一格，标签还挂在边上。你出来时霜已经化了，鞋印也没了，权限记录里只留下你进去四分钟，剩下七分钟写成了设备自检。' },
+        { label: '把空档上报，换一次功劳',
+          run: { track: { loyalty: 3, power: 1, sin: -1 } },
+          after: '安保科当天封了三号门禁，加装一道闸机。文件上你的名字排在程砚前面，她看过后什么也没说，只在附件上补了一行字，写着当班值守人为彭戬。' },
+        { label: '不动，只记下气味和值班表',
+          run: { intel: 2, gear: 1, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '值班表上那十一分钟的值守人是彭戬。三天后他在旧货梯口叫住你，塞给你一张扩张类指令牌，说这层楼该有人接手，牌他本来是要交上去的。' },
+      ] },
+    { id: 'v14', portrait: 'portrait-peng', district: 'lab', title: '伦理审查黑箱里的一枚编号',
+      text: '黑箱里有一个编号，标注是「志愿者」。编号对应的名字你有印象，是三个月前在这条走廊和你点过头的人。档案柜的锁是新换的，钥匙孔边缘还有划痕。彭戬站在门口的阴影里，手一直插在兜里，说这一箱今天不归他管，钥匙在楼上。柜顶的灰上有一道抹痕，像被人伸手够过。',
+      options: [
+        { label: '打开完整档案',
+          run: { intel: 5, track: { sin: 1, loyalty: -1 } },
+          after: '档案里写着自愿终止，签字的手和别人不是同一支笔，压痕的方向也和人名对不上。你把编号抄下来，柜门关上时锁舌弹得比别的柜子响，走廊的灯同时闪了一下。' },
+        { label: '把编号抄下来，交给监事会',
+          run: { track: { loyalty: 3, renown: 1, sin: 1 } },
+          after: '监事会收了材料，一周后回执写着程序合规。那个编号在系统里改成了已结项，签字人换成了戴思远，抄送名单里却有你的工号，此前你没在流程里出现过。' },
+        { label: '装作没看见，转身离开',
+          run: { intel: 1, track: { sin: -1 } },
+          after: '你走到电梯口才发觉手心是湿的。第二天黑箱被人搬走了，柜子还在，锁孔里塞着一小团纸，纸上什么都没写。那位和你点过头的名字，此后再没出现在花名册上。' },
+      ] },
+    { id: 'v15', portrait: 'portrait-scientist', district: 'lab', title: '一只被退回又被转寄三次的样品',
+      text: '一只编号被涂改过的样品被退回，退回原因一栏写着「收件人已不存在」。签收栏是空的，等着被填。样品箱上贴着三次转寄的标签，最上面那张是昨天才贴的，胶还没干透。程砚的工位空着，显示屏没关，屏保上是一行跑不完的编号，滚到某个位置会顿一下。',
+      options: [
+        { label: '替程砚签下这个名字',
+          run: { gear: 2, track: { power: 2, sin: 2 } },
+          after: '签完你去实验室还箱子，程砚在门后等着，只问你签的是谁的名字。她收下样品，把编号那一栏重新写了一遍，写完之后把原标签撕下来烧掉，灰留在瓷盘里。' },
+        { label: '把样品直接销毁',
+          run: { intel: 1, track: { sin: -1, renown: 1 } },
+          after: '销毁流程走了两小时，炉温记录留了底。第二天退回单上多了一行系统备注，写着物品状态已更正。第三天研究所把你调出这个流程，交接人换成了新来的一个人。' },
+        { label: '把样品送到监事会',
+          run: { track: { loyalty: 3, sin: 1 }, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '闻铎亲自过问这件事，让苏纹给你一张清洗类指令牌，说这条线该收尾了，别让它再转寄第四次。样品当天入库，入库单编号写在你的名下，收件人一栏空着。' },
+      ] },
+    { id: 'v16', portrait: 'portrait-peng', district: 'lab', title: '恒温箱里多出来的第七格',
+      text: '恒温箱第七格本来空着，今天打开时里面放着一支标记为「已使用」的试剂管。管壁上有指纹，指纹的方向是从内往外擦的。巡检单上这一格连续三天都写着「无内容」，签的都是同一个缩写，笔画比其他人粗，写的时候笔尖压得很重。箱门内侧的密封条上沾了一小段纸纤维。',
+      options: [
+        { label: '把试剂管带走，做一次分析',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '分析结果显示成分为常规缓冲液，唯一异常的是批号属于三年前。你把结果锁进私人目录，管子在当晚熔掉了，熔样登记上写的名字不是你的，工号却对得上。' },
+        { label: '照巡检单填「无内容」，关上箱门',
+          run: { track: { loyalty: 2, sin: -1 }, vitality: 1 },
+          after: '当天巡检单顺利通过复核。第二天第七格里放着的是一支空管，签缩写的人换了笔迹，写法更轻。你把两次巡检单都留了一份复印，编号正好接得上，中间没有断号。' },
+        { label: '把这一格单独报给程砚',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '程砚看完没说话，只把恒温箱的权限转到你名下。当晚彭戬送来一张扩张类指令牌，说这格空位该换主人了，牌是他从安保科的例会上顺手带出来的。' },
+      ] },
+    { id: 'v17', portrait: 'portrait-dai', district: 'lab', title: '被同色墨水涂掉的一行实验记录',
+      text: '交接记录上有一行被人用同色墨水涂掉，涂得很密，对着灯也看不出原来写的是什么。这一页的其他行都填得工工整整。值班员的签名还在，日期比前一行晚了两天。实验室的除湿机一直响，声音像有人隔着墙翻纸。你把纸端起斜看，涂痕的走向是自左向右，写字的人应该是左手。',
+      options: [
+        { label: '用显影剂把这一行还原',
+          run: { intel: 5, track: { sin: 1, loyalty: -1 } },
+          after: '还原出来的是一句关于样本销毁数量的记录，数字和你手上那份清单差了三。你把差异抄在一张便签上，第二天显影剂被列为非在册试剂，领用要两级签字。' },
+        { label: '把这一页整张留底，不还原',
+          run: { intel: 3, chips: 1 },
+          after: '留底件扫描时多生成了一份缓存，落在实验室公用服务器上。三天后那份缓存被系统自动清理，清理日志里的操作人是一个已经注销的临时工号，痕迹留在你这份留底上。' },
+        { label: '问值班员这两天发生了什么',
+          run: { track: { loyalty: 1, renown: 1 }, intel: 1 },
+          after: '值班员说他不记得自己签过这一页，但他的工号确实在。第二天他换了工牌挂绳，颜色和别人的不一样，值班表也改了，他的名字从夜班挪到了白班最后一个格。' },
+      ] },
+    { id: 'v18', portrait: 'portrait-peng', district: 'lab', title: '夜班表上被红笔圈起来的名字',
+      text: '夜班表贴在更衣室门后，有七个名字被红笔圈过，其中一个是你。圈线画得很轻，像怕被人看到。表上这个人连续值了十一天夜班，中间没有休。更衣柜最下面一层的柜门半开着，里面挂着一件没取走的白大褂，口袋鼓着一小块，像塞了一张折过很多次的单子。',
+      options: [
+        { label: '接下这十一天的班，一口气值完',
+          run: { intel: 3, vitality: -2, track: { power: 1 }, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '第十一天清晨彭戬来交接，给你一张清洗类指令牌，说这个岗位本来该有两个人，另一个位子空了很久。交接记录上你只签了姓，名那一栏留给他补，他也没补。' },
+        { label: '找安保科问圈线是谁画的',
+          run: { intel: 2, track: { loyalty: 1 } },
+          after: '安保科查不到落笔人，只说这张表是手抄的副本。原件那一份已经没有七个名字，只剩四个，剩下的三个位置留着红笔的印子，纸背也透出了同样的红。' },
+        { label: '照常上班，不作任何调整',
+          run: { track: { sin: -1 }, vitality: 1 },
+          after: '你照常值了三天，红圈被擦掉了两个。第四天那把空柜子的门被人从里面锁上了，锁芯是新换的，钥匙没交到更衣室，也没人问起那件白大褂去了哪里。' },
+      ] },
+    { id: 'v19', portrait: 'portrait-fixer', district: 'slum', title: '下雨天里排队等着打开的一只排水阀',
+      text: '雨落进来变成泥，队伍从街口排到巷尾，所有人都在等同一个排水阀被打开。阀门的钥匙在集团手里，开阀的申请单在你部门。前面那个抱着孩子的女人已经站了四十分钟，孩子的鞋底泡得发白。队伍里没有人说话，只有雨水敲铁皮的声音，一直没停过。',
+      options: [
+        { label: '批了这份申请，今天就把阀打开',
+          run: { money: -25, track: { renown: 3, loyalty: -2 } },
+          after: '阀开了两个小时，水退了半条街，巷口的人陆续散掉。审批单上你用的是代签，费用走的部门杂项，扣了二十五点。第二天部门质询会上没人提这件事，那位女人也没再来道谢。' },
+        { label: '把申请转给灰市，让他们去开',
+          run: { money: 35, track: { sin: 1, renown: 1 } },
+          after: '老鸦的人当天下午就把阀拧开了，收了你三十五点。巷口多了一块手写的牌子，写着下次找谁。你部门的申请单在系统里一直挂着，第三天自动作废，理由栏没人填。' },
+        { label: '不批，把申请压到期限结束',
+          run: { track: { loyalty: 2, renown: -2, sin: 1 } },
+          after: '申请在系统里挂了七天自动作废。第八天那条巷子的排水口被居民自己砸了个洞，修单落在你的部门，维修预算比那份申请贵三倍，审批人还是你。' },
+      ] },
+    { id: 'v20', portrait: 'portrait-lu', district: 'slum', title: '无证诊所柜台上并排放着的两份账单',
+      text: '陆晚给你包完伤口，把两份账单并排放着。一份是你该付的，另一份的付款人写着「穹顶集团，代付」。听诊器挂在椅背上，管子上缠着胶布。里屋有病人在咳，声音很轻，像刻意压着。她把笔放在两份账单中间，没有推给任何一边，自己转身去收药盘。',
+      options: [
+        { label: '付自己那份，把另一份撕掉',
+          run: { money: -20, track: { renown: 2, sin: -1 } },
+          after: '陆晚把撕掉的纸收进抽屉，说代付的那份她每个月都要撕一次。里屋的咳声在你出门时停了。你花了二十点，回执上写的项目是常规诊疗，编号是空的。' },
+        { label: '签下集团代付的那份',
+          run: { track: { sin: 1, loyalty: 1 }, money: 15 },
+          after: '签完账上多了十五点补贴。陆晚看着你签名，没说什么，只是把听诊器换了个方向挂。第二天她门口多了一张集团统一发放的价目表，上面有三种药被划掉了。' },
+        { label: '两份都付，问她代付是给谁用的',
+          run: { money: -40, intel: 3, track: { renown: 1 }, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '陆晚给了你一张写满编号的处方单，说这是她攒的人情。她把一张笼络类指令牌压在账单底下，说牌比钱好使，找她看病的人里有一半是拿着这种牌来的。' },
+      ] },
+    { id: 'v21', portrait: 'portrait-tie', district: 'slum', title: '整栋楼一夜之间换掉的电表',
+      text: '整栋楼的电表昨天全被换过一遍，新表走得比旧表快。换表的人没留工单，只在中庭贴了一张手写的通知，说系统升级。住户围在通知下面看，谁也不说话。楼梯口那盏灯还是坏的，第二天也没人来修。中庭地上的包装带没收拾，印着一家已经注销的厂名。',
+      options: [
+        { label: '查这批电表的采购来源',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '采购单走的是一家注销过的供应商，收货人栏写的是你的部门。你把单号记下，第二天通知被人撕了，包装带也扫干净了，只有电表还在走，走得比前一天还快。' },
+        { label: '把新表读数上报，要求重新核算',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '核算组回了误差在允许范围。电费照收，但这一栋的读数在系统里被单独标了颜色。你拿到了核算组长的工号，他三天后调去了另一条线，回你邮件的人换了名字。' },
+        { label: '私下找铁贵，让他组织人把旧表装回去',
+          run: { track: { power: 2, sin: 1 }, money: -20 },
+          after: '铁贵当晚带人装回了十一块旧表，收了你二十点的人工。三天后他没有出现，工位上的水杯还在。旧表在第二个星期又被换掉，这次换表的人带了保安。' },
+      ] },
+    { id: 'v22', portrait: 'portrait-fixer', district: 'slum', title: '灰市摊位上压着的一张手抄名单',
+      text: '老鸦的摊位上摆着自己抄的名单，抄在旧报纸背面，字很小。名单上的人都在这一周消失，名字旁边写着日期和一个数字。他用一块压板压着那张纸，风一吹就压一下，动作熟练得像做过很多次。摊位后面堆着没拆的货箱，箱角有用刀划过的记号，一共七道。',
+      options: [
+        { label: '出钱把名单买下来',
+          run: { money: -45, intel: 3, track: { renown: 1 } },
+          after: '名单到手后你核了三个名字，都查得到记录，只是状态改成了外派。老鸦收钱时没抬眼，把压板也一起给了你。第二天他的摊位空了半天，货箱的划痕从七道变成了八道。' },
+        { label: '要求老鸦别再抄这份名单',
+          run: { track: { loyalty: 1, sin: -1 } },
+          after: '老鸦把报纸折起来收进怀里，说这一份本来就只抄给自己看。第二天摊位换了位置，人和货都不见了半天，回来时报纸背面是白的，压板换了一块新的。' },
+        { label: '照名单上的顺序留言给上面',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '你的留言当天就有人回。回信的附袋里装着一张清洗类指令牌，附言只有四个字，写着清完为止。你按顺序核了一遍名单，最后一行留的是你的名字，日期还没填。' },
+      ] },
+    { id: 'v23', portrait: 'portrait-tie', district: 'slum', title: '装卸工会门口并排放着的三把空椅子',
+      text: '工会门口摆着三把空椅子，椅面上放着名字和工号，人却不在。铁贵说是请假，请假条是他自己写的。椅子旁边的地砖被人重新铺过，颜色比别处新。他说话时一只手一直在盘那串钥匙，盘到第三圈时金属碰出一声轻响，他停了一下，又接着盘。',
+      options: [
+        { label: '要三份请假条的复印件',
+          run: { intel: 3, chips: 1 },
+          after: '三份条子的日期是同一天，笔迹不一样但压痕一致，像照着一张描的。铁贵给了你复印件，原件当天烧了，烧完的纸灰倒进了门口那只装水的桶里，桶面浮着几片没化开的黑边。' },
+        { label: '替那三个人把工位调回原来位置',
+          run: { track: { renown: 2, loyalty: -1 }, money: -25 },
+          after: '调位花了二十五点走关系。三个人当中有两个回来了，第三个的名字从名册上消失了。回来的两个人不怎么说话，其中一个把椅子从门口搬进了里屋，之后再没搬出来。' },
+        { label: '什么也不做，把椅子的位置记下来',
+          run: { intel: 1, track: { sin: -1 } },
+          after: '第二天椅子还在，名字被人擦掉了一半。地砖上的新色差也淡了，像被人重新压过。铁贵把钥匙收进了兜里，见到你时先开口说了别的，那三把椅子此后再没有放过名字。' },
+      ] },
+    { id: 'v24', portrait: 'portrait-lu', district: 'slum', title: '巷口突然挂上牌子的那间诊室',
+      text: '巷口那间临街的铺面昨天挂上了诊所的牌子，执照号是真的，法人是陆晚。铺面原本是仓库，门口堆着没搬走的木箱。今天早上有一个穿灰雨衣的男人在门口站了半小时，没进门，也没走。雨衣的下摆沾着泥，泥的颜色和这条巷子里的不一样，比这里的深。',
+      options: [
+        { label: '进去问陆晚这是谁开的',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '陆晚说执照是别人替她办的，她只在上面签了名。雨衣男人当天下午又来了，手里多了一个没封口的纸袋。她收下了纸袋，把牌子摘下来擦了擦，又挂回去，位置往左挪了一寸。' },
+        { label: '替她把牌子摘下来，暂缓开业',
+          run: { track: { renown: 2, loyalty: -1 } },
+          after: '牌子摘下来放到铺面里，第二天又被挂回去了。这次门框上多了一道新刷的漆，颜色和原来不太一样。门口的木箱少了两只，箱子底下的地面扫得很干净，连脚印都没有。' },
+        { label: '守在对面，等那男人离开再跟一段',
+          run: { intel: 4, vitality: -1 },
+          after: '男人最后进了集团侧门，刷卡进去的，卡面没有照片。你记下时间，回程时发现那间铺面门口的木箱已经搬空，地上留着一圈箱底的印子，比箱子本身小一号。' },
+      ] },
+    { id: 'v25', portrait: 'portrait-tie', district: 'docks', title: '三号泊位底下压着的一张手写货单',
+      text: '铁贵让工会的人封了三号泊位两小时，理由是机械检修。检修单是手写的，笔迹和上周那份一模一样。压在最下面那张货单上有一个你熟悉的收货章，日期比检修申请还要早一天。潮水味顺着通风口一路飘到办公室，码头上没有人卸货，吊机停着不动，钩子悬在半空里晃。',
+      options: [
+        { label: '掀开货单看完整的收货记录',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '收货方是研究所园区，货名写的是废弃耗材。你抄下批号，两小时后泊位解封，那张货单不见了。铁贵说他自己也没见过这单子，检修单也跟着换成了新的一张，编号是连着的。' },
+        { label: '照单放行，什么也不过问',
+          run: { money: 40, track: { loyalty: 1, sin: 1 } },
+          after: '放行当天账上多了四十点。铁贵之后再没提这件事，只是在食堂见到你时把烟换到了另一只手。第三天那批货的收货记录被系统标成已结项，经办人一栏填的是你的部门。' },
+        { label: '把检修单的漏洞报上去',
+          run: { track: { loyalty: 3, renown: 1, power: 1 }, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '安保科奖励了你的举报，附袋里放着一张扩张类指令牌。铁贵被谈话一次，回来后把三号泊位的钥匙换了一把，新钥匙他谁也没给，挂钩上空了两天。' },
+      ] },
+    { id: 'v26', portrait: 'portrait-wen', district: 'docks', title: '引航票价表上一个临时的空档',
+      text: '温仕成在码头边的茶摊上给你看了一页价目表，明天凌晨两点到四点会有一个空档，系统价格会掉到平时的三成。他说这个空档不是他做的，是排程里本来就有的。茶杯边上有一圈盐渍，海风一直往这边吹，价目表的纸角被风掀起来，他用手一直压着没让它翻过去。',
+      options: [
+        { label: '吃下这个空档，转手卖出去',
+          run: { money: 65, track: { sin: 2 } },
+          after: '空档里你转了三笔引航额度，赚了六十五点。第二天这个时段被人从系统里删掉了，只剩一条改单记录，改单人的工号是空的，操作时间卡在系统维护那一分钟里。' },
+        { label: '把空档报给合规部',
+          run: { track: { loyalty: 2, renown: 1 }, money: 15 },
+          after: '合规部以系统故障处置，奖了你十五点。温仕成再没请你喝茶，价目表也换了新的版本，新表上的时段被人用尺子重新划过，凌晨两点到四点那一栏整段涂掉了。' },
+        { label: '不要空档，只要他手上那张指令额度',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'capital', tier: 2 } },
+          after: '温仕成掏出一张资本类指令牌，说他名下最后一张额度就是这个。他说完把茶钱一起结了，走的时候把那张价目表撕了，撕完的纸片都塞进了茶摊的火炉里。' },
+      ] },
+    { id: 'v27', portrait: 'portrait-enforcer', district: 'docks', title: '冷库门口新挂上去的第二把锁',
+      text: '工业港区的冷库门口多了一把新锁，旧的还挂在旁边，没摘。值班员说这是安保科加的，理由是上周少了两箱货。但你查到那两箱货的签收人就在港区当班，今天还在，工牌挂得好好的。冷库门缝里往外冒白气，在门槛上结了一层薄冰，值班员一直站在冰没有化的那一侧。',
+      options: [
+        { label: '找值班员要上周的点货记录',
+          run: { intel: 3, chips: 1 },
+          after: '点货记录上少的两箱货被改成了破损报废，签字人是安保科的临时代签。你把这份记录单独留了底，第二天点货记录换了新本子，旧本子上的页数比装订线少了两页。' },
+        { label: '当面找那位签收人对质',
+          run: { track: { power: 2, renown: 1 }, vitality: -1 },
+          after: '对方承认货没少，是先把货挪到了三号库。你要求写书面说明，字据当晚落在了你的抽屉里，写字的纸是冷库的出入单背面，背面还有没擦净的油印。' },
+        { label: '什么都不查，把新锁的编号记下',
+          run: { intel: 2 },
+          after: '锁的编号在系统里查不到备案。三天后这把锁换了位置，挂到了另一扇门上，旧锁也被摘走了一只。值班员的工牌换成了新的，照片上他比现在胖一点，应该是早年拍的。' },
+      ] },
+    { id: 'v28', portrait: 'portrait-fixer', district: 'docks', title: '两个集装箱之间夹着的一只纸箱',
+      text: '两个集装箱之间夹着一只纸箱，箱角被雨水泡软了一半，胶带是新的。箱子上没有运单，只写了一个编号，和灰市那边用的一种编号格式很像。夜班的灯只照亮一半场区，另一半一直黑着，没有人往那边走。吊机今天没开，轨道上落着一层细灰，灰上没有脚印。',
+      options: [
+        { label: '拆开箱子看一眼',
+          run: { intel: 4, gear: 1, track: { sin: 1 } },
+          after: '箱子里是成套的队服，胸口的标识被拆掉了，线头还是新的。你取走一件当证物，剩下的原样封回去。第二天箱子还在原处，封胶带的方向换了，从横着贴变成了斜着贴。' },
+        { label: '把箱子搬到值班室登记',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '值班室登记为无主货物，放在货架第二层。三天后编号被人认领，认领人一栏填的是集团的一个内部部门，签收人只写了一个姓，签名很潦草，看不出是什么字。' },
+        { label: '把编号传给老鸦，问他认不认',
+          run: { intel: 2, money: 25, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '老鸦一眼就认出来了，付了你二十五点情报钱，还塞给你一张清洗类指令牌，说这批货不是他的，但有人要清。你回头去看，那只纸箱已经不在了，场区的地面也扫过。' },
+      ] },
+    { id: 'v29', portrait: 'portrait-tie', district: 'docks', title: '装卸工会门口摆出来的临时入会表',
+      text: '工会门口摆着一张临时入会表，要求填姓名、工号、部门担保人。担保人一栏预填的是你的名字，墨迹比表上其他地方新。铁贵在里屋打电话，声音压得很低。表上已经有十七个签名，最后三个的日期是今天。表格用一颗钉子钉在门板上，钉帽是新的，门板上还留着旧钉孔。',
+      options: [
+        { label: '把自己的名字划掉，重新填一份担保人',
+          run: { track: { loyalty: 2, renown: 1, sin: -1 } },
+          after: '新表当天贴出去，签名的少了四个。铁贵出来看了一眼，什么也没问，把旧表收进了柜子。晚上你路过工会，门板上那颗新钉帽已经被取走了，只剩一个圆形的印。' },
+        { label: '认下担保，把十七个人收进名下',
+          run: { track: { power: 3, loyalty: -2, sin: 1 } },
+          after: '十七个人归你调度，第二天工会台账上你的名字被单独列了一行。铁贵电话里的那个人再没打过来，铁贵自己倒是在食堂排了一次队，站在你后面，没打招呼。' },
+        { label: '把这张表拍下来，交给人事部核对',
+          run: { intel: 3, track: { loyalty: 1 } },
+          after: '人事部查出三个工号不存在。表格被回收重制，担保人那一栏改成了部门集体。铁贵被叫去问了一次话，回来时手上那串钥匙少了两把，他没提去哪了。' },
+      ] },
+    { id: 'v30', portrait: 'portrait-enforcer', district: 'docks', title: '凌晨被叫停的一次卸货作业',
+      text: '凌晨的卸货到一半被叫停，理由写的是区域调压，但港区的气压表没有任何波动。吊机停在半空，货悬在离地三米的地方晃。值班主管拿着对讲机站了很久，一句话也没说出去，直到远处一列黑车开进来。车厢的窗全是黑的，没有牌照，进场的速度比园区里任何一辆车都快。',
+      options: [
+        { label: '上前要求出示叫停依据',
+          run: { track: { power: 2, loyalty: -1 }, intel: 2 },
+          after: '依据文件是现场打印的，编号跳号。主管当众道歉，那条货最后被吊回了船上，去向不明。你把跳号的数字记下，第二天的值班表上，这位主管的名字换到了别的时间段。' },
+        { label: '退到库房后面，把整个过程录下来',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '录像里黑车没有牌照，下来的人进的是港区最深的那间办公室，门开的时候里面有灯光漏出来。你留了备份，原件当天删了。录像里报时的钟比你的表慢三分钟，一直是这个差。' },
+        { label: '按流程补一张区域调压的记录',
+          run: { track: { loyalty: 3, sin: 1 }, money: 20 },
+          after: '记录补齐后账面上多出二十点加班补贴。主管第二天调去了别的班次，对讲机留在桌上，电池还是满的。气压表的记录纸也换了新的一卷，旧卷的末段被剪掉了。' },
+      ] },
+    { id: 'v31', portrait: 'portrait-wen', district: 'orbit', title: '过境申报单上多出的一个章',
+      text: '轨道港的过境申报单上多出一个章，章的样式和集团常用的不一样，边线更细。同一天有三份申报都盖了这个章，出发地一栏写着穹顶外。窗口里的人把单子翻过去又翻回来，最后让你先在等候区坐一会儿。挂钟的秒针卡了两下。',
+      options: [
+        { label: '坐着等，什么都不问',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '四十分钟后有人把单子送回来，章已经被压平。申报通过，但那三份记录的出发地被改成了无人区。' },
+        { label: '把章的形状描在便签上',
+          run: { intel: 2, chips: 1 },
+          after: '便签收进内袋。晚上你对比了自己的空白指令，发现边缘纹路有一部分对得上。' },
+        { label: '直接要求见盖章的人',
+          run: { track: { power: 2, loyalty: -1 }, grantCard: { n: 1, path: 'capital', tier: 3 } },
+          after: '出来的是温仕成。他说这三份本来就是你名下的空额，走完就给你一张资本类指令牌，界别比别人的高一档。' },
+      ] },
+    { id: 'v32', portrait: 'portrait-yuke', district: 'orbit', title: '候船厅里的一件湿雨衣',
+      text: '候船厅的椅子上搭着一件还在滴水的雨衣，水滴落在地砖上，聚成一小片。厅里没有下雨，外面也没有下雨。雨衣的口袋翻出来一半，里面是一张对折的纸。广播每隔十分钟报一次同样的班次号，那个班次今天没有到港。',
+      options: [
+        { label: '把雨衣交给失物处，纸不看',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '失物处登记为无主物品，编号排在当天第七件。三天后雨衣被领走了，领取人签名一栏只画了一道横。' },
+        { label: '取出那张纸，看上面写了什么',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '纸上是一串坐标和一小时的时间。你核对了当天的班次表，那个时间里没有任何船只停靠。' },
+        { label: '守着雨衣等它的主人',
+          run: { intel: 2, vitality: -1, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '两小时后雨客进来取雨衣，看了你一眼，把一张清洗类指令牌压在座椅上。她说这张牌一直找不到合适的持有者。' },
+      ] },
+    { id: 'v33', portrait: 'portrait-enforcer', district: 'orbit', title: '登船口被退回的一件行李',
+      text: '登船口的检查台上放着一件被退回的行李，锁扣完好，标签上是集团内部编号。检查员说这件行李的申报重量和实际不符，差了三公斤。行李的主人已经上船了，船还没走，停在那里，引擎一直没关。',
+      options: [
+        { label: '当场开箱验看',
+          run: { intel: 4, gear: 1, track: { sin: 1 } },
+          after: '箱内是三层叠好的资料盒，最下面一层压着一枚旧工牌。检查员在旁记录时手抖了一下，多写了一个零。' },
+        { label: '照实重报重量，让行李随船走',
+          run: { track: { loyalty: 2 }, money: 20 },
+          after: '改单费二十点，行李被送上船。船开走十分钟后，那件行李的名称在系统里被改成了普通耗材。' },
+        { label: '扣下行李，通知安保科来取',
+          run: { track: { loyalty: 3, power: 1 }, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '安保科当晚取走行李，奖励里附了一张扩张类指令牌。行李的主人没有下船，船照常离港。' },
+      ] },
+    { id: 'v34', portrait: 'portrait-sal', district: 'orbit', title: '停机坪边的一排空油桶',
+      text: '停机坪边上一排油桶，编号连号，缺了中间三个。缺号的位置地面积着一层新灰，没有人扫。萨尔蹲在旁边翻一只桶盖，看到你之后把桶盖盖了回去，动作不快也不慢。远处的塔台灯在转，光扫过来时她的脸是白的。',
+      options: [
+        { label: '问她那三个桶去哪了',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '萨尔说桶是空的，被人提前拖走了，拖走时地面留了辙。你沿着辙找到一堆被烧过的编号牌。' },
+        { label: '帮她一起把桶盖全部复位',
+          run: { track: { renown: 2, loyalty: -1 }, vitality: -1 },
+          after: '十二只桶盖全部盖好。第二天这排桶被整体拖走，编号顺序重排，缺号的事没人再提。' },
+        { label: '把缺号记下来，报给港区管理',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '港区管理回复说这批桶已经报废。你在报废单上看到签收人，是上周刚被外派的一个工号。' },
+      ] },
+    { id: 'v35', portrait: 'portrait-wen', district: 'orbit', title: '一张提前售出的引航票',
+      text: '系统里有一张引航票在出发前七十二小时就被售出，购票人一栏空着。售票窗口的日志显示这张票是用工号购买的，不是名字。今天登船名单上没有对应的乘客，票也没有退。售票员一直在擦那块有机玻璃。',
+      options: [
+        { label: '按票号追查购票工号',
+          run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '工号属于研究所的一个已注销编制。你查到最后一次使用记录，时间在三个月前，地点是三号门禁。' },
+        { label: '把这张票作废，登记为空票',
+          run: { track: { loyalty: 2 }, renown: -1 },
+          after: '作废申请当天通过。晚上售票员的工位换了人，玻璃也换了一块新的。' },
+        { label: '自己买下这张票，保留登船权',
+          run: { money: -50, intel: 2, grantCard: { n: 1, path: 'capital', tier: 2 } },
+          after: '花五十点接手后，票面自动换成你的名字。温仕成随后送来一张资本类指令牌，说有了票， boarded 的事才好谈。' },
+      ] },
+    { id: 'v36', portrait: 'portrait-enforcer', district: 'orbit', title: '塔台里换掉的一个频率',
+      text: '塔台的通讯记录里，昨晚有一段频率被换成了备用频道，持续十九分钟。值班记录上写着设备自检，但自检的表格没有填。塔台玻璃上有一块地方被擦得特别亮，比别处干净，像有人贴着玻璃往外看了很久。',
+      options: [
+        { label: '调出那十九分钟的录音',
+          run: { intel: 5, track: { sin: 1, loyalty: -1 } },
+          after: '录音里只有一段报数，数字和你手上指令卡的编号格式一致。播到第十四个数时录音断了。' },
+        { label: '把值班记录补完整，按自检结案',
+          run: { track: { loyalty: 2, sin: 1 }, money: 15 },
+          after: '补录后结案，账上多了十五点夜班费。塔台当班的人第二天升了一级，见到你时点了下头。' },
+        { label: '查这十九分钟里穹顶外的天气',
+          run: { intel: 3, gear: 1 },
+          after: '那段时间穹顶外晴，气象记录上却标着酸雨。你顺手取了一件野外装备，编号也是空的。' },
+      ] },
+    { id: 'v37', portrait: 'portrait-ring', district: 'ring', title: '第七段的巡检签字',
+      text: '环带第七段的巡检记录上，签名栏是空的，日期却已经填好。荀戒把笔递给你，说这一段的灯坏了三盏，写不写都一样。通道壁上凝着一层水汽，顺着焊缝往下爬，在脚边汇成一小汪。风机转得比平时慢。',
+      options: [
+        { label: '签，但先在壁面上做一处标记',
+          run: { intel: 3, chips: 1 },
+          after: '你在一处焊缝上划了道浅痕。三天后那段壁面被重新喷漆，痕和焊线一起消失了。' },
+        { label: '不签，要求先把灯修好',
+          run: { track: { loyalty: 2, renown: 1 }, vitality: -1 },
+          after: '灯在第五天修好，换下来的灯泡里有一只是新的。荀戒把签字栏划掉，重新抄了一份。' },
+        { label: '签，并顺手把这一段划进自己的巡查区',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '巡查区变更当天生效。荀戒把一段旧钥匙交给你，另附一张扩张类指令牌，说这一段迟早要有人真管。' },
+      ] },
+    { id: 'v38', portrait: 'portrait-enforcer', district: 'ring', title: '结冰的管道旁的一双鞋',
+      text: '环带维修层的管道结了冰，冰层里冻着一双工装鞋，鞋带还系着。值班的人说这段管线已经停用两年，没人来。管道保温层的作业单贴在墙上，最新一张的日期是昨天，签名是空的。',
+      options: [
+        { label: '把冰敲开，把鞋取出来',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '鞋里塞着一卷纸，展开是一份手写清单，记着十二个编号。冰化得很快，走廊里一整天都是水。' },
+        { label: '把作业单拍照，报给安保科',
+          run: { track: { loyalty: 3, renown: 1 } },
+          after: '安保科当天封了这条支线，冰被整体切除运走。你在封条编号上看到了自己的部门代码。' },
+        { label: '照作业单把这段管线重新标为在用',
+          run: { intel: 2, money: 25, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '重标流程走完，账上多了一笔二十五点的维护费。荀戒给了你一张笼络类指令牌，说这条线归你管，人也就归你管。' },
+      ] },
+    { id: 'v39', portrait: 'portrait-ring', district: 'ring', title: '环带深处的第九个检修口',
+      text: '环带共有十个检修口，第九个今天被焊死了，焊口还没有完全冷却。焊工说这是临时处置，怕有人从外面进。可这个检修口朝内，外面进不来。焊条头丢在地上，一共三根，长短都差不多。',
+      options: [
+        { label: '找焊工要作业指令号',
+          run: { intel: 3, chips: 1 },
+          after: '指令号是真的，申请人是安保科，理由栏写着防渗。你把号码抄下，第二天这条申请从系统里消失。' },
+        { label: '把焊口切开一条缝',
+          run: { intel: 4, gear: 1, vitality: -1, track: { sin: 1 } },
+          after: '缝里吹出来的风是温的，带着一点消毒水味。你取了一件随身装备，焊口当晚又被补上，补得更厚。' },
+        { label: '向上申请把这一段整体停用',
+          run: { track: { loyalty: 2, power: 1 }, money: -15 },
+          after: '停用申请批下来，花十五点做了一次安全评估。评估人当天没进现场，报告写了四页。' },
+      ] },
+    { id: 'v40', portrait: 'portrait-ghost', district: 'ring', title: '值班室里的两台收音机',
+      text: '环带值班室桌上摆着两台收音机，一台开着，另一台没插电也在响。荀戒说他只听得见开的那台。第二台的声音很小，像隔着几层布，播的不是任何频道。窗外的环带外壁一直在响，是风压。',
+      options: [
+        { label: '把那台没插电的拆开看',
+          run: { intel: 4, gear: 1, track: { sin: 1 } },
+          after: '机壳里除了正常的电路，多了一块不属于这个型号的板子，编号被砂纸磨过。你把它收进口袋。' },
+        { label: '把它关掉，用布盖起来',
+          run: { track: { sin: -1, loyalty: 1 }, vitality: 1 },
+          after: '盖布之后值班室里静了很多。第二天这台机器被搬走，原来的位置落了一层圆形的灰印。' },
+        { label: '坐下来，听完整段广播',
+          run: { intel: 3, vitality: -1, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '广播里念了七个工号，最后一个是你。念完之后荀戒递来一张清洗类指令牌，说他也不知道这牌是从哪台机器里掉出来的。' },
+      ] },
+    { id: 'v41', portrait: 'portrait-enforcer', district: 'ring', title: '被拆走的三个螺栓',
+      text: '环带一段护栏上有三个螺栓被拆走，孔里塞着纸，防止锈。检修单上这段护栏的状态是完好。荀戒说他上个月巡过这一段，那时候螺栓还在。护栏外侧就是几十米落差的井，风从下往上灌。',
+      options: [
+        { label: '把纸取出来看',
+          run: { intel: 3, track: { sin: 1 } },
+          after: '纸上写着一串数字和两个字，字迹是新的。你把纸留下，当天护栏被整体换掉。' },
+        { label: '自己用备件把螺栓补上',
+          run: { vitality: -1, track: { renown: 2, loyalty: -1 } },
+          after: '补好之后你在护栏上拍了照。第二个月安全检查通了，检验员看的是你的照片，不是现场。' },
+        { label: '按检修单结案，不补',
+          run: { track: { loyalty: 2, sin: -1 }, money: 15 },
+          after: '结案后这段护栏被标为「待更换」，进了下一年度的预算。你因此拿到一笔十五点的绩效。' },
+      ] },
+    { id: 'v42', portrait: 'portrait-ring', district: 'ring', title: '环带外的敲击声',
+      text: '今天凌晨，环带外壁被人从外面敲了七下，间隔很均匀。值班的人记录了时间，没有记录别的。壁面的震动传感数据是有的，但系统把它标成了风压扰动。荀戒站在壁边听了一会儿，没有说话。',
+      options: [
+        { label: '申请一次外壁巡检',
+          run: { intel: 4, track: { power: 1 }, money: -20, vitality: -1 },
+          after: '巡检花了二十点和一整夜。外壁上有一处新擦痕，位置在检修口旁边，长度和你手掌差不多。' },
+        { label: '按风压扰动结案，不动',
+          run: { track: { loyalty: 2, sin: 1 } },
+          after: '记录按扰动归档。第二天那条传感曲线被系统重算了一遍，峰值低了一半。' },
+        { label: '照着七下的间隔回敲，等人回应',
+          run: { intel: 3, track: { sin: 1 }, grantCard: { n: 1 } },
+          after: '外面没有回敲，但第二天值班室门缝里塞进一张空白指令牌，没有登记人，编号却是有效的。' },
+      ] },
+    { id: 'v43', portrait: 'portrait-mem', district: 'memory', title: '柜台前的一笔逾期记忆',
+      text: '无面把一份逾期未取的记忆放在柜台上，寄存人是三年前的一个工号，最后一次刷卡记录也是三年前。存单背面写着一句提示，说若逾期，交由任意一位在职中层处置。柜台的玻璃隔断上有一道裂纹，用透明胶贴着。',
+      options: [
+        { label: '取出这段记忆，自己用',
+          run: { intel: 5, track: { sin: 2, loyalty: -1 } },
+          after: '记忆里是一间会议室的完整录音，讲话的人里有三个你认得。取完之后你连做了两晚同一个梦。' },
+        { label: '照流程销毁，填一份处置单',
+          run: { track: { loyalty: 3, sin: -1 }, money: 15 },
+          after: '处置单签完，柜员给了你十五点的流程补贴。存单被剪角归档，编号当天从索引里删除。' },
+        { label: '把存单转给寄存人的家属，附一份说明',
+          run: { track: { renown: 3, loyalty: -2 } },
+          after: '家属来取的时候带了一张旧的工牌照片。她说那个人三年前被转去了外派，此后没有回过家。' },
+      ] },
+    { id: 'v44', portrait: 'portrait-ghost', district: 'memory', title: '同一段记忆的两次寄存',
+      text: '系统里查到同一段记忆被寄存过两次，间隔半年，寄存人不同，编码完全一致。第二次的寄存人今天还在柜台边站着，等着取东西。她把寄存凭条折成很小的方块，握在手心里，一直没松开。',
+      options: [
+        { label: '把两次寄存的记录都调出来',
+          run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '两份记录的内容一致，但第一次那份的备注栏多了一行，写着「请勿归还本人」。你把两页都留了底。' },
+        { label: '先让她把东西取走，事后再查',
+          run: { track: { renown: 2, loyalty: -1 } },
+          after: '她取出东西后走得很快，没有回头。当天晚上那份第一次的寄存记录被人手动改成了「已合并」。' },
+        { label: '当场告知她这段记忆有第二份',
+          run: { intel: 3, track: { renown: 1, sin: 1 }, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '她愣住了，随后把手上那张凭条给了你。凭条背面写着你的工号，另附一张笼络类指令牌，说是早准备好的。' },
+      ] },
+    { id: 'v45', portrait: 'portrait-mem', district: 'memory', title: '被划掉的一行索引',
+      text: '记忆索引里有一行被划掉，红线画得很直，用的不是索引笔。这一行对应的编号在系统里仍然有效，只是查不到内容。柜员说这种情况每个月都有两三笔，一般不会有人来问。除湿机在响，声音比昨天大一些。',
+      options: [
+        { label: '顺着编号去查对应的寄存人',
+          run: { intel: 4, track: { sin: 1, loyalty: -1 } },
+          after: '寄存人的工号属于研究所园区，最后一次出现是三号门禁的空档那天。红线是谁画的查不到。' },
+        { label: '把这一行抄进自己的记录，报个异常',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '异常工单被受理，两天后回复「索引维护」。那行红线被擦掉了，编号也一并注销。' },
+        { label: '要求柜员把这一行复原',
+          run: { track: { power: 2 }, intel: 2, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '复原申请走了特殊通道，当天通过。柜员在交接时给你一张清洗类指令牌，说这类索引最好别再有人碰。' },
+      ] },
+    { id: 'v46', portrait: 'portrait-ghost', district: 'memory', title: '寄存柜里的一段空白',
+      text: '寄存柜里有一段被标记为已存满的记忆，读出来却是空白，整整三十分钟。柜员说不可能是空的，存满标记要占满配额才会亮。你把空白读了一遍，中间能听见一点环境声，像有人在走路，脚步很轻。',
+      options: [
+        { label: '把环境声单独抽出来比对',
+          run: { intel: 3, chips: 1 },
+          after: '脚步声的间隔是固定的，和环带通道某一段的实地步频一致。你把音频留下，其余销毁。' },
+        { label: '按空白处理，销掉这个柜位',
+          run: { track: { loyalty: 2, sin: 1 }, money: 15 },
+          after: '柜位注销当天就腾给了别人。第二天新寄存人来了三次，每次都在同一时间。' },
+        { label: '留下这段空白，不销柜位',
+          run: { intel: 1, track: { sin: -1 } },
+          after: '你替这段空白续了三年。柜员看了你一眼，说续费的人一般都不会再来第二次。' },
+      ] },
+    { id: 'v47', portrait: 'portrait-mem', district: 'memory', title: '柜台外的一次代取',
+      text: '有人持代理书来取一段记忆，代理书上的委托人和被委托人写的是同一个人。柜员核了三遍，两张证件都是真的，照片也都对得上。来取的人穿得普通，站在柜台前不动，等柜员先说话。',
+      options: [
+        { label: '照代理书放行',
+          run: { money: 30, track: { loyalty: 1, sin: 1 } },
+          after: '放行之后账上多了三十点手续费。当天的操作日志里，这条记录被标记为「本人代取」。' },
+        { label: '要求现场做一次生物核对',
+          run: { intel: 3, track: { loyalty: 2, renown: 1 } },
+          after: '生物核对通过，但数据在系统里留了第二份快照。来取的人走后，柜员把快照单独拷了一份。' },
+        { label: '暂缓放行，先查委托人的在岗状态',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '委托人在岗状态显示「外派」，已满两年。你把查询单留着，那位来取的人第二天又来了一次。' },
+      ] },
+    { id: 'v48', portrait: 'portrait-ghost', district: 'memory', title: '被归还的一段记忆',
+      text: '柜员说今天有一位客户主动归还记忆，理由是「用不上了」。归还流程要销毁原文，客户却要求先放一遍。放的时候他闭着眼，跟着默念。柜台上那台老播放器的指示灯一直在闪，比平时暗。',
+      options: [
+        { label: '允许先放一遍，再销毁',
+          run: { intel: 3, track: { renown: 1 }, vitality: -1 },
+          after: '播放时长比登记的多出四分钟。客户走时说了句「果然被剪过」，之后这段记忆还是销了。' },
+        { label: '要求按流程直接销毁，不放',
+          run: { track: { loyalty: 2, sin: -1 } },
+          after: '客户签名时手停了两秒。销毁后系统里这条记录的状态改成「已了结」，经办人是你。' },
+        { label: '先把这段记忆复制一份，再销毁',
+          run: { intel: 5, track: { sin: 2 } },
+          after: '复制件存在不联网的离线介质里。原件的销毁凭证齐全，客户第二天收到回执时语气很平静。' },
+      ] },
+    { id: 'v49', portrait: 'portrait-sal', district: 'salvage', title: '熔炉前的一批入炉单',
+      text: '回收场的熔炉今天多烧了一批，入炉单上写着「办公设备」，共二十七件。班头把单子压在台钳下面，说这批是加急。炉口的铁皮被烤得发红，热气把墙上的排班表吹得一直翻。萨尔在边上数箱子，数到二十三以后就不数了。',
+      options: [
+        { label: '拿单子核对件数，找出少的那几箱',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '四箱没有入炉记录，编号连号。班头说这四箱已经出库，出库单上的签字是安保科的。' },
+        { label: '照单签收，把加急单存档',
+          run: { track: { loyalty: 2, sin: -1 }, money: 20 },
+          after: '签收后账上多了二十点加急补贴。三天后这批单子被系统标为「已结项」，编号连号的那四箱再没出现过。' },
+        { label: '拦住入炉，要求开箱逐件清点',
+          run: { track: { power: 2, renown: 1 }, vitality: -1 },
+          after: '清点花了四小时，炉子降了温重新点过一次。第二天班头在场区见到你，把安全帽往下压了压。' },
+      ] },
+    { id: 'v50', portrait: 'portrait-enforcer', district: 'salvage', title: '堆场里的一块旧工牌',
+      text: '堆场里翻出一块旧工牌，照片被酸雨蚀掉了，只剩下半张脸。卡上的部门和你的部门一样，工号差一位。班头说这批牌是上个月从环带收上来的，一起有十二块。这块牌被扔在传送带边上，没人捡。',
+      options: [
+        { label: '把十二块牌都找出来，核对工号',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '十二个工号里有七个还能在系统里查到，状态都是外派。另五个工号从来没有登记过。' },
+        { label: '只把自己的那块收好，不再多问',
+          run: { intel: 1, track: { sin: -1 } },
+          after: '牌子收进抽屉最下层。当天下午收料的人来问过一句有没有见到旧牌，你说没有。' },
+        { label: '把这块牌交给班头，登记入库',
+          run: { track: { loyalty: 2 }, intel: 2 },
+          after: '登记为「待销毁硬质废物」，编号当天生效。第二天这十二块牌的去向全改成了已熔。' },
+      ] },
+    { id: 'v51', portrait: 'portrait-ghost', district: 'salvage', title: '称重台上多出来的三公斤',
+      text: '回收场的称重台今天连续三车都比台账重三公斤，误差稳定得像被调过。班头说是台面结露，让工人擦了一遍，读数没变。称重台旁边的记录屏一直在跳数字，从下往上滚，每次滚到同样的位置会顿一下。',
+      options: [
+        { label: '重新做一次空载校准',
+          run: { intel: 3, chips: 1 },
+          after: '空载读数是负的三公斤。校正记录当天打印出来，班头把那张纸折起来放进口袋，没归档。' },
+        { label: '按现值过秤，把差额记账',
+          run: { money: 35, track: { sin: 1, loyalty: 1 } },
+          after: '差额进了部门的小账，你分到三十五点。第二台秤在三天后换掉了，换下来的那台还在库里。' },
+        { label: '把这三车的来源单独报一次',
+          run: { track: { loyalty: 3, renown: 1 }, grantCard: { n: 1, path: 'expand', tier: 2 } },
+          after: '来源是研究所园区的清运单。安保科表扬了你的细致，附袋里装着一张扩张类指令牌，说这片区域可以扩一扩。' },
+      ] },
+    { id: 'v52', portrait: 'portrait-sal', district: 'salvage', title: '冷库外被丢掉的雨衣',
+      text: '冷库外面挂着三件雨衣，都是同一批的，标签上的尺码一样。今天是晴天，穹顶内侧已经半个月没有降雨。萨尔说这三件是昨天从货箱里翻出来的，还有一股药味。冷库门开着一条缝，里面的白气往外走得很慢。',
+      options: [
+        { label: '取一件雨衣做残留检测',
+          run: { intel: 4, gear: 1, track: { sin: 1 } },
+          after: '残留里有两种不属于回收场的清洗剂，其中一种只在研究所订得到。你把结果抄下来，雨衣还回去了。' },
+        { label: '把三件雨衣全部烧掉',
+          run: { track: { sin: -1, loyalty: 1 } },
+          after: '烧掉的过程很短，只剩三颗金属扣。班头看了灰烬一眼，说这种事以后不用他签字。' },
+        { label: '顺着标签查货箱的来源批次',
+          run: { intel: 3, money: 25, grantCard: { n: 1, path: 'purge', tier: 2 } },
+          after: '批次来自三号库的加急货。班头付了你二十五点封口，另塞一张清洗类指令牌，说这箱子的事他到不了上面。' },
+      ] },
+    { id: 'v53', portrait: 'portrait-out', district: 'salvage', title: '场区围栏上的一个缺口',
+      text: '回收场靠穹顶一侧的围栏上有个缺口，边上的网被剪断，断口是新的。缺口外面就是酸雨层，地面上却没有雨蚀的痕迹，只有一串脚印进出。巡检记录上这一段的最近一次检查是两周前，签的是班头。',
+      options: [
+        { label: '沿脚印走进去看一段',
+          run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '脚印通向一个被沙土半埋的箱体，箱盖上的编号你在港区货单上见过。你没开箱，只拍了照。' },
+        { label: '当天把缺口焊上并报备',
+          run: { track: { loyalty: 3, renown: 1 } },
+          after: '焊补当天完成。第二天围栏上多了一道监控线，缺口位置也被记进了巡检重点。' },
+        { label: '不填，只在班头的巡检表上抄一份日期',
+          run: { intel: 2, track: { sin: 1 } },
+          after: '两周前的巡检表是你抄的。三个月后这一栏成了唯一能证明缺口存在过的记录。' },
+      ] },
+    { id: 'v54', portrait: 'portrait-enforcer', district: 'salvage', title: '一台还没销毁的终端',
+      text: '回收场的压机今天停了一次，停的时候压着的是一台还能开机的终端。屏幕上留着最后一条登录记录，工号是研究所的。班头站在压机旁边抽烟，说这台本该昨天就碎掉的，机器坏了，责任在他。',
+      options: [
+        { label: '趁停机把终端里的数据拷出来',
+          run: { intel: 5, track: { sin: 2 }, vitality: -1 },
+          after: '数据里有一份出库清单，和港区三号泊位的货单能对上。你把清单单独存好，终端按原样压碎了。' },
+        { label: '通知研究所派人来取终端',
+          run: { track: { loyalty: 2, renown: 1 }, money: 15 },
+          after: '研究所当天来人，签收时绕过了你的名字。班头被扣了一天工时，压机三天后才修好。' },
+        { label: '把压机修好，照原定流程销毁',
+          run: { track: { loyalty: 3, sin: -1 } },
+          after: '压机修好后终端被压成一块，日志由你签字确认。研究所那边再没提过这台设备。' },
+      ] },
+    { id: 'v55', portrait: 'portrait-yuke', district: 'outside', title: '穹顶外带回来的一只箱子',
+      text: '雨客把一只箱子放在你办公室门口，箱体上凝着一层酸雨的壳，摸上去是脆的。他说箱子里没有东西，他只是要一个存放的地方。箱子的封条是新的，压印着一个你在空白指令上见过的编号格式。',
+      options: [
+        { label: '收下箱子，不问里面',
+          run: { intel: 2, track: { sin: 1 } },
+          after: '箱子在你办公室放了六天。第七天早上它不见了，地板上留着一个干燥的方框印。' },
+        { label: '拒收，让他带去别处',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '雨客什么也没说，把箱子提走了。三天后穹顶内侧贴出一张寻物启事，丢了的是同一只型号。' },
+        { label: '收下，并在当天打开看一次',
+          run: { intel: 4, chips: 1, track: { sin: 1 }, grantCard: { n: 1, path: 'purge', tier: 3 } },
+          after: '箱子里是一叠空白指令卡的毛坯，边角还没切齐。雨客后来给你一张清洗类指令牌，说这批货本来就有你的一份。' },
+      ] },
+    { id: 'v56', portrait: 'portrait-out', district: 'outside', title: '穹顶内侧的雨线',
+      text: '穹顶内侧今天出现一条细窄的雨线，从接缝处漏下来，落在一条很少人走的货运通道上。通道地面被腐蚀出一小片白点。维保的人来看过一次，说这是正常渗漏，一周内会修，然后就走了。',
+      options: [
+        { label: '自己带人先把这条通道封了',
+          run: { track: { renown: 2, loyalty: -1 }, money: -20 },
+          after: '封道花了二十点。第二天维保的人还是没来，通道已经被你封着，通行的人绕了两百米。' },
+        { label: '把渗漏点拍照报修，等流程',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '报修单在系统里排到了下周。这条雨线在第三天自己停了，白点被人用砂纸磨掉。' },
+        { label: '顺着渗漏点往上查接缝的检修记录',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '这段接缝的检修记录缺了两次，缺的那两次正好是对应那条货运通道停用的时间段。' },
+      ] },
+    { id: 'v57', portrait: 'portrait-sal', district: 'outside', title: '气闸里的一名陌生人',
+      text: '凌晨的气闸打开过一次，进来一个人，登记表上写的是外派返岗，工号却查不到。他穿着外出的防护服，袖口有一圈白色的盐霜。值守的人让他先在缓冲间等，等了两个小时，他一直站着没坐。',
+      options: [
+        { label: '让他先坐下，给他补一份登记',
+          run: { track: { renown: 2, loyalty: -1 }, vitality: -1 },
+          after: '登记补完，工号还是查不到。他走的时候把防护服留在了缓冲间，里面没有一个口袋。' },
+        { label: '按无登记人员流程上报',
+          run: { track: { loyalty: 3, renown: 1 } },
+          after: '安保科十分钟后就到，把人带走。当天缓冲间做了一次全面消杀，记录上写着发现不明来源盐渍。' },
+        { label: '把防护服的袖口剪下一块留存',
+          run: { intel: 3, gear: 1, track: { sin: 1 } },
+          after: '袖口的盐霜成分里有酸雨里才有的元素。你把样本收好，防护服第二天被统一销毁。' },
+      ] },
+    { id: 'v58', portrait: 'portrait-yuke', district: 'outside', title: '一张被雨水泡开的手写单',
+      text: '穹顶内侧的排水沟里捞出一张手写单，纸已经泡开，字迹还能认出一半。上面记的是十二个日期和一个重复出现的编号。捞的人把单子摊在水泥台上晾，风一吹就卷边。你往下看时，编号里有三个和空白指令的格式一样。',
+      options: [
+        { label: '把单子烘干，完整抄一份',
+          run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '抄完你核了三个日期，都对应着董事会例会的第二天。原单在交班时被扔进了普通垃圾。' },
+        { label: '把单子交给合规部',
+          run: { track: { loyalty: 3, renown: 1 } },
+          after: '合规部收下并出具了收条。一周后回复「无可核实事项」，那十二个日期没有一个被提起。' },
+        { label: '把单子放回排水沟，不带走',
+          run: { intel: 1, track: { sin: -1 } },
+          after: '你走开不到十分钟，那张单子就不见了。排水沟当天下班前做了一次清掏。' },
+      ] },
+    { id: 'v59', portrait: 'portrait-out', district: 'outside', title: '观测窗外的一个人影',
+      text: '穹顶的观测窗每隔一段时间自动除雾，除到第四格时，外面站着一个人影，距离约三十米。除雾程序走完，人影就不在了。观测记录里那四秒的图像被系统标成了噪点，连续三天都是同一格。',
+      options: [
+        { label: '调出那四秒的原始图像',
+          run: { intel: 5, track: { sin: 1, loyalty: -1 } },
+          after: '原始图像里人影的防护服上有编号，样式和雨客那件一样。三天的图像里，那个人换了三个姿势。' },
+        { label: '把这一格列入禁止除雾区域',
+          run: { track: { loyalty: 2, sin: -1 }, money: 15 },
+          after: '设置当天生效，第四格不再自动除雾。之后观测记录里再没出现过噪点，窗面上多了一层灰。' },
+        { label: '亲自去观测窗外侧走一段',
+          run: { intel: 3, vitality: -2, track: { sin: 1 }, grantCard: { n: 1, path: 'expand', tier: 3 } },
+          after: '外侧只有新积的沙尘和一串被吹散的脚印。回程时值守的人给了你一张扩张类指令牌，说穹顶外的地迟早要有人去占。' },
+      ] },
+    { id: 'v60', portrait: 'portrait-sal', district: 'outside', title: '穹顶接缝处的一枚螺栓',
+      text: '萨尔在穹顶接缝处捡到一枚螺栓，螺帽上有编号，和环带检修口用的是同一批。螺栓是新的，没有锈，螺纹上还留着油脂。她把螺栓放在你手心里，说这东西不该出现在外面，说完就转身走了。',
+      options: [
+        { label: '把螺栓拿去环带比对',
+          run: { intel: 4, track: { sin: 1 } },
+          after: '环带第十号检修口的备件箱里少了一枚同批螺栓，缺件记录上写着「自然损耗」。你把两者都对上了。' },
+        { label: '把螺栓交回库房，登记为拾得物',
+          run: { track: { loyalty: 2, renown: 1 } },
+          after: '登记编号当天生成。三天后这枚螺栓被列入待销毁清单，和你当天交上去的那批一起处理。' },
+        { label: '留着螺栓，记住萨尔交给你的动作',
+          run: { intel: 2, track: { power: 1 }, grantCard: { n: 1, path: 'control', tier: 2 } },
+          after: '螺栓收进抽屉。半个月后萨尔捎来一张笼络类指令牌，说潮那边的人让她转交，理由是她自己也没听懂。' },
+      ] },
+  ];
+})();
+
+/* ===== game/events-v6.js ===== */
+/* 随机事件扩充（第二批，80 条）。 */
+(function () {
+  'use strict';
+
+  window.EVENTS_V6 = [
+    { id: 'y1', portrait: 'portrait-monitor', district: 'tower', title: '四十一层多出来的一段走廊',
+      text: '电梯在四十一层停下，你按的是三十三层。门开时外面多出一段走廊，封条是新的，胶还没干透。走廊尽头有人背对着你打电话，念的是你的编号前四位，念完又念了一遍。门开始合，你的手压在开门键上，没有松。你在这一层没有任何会议，通讯录里也查不到这一层的任何一个人。走廊那盏灯每两秒闪一次，和你的心跳对不上。',
+      options: [
+        { label: '走出来，看清打电话的人', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '你走出来，走廊只有八米，尽头是一扇消防门。那人挂了电话回头看你，说：你走错楼层了。他从你身边过去，外套上是消毒水的味道。消防门后面的门牌号，在这栋楼的图纸上不存在。' },
+        { label: '按住关门，回到自己的楼层', run: { track: { loyalty: 1, sin: -1 } },
+          after: '你回到三十三层，电梯正常得让人不安。当天下午，物业发来一份通知，说四十一层正在封闭检修，感谢配合。通知没有落款，抄送名单里有你的工号，排在第一个。' },
+        { label: '申领这段监控，报给监事会', run: { intel: 2, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '调阅申请批下来了，给你的却是一段空白。技术科说那十一秒的录像被覆盖过一次，用的是你自己的权限。你把空白录像原样交上去，闻铎收下，什么也没问。' },
+      ] },
+    { id: 'y2', portrait: 'portrait-su', district: 'tower', title: '日程表上被划掉的那一格预留',
+      text: '苏纹把明天的日程投在墙上，十四点半那一格用红笔划掉了，划得很直。她说这一格是上周预留的，预留人一栏写着你的名字，可没人记得是谁预留的。她问你是恢复，还是就这么留着。走廊里还站着一个人，工牌翻了过去，看不见名字，他说有件事，只要你签个字就行。',
+      options: [
+        { label: '让她恢复这一格，自己坐进去', run: { intel: 3, track: { sin: 1, renown: 1 } },
+          after: '你坐进去，房间里只有一张椅子和一台老终端。终端开机后弹出一份待签列表，都是你的权限能签的字。你签了两个，第三个跳出一行红字：该目标已失效。你退出来时，日程表上那一格又消失了。' },
+        { label: '把这一格让给走廊里的人', run: { grantCard: { n: 1, path: 'control' }, track: { loyalty: -1, sin: 1 } },
+          after: '那人进去待了十七分钟，出来时把一张指令卡放在你桌上，说这是苏纹让转的。牌面目标是「城北调度室」，路径是操控。他走后，你在日程系统的操作日志里看到，这一格是三分钟前才出现的。' },
+        { label: '什么都不改，照原样过星期三', run: { track: { loyalty: 1, sin: -1 } },
+          after: '你什么也没做，第二天十四点半你在工位上喝完了一杯茶。当天晚上，苏纹把那张日程表归档了，归档备注是「无效预留」。走廊里那个人没有再来，工牌翻过去的那一面，也没人见过。' },
+      ] },
+    { id: 'y3', portrait: 'portrait-dai', district: 'tower', title: '合规部送来的一份带痕复印件',
+      text: '合规部送来一份复印件，一共九页，第八页边角有一块咖啡渍，形状和你上个月交上去的那份一模一样。戴思远的便签贴在第一页，只有一句：请确认这份是否由你本人提交。你那份原件还在抽屉里锁着，编号是连号，中间少了一页。便签的胶已经不太粘，边角卷起来。',
+      options: [
+        { label: '确认，说是本人提交', run: { intel: 2, track: { loyalty: 2, sin: 1 } },
+          after: '你签了字，戴思远把复印件收进柜子里，说这样就行了。一周后，这份复印件出现在另一起案子的证据清单里，清单一栏写着「由本人确认，无异议」。你想起来了，那天你并没有看第九页。' },
+        { label: '否认，并要求核对原件', run: { intel: 4, grantCard: { n: 1, path: 'control' }, track: { loyalty: -1, renown: 1 } },
+          after: '戴思远把原件调出来，第八页干干净净。他停了两秒，把便签撕下来收进抽屉，又从抽屉里抽出一张操控指令卡推给你，说这份是补的程序材料。他合上本子，没有给你看记录上写的那一句。' },
+        { label: '不回应，让它在期限里作废', run: { track: { sin: 1, renown: -1 } },
+          after: '你没回。第十天，系统发来一条自动通知：逾期未确认，按原提交归档。同一天，人事那边多了一条关于你的备注，措辞很客气，只有四个字，需要观察。' },
+      ] },
+    { id: 'y4', portrait: 'portrait-yu', district: 'tower', title: '提前半天到账的一笔清算款',
+      text: '郁南枝发来一条结算通知，金额六十四点五，备注写着「预付」。你的部门这个季度没有任何预付款项。通知底下附着一行小字：当日未退回，视为接受。现在离十一点半还有四十分钟，清算行的退回通道不需要手续，也不需要理由。通知的落款时间是十一点二十九分。',
+      options: [
+        { label: '十一点半前原路退回', run: { track: { loyalty: 2, renown: 1 } },
+          after: '你在十一点二十七分按下退回键，回执号跳出来。当天下午郁南枝的助手打来电话，只说了一句：收到。第二天你的部门结算单上多了一行备注，「该席位资金往来清晰」，落款是清算行。' },
+        { label: '留下，等对方自己来认', run: { money: 65, track: { sin: 2 } },
+          after: '钱在账上待了十一天，没有人来认，也没有催收。第十二天早上，它被合并成一笔正式拨款，拨款依据一栏是空的。郁南枝在走廊里遇见你，点了一下头，像是这笔账从头到尾都跟你无关。' },
+        { label: '退一半，另一半留作保证金', run: { money: 30, intel: 2, track: { sin: 1, loyalty: -1 } },
+          after: '你退了三十二。第二天清算行发来一份简短的函，说保证金已受理，编号 Y-4471。函件最后一句话是：该笔资金不产生利息，也不接受归还。你把它夹进抽屉，和那份少了一页的原件放在一起。' },
+      ] },
+    { id: 'y5', portrait: 'portrait-clerk', district: 'tower', title: '工位被换到走廊尽头的角落',
+      text: '行政发来一份工位调整表，你的位置从十七层换到十九层走廊尽头，靠消防通道，那一片没有监控。表上写的原因是「业务需要」，签字栏空着。同一天，你的门禁多出一层权限，能打开十九层那扇一直锁着的门，权限有效期写着三十天。走廊的灯开关在门外面，你摸了一下。',
+      options: [
+        { label: '搬过去，试试那扇门', run: { intel: 3, vitality: -1, grantCard: { n: 1 }, track: { sin: 1 } },
+          after: '门后面是一间没有窗的会议室，桌上放着一份没封口的卷宗，第一页是一张清洗指令卡，目标栏空着。卷宗里夹着一张便签：补给你。你把卡收下，会议室的门在你身后自动锁上，灯灭了。' },
+        { label: '拒绝调整，要求回原工位', run: { track: { loyalty: 1, renown: -1 } },
+          after: '你提交了不同意书，行政过了四天才回，说可以维持原工位，但门禁权限已经回收。之后一周，你的部门例会被挪到了没有你名字的会议室。十七层的空调出风口正对着你的后颈。' },
+        { label: '搬过去，把这件事报给行政主管', run: { intel: 2, track: { loyalty: 2, sin: -1 } },
+          after: '行政主管看完你的报告，说这是例行轮换，全公司这个月换了四十多个工位。他把报告归了档，编号是连号里的第三份。当天下午，十九层那扇门的权限在你卡上失效了，比预计早了十天。' },
+      ] },
+    { id: 'y6', portrait: 'portrait-ghost', district: 'tower', title: '内部通讯里多出来的一个群',
+      text: '内部通讯里多了一个群，名字是一串数字，成员三十二人，全部隐藏身份，只有你的名字是公开的。群里第一条消息发自三天前，是一份排班表，每天夜里都有人被标红。今天标红的名字，是替你签过字的那个人。群里没人说话，也没人退。群里最近一条消息的时间停在昨天二十三点。',
+      options: [
+        { label: '把排班表存下来，逐日对', run: { intel: 4, track: { sin: 1 } },
+          after: '你存了整张表，对着值班记录逐日核。前七天标红的人里，有五个的工牌已经注销，注销原因都是「主动离职」。第八天夜里，排班表上标红的名字换成了你，标红时间写着凌晨四点零七分。' },
+        { label: '退群，截图留证', run: { intel: 2, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '你退出群聊的瞬间，聊天记录全部清空，只有你提前截下的三张图还在。你把图存进离线盘。第二天，那个群还在，成员变成了三十一人，公开的名字换成了一串编号，那串编号不是你的。' },
+        { label: '在群里问一句：标红是什么意思', run: { intel: 3, vitality: -1, track: { power: 1, sin: 1 } },
+          after: '消息发出去，三十二个人里没有人回。七分钟后，群里弹出一条系统提示：发起人已退出。你被默认为群主。当晚你的终端多了一次异地登录，登录地显示为环带维修层，你从没去过那里。' },
+      ] },
+    { id: 'y7', portrait: 'portrait-monitor', district: 'tower', title: '那一天电梯广播念了你的名字',
+      text: '早高峰，电梯广播忽然换了内容，念了三个名字，第一个是你，后面跟着一句「以上人员请到十七层复核」。电梯里的人都在看楼层显示器，没有人看你。你到十七层时，复核室的门开着，里面没有桌子，也没有人，只有一把椅子对着墙。复核室墙上有块屏幕，黑着，边框很新。',
+      options: [
+        { label: '进去，把复核走完', run: { intel: 3, vitality: -1, track: { loyalty: 2, sin: 1 } },
+          after: '你坐下，墙上一块屏幕亮了，滚动播放你过去三个月的考勤。播完跳出一行结论：无异常。灯灭了，门还开着。你出来时，走廊里有个人刚把名单上的第二个名字划掉。' },
+        { label: '不进去，直接回工位', run: { track: { loyalty: -2, sin: 1 } },
+          after: '你转身走了。当天下午，复核室的那份名单被归档，你那一栏写着「未出席」。三天后，你的门禁少了一层权限，人事没有通知，是刷卡时才发现刷不开的。' },
+        { label: '先找苏纹，问是谁排的名单', run: { intel: 2, track: { power: 1, loyalty: -1 } },
+          after: '苏纹翻了排期系统，说这次广播是自动触发的，触发条件是门禁异常，不是人为安排。她把触发记录导给了你，记录显示触发时间比你进电梯早了四分钟，那时你还在楼下排队。' },
+      ] },
+    { id: 'y8', portrait: 'portrait-su', district: 'tower', title: '董事会秘书推过来的那一页纸',
+      text: '例会开始前，苏纹把一页纸推给你，是下周的旁听名单，六个名字，第五个是你。她说这一页只印了一份，会后统一销毁。名单上第四个人，上个月刚被调去环带维修层，理由一栏写着「个人申请」。他的工位昨天清空了，桌上那盆植物还在。纸是单面打印的，背面透出上一份文件的字。',
+      options: [
+        { label: '收下，会上照名单发言', run: { track: { loyalty: 2, power: 1, sin: 1 } },
+          after: '你按名单的顺序发了言，说了三段话，都是记录好的口径。散会时，主持人点了一下你的工号，说留下。会议纪要里，你发言那一段被完整摘录，而其他人说的都只有一句「略」。' },
+        { label: '问她第四个人现在在哪', run: { intel: 4, track: { sin: 1 } },
+          after: '苏纹说她不知道，但给了你一个内线号码，说这是环带那边的排班线，半夜打才有人接。当晚你打过去，接电话的人报了三个部门名，没有一个是你的，然后挂断。你记下了背景音里的滴水声。' },
+        { label: '把纸推回去，说这次不参加', run: { track: { renown: -1, loyalty: -1 } },
+          after: '你把纸推回去。苏纹没说什么，把它收进文件夹，走到碎纸机前站了一会儿，最后走了回来。第二天你没有被安排旁听，也没有被安排任何事。整周你的日程表都是空的，空得很整齐。' },
+      ] },
+    { id: 'y9', portrait: 'portrait-yu', district: 'exchange', title: '收盘前三分钟的一张错价单',
+      text: '收盘前三分钟，系统挂出一张错价单，买入价和卖出价写反了，挂单人一栏空着。只要点一下就能吃掉里面的差价。清算行那边没有撤单，也没有技术员上线，像是故意摆在那里。屏幕右下角有一行很小的字：仅限本席位。挂单编号连号，前一位属于一笔早已作废的委托。',
+      options: [
+        { label: '吃掉差价，立刻平仓', run: { money: 70, track: { sin: 2 } },
+          after: '你在最后四十秒平了仓，落袋七万。收盘后两小时，那张单子的挂单人补上了，是清算行自己的内部账户。第二天没有人提这件事，只是你的席位保证金门槛被悄悄调高了一档。' },
+        { label: '不碰，把截图交给清算行', run: { intel: 3, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '你把截图发过去，对方回了一句收到。第二天郁南枝让人送来一张通行条，凭它可以走一次内部结算的绿色通道，仅限一次。你以前排过四十分钟的队，这次用了两分钟。' },
+        { label: '反向挂一笔，等对方来找', run: { intel: 2, grantCard: { n: 1, path: 'capital' }, track: { sin: 1 } },
+          after: '你的反向单挂出去，四秒就被吃掉，对方的账户连编码都查不到。第二天早上，一张资本指令卡从门缝塞进来，附一张纸条：昨天那把，算你赢。字迹是左手写的，纸是清算行的专用纸。' },
+      ] },
+    { id: 'y10', portrait: 'portrait-dai', district: 'exchange', title: '一份没有归档授权的签名样本',
+      text: '审核窗口下班后，戴思远的助手送来一个档案袋，里面是你的签名样本，一共七份。其中三份不是你签的，起笔收笔学得很准，只有捺的收锋短了半分。助手说这是例行比对，结果两周后进档案，比对过程不需要你参加，也不需要你同意。档案袋的封口线是后打的，孔位对不齐。',
+      options: [
+        { label: '配合比对，并指出那三份', run: { intel: 3, track: { loyalty: 2 } },
+          after: '你把三份挑出来，助手当场登记在案，说会并入报告。两周后你调阅那份报告，结论是「样本一致性良好」。你指出过的那三份，在报告里被编号合并进了另外四份，看不出哪张是哪张。' },
+        { label: '要求调取比对程序，问谁有权取样', run: { intel: 4, track: { power: 1, loyalty: -1 } },
+          after: '你递了调阅申请，程序文本当天就送到了，采样授权一栏是空的。你顺着编号往下查，发现这批样本来自一个三个月前就注销的部门。注销文件上的签批人，姓氏和你一样。' },
+        { label: '取回样本，拒绝进入比对', run: { track: { loyalty: -2, renown: -1 } },
+          after: '你把档案袋取回来了，助手提醒你，取样是系统自动完成的，样本还有备份。你确认了这点，还是取走了。之后一个月里，你的每份文件都被要求提供两份身份证明，窗口的人说是常规抽查。' },
+      ] },
+    { id: 'y11', portrait: 'portrait-yu', district: 'exchange', title: '一笔坏账的第七次展期申请',
+      text: '一笔账挂了七次展期，每次都是同一个人签字。第八次展期申请今天到期，签批栏空白，逾期不签就自动转成核销，核销意味着债务会转到经手人头上。经手人那一栏，写的是你的编制号，尽管你从没见过这笔钱。展期单上的章每次都是同一个角度，压痕很深。',
+      options: [
+        { label: '签，把展期续上', run: { intel: 2, track: { loyalty: 1, sin: 1 } },
+          after: '你签了第八次。系统自动生成了一条备注：连续展期八次，建议复核。建议状态一直是待办，没有人处理。这笔账半年后消失了，消失的当天，你的额度上限被调高了两个百分点。' },
+        { label: '不签，让它核销', run: { money: -40, track: { renown: -1, loyalty: -1 } },
+          after: '债务按规则转到了你名下，从当月的部门预算里扣。你没提异议，扣款在第三天完成。郁南枝那边发来一份结清通知，通知末尾附了一句：此账目已封存，请勿引用。' },
+        { label: '查清前七次是谁签的', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '前七次签名是同一个笔迹，前三次用的是同一支笔，墨水型号一致。你把样本带出来比对，发现那个人在第四次展期后就被调走了。调令的签发日期，比这笔账的挂账日期还早了一天。' },
+      ] },
+    { id: 'y12', portrait: 'portrait-clerk', district: 'exchange', title: '一个专问冷门标的的陌生人',
+      text: '一个陌生人坐在交易席位旁边，问价问了一个小时，问的都是没人要的标的。他走的时候留下一张纸条，上面是一个地址和一句话：今天下午四点，来不来都行。纸条背面印着清算行的水印，编号格式是旧版的，七年前就不再使用。纸条的水印要在灯下侧着看才显出来。',
+      options: [
+        { label: '去。', run: { intel: 3, vitality: -1, grantCard: { n: 1, path: 'capital' }, track: { sin: 1 } },
+          after: '地址是交易所地下二层的旧档案室，铁柜有一半是空的。他在里面等你，递来一张资本指令卡，说是手上最后一张，目标写着「交易所旧档区」。名单他留在桌上，第一页第三行被裁掉了，他自己先走了。' },
+        { label: '把纸条交给合规部', run: { chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '合规部收下了纸条，说这属于线索移交。两天后戴思远约你谈了十分钟，问你当时为什么不追出去。你说他在打电话。戴思远在本子上记了两笔，抬头时说：那一层确实有信号屏蔽。' },
+        { label: '不去，把纸条烧掉', run: { track: { sin: 1, renown: -1 } },
+          after: '你在消防通道里把纸条烧了，水印那一角烧不干净，你用鞋底碾了两下。第二天，那个席位旁边坐了一个新的人，同样问价问了一小时，同样问的都是没人要的标的，只是没有再留纸条。' },
+      ] },
+    { id: 'y13', portrait: 'portrait-scientist', district: 'exchange', title: '广场主屏幕上的一行免责声明',
+      text: '广场主屏幕今天多了一行免责声明，说本日行情「不构成对任何主体的价值判断」。声明在屏幕底部滚动了整个上午。中午，一则公告被撤了下来，公告内容是某个部门被整体转让，买方一栏用的是编号。你部门的编号，和它只差一位。滚动的声明字号比行情数字小两号。',
+      options: [
+        { label: '查那则被撤下的公告', run: { intel: 4, track: { sin: 1 } },
+          after: '公告存活了六分钟，缓存里还留着一半。买方编号的末位是 7，你部门是 6。你往下翻，看到人员安置方案那一栏写着「整体并入，岗位保留」。方案里没有写保留多久。' },
+        { label: '把这件事告诉部门里的人', run: { track: { renown: 2, loyalty: -2 } },
+          after: '你说了，十七个人的部门，当天就有四个去人才系统更新了简历。第二天主管找你谈话，说这种事不该由你来讲。你的工位当天晚上被清走了一半绿植，行政说是季度养护。' },
+        { label: '截图存证，按兵不动', run: { intel: 3, chips: 1, track: { sin: 1, loyalty: -1 } },
+          after: '你把截图存了三份，两个离线盘一个纸质。三周后，编号末位是 7 的那个部门被整体并入了集团直属机构，安置方案和公告上写的一样。你的部门没有任何变化，只是例会改到了隔周举行。' },
+      ] },
+    { id: 'y14', portrait: 'portrait-yu', district: 'exchange', title: '拍卖会清单上的一格旧编号',
+      text: '夜间拍卖的清单里有一样东西，编号 Y-11，说明只有一行「权益类，详见内档」。标的预估价比整层写字楼还高。举牌的不是人，是七个自动席位，每次加价都精准地压在前一手之上。你手里有一张别人的委托牌，权限到今晚零点。清单上 Y-11 那一行用了加粗，别的行没有。',
+      options: [
+        { label: '跟到第三手就停', run: { intel: 3, track: { sin: 1 } },
+          after: '你在第三手停了。落槌价翻了四倍，买家是一个你查不到的托管账户。清算行当晚就完成了过户，结算速度比正常快了十一倍。第二天，Y-11 这个编号在系统里被划掉，备注是「已合并」。' },
+        { label: '用委托牌一口气抬到底', run: { money: -70, grantCard: { n: 1, path: 'capital' }, track: { power: 2, sin: 2 } },
+          after: '你抬到底，赢下标的。清算行送来的不是资产，是一张资本指令卡，附注写着「原持有方转让剩余处置权」。你回头查委托牌的主人，才发现那个委托人上周已经注销，注销申请是他自己提的。' },
+        { label: '放弃举牌，记下七个席位的出价规律', run: { intel: 4, chips: 2, track: { sin: 1 } },
+          after: '你把七次加价的时间差记下来，间隔都是 1.7 秒，误差不到百分之一。这是同一台机器的节奏。第二天，这七个席位从拍卖系统的可见名单里消失了，但出价记录还在，用的是同一台时钟。' },
+      ] },
+    { id: 'y15', portrait: 'portrait-yu', district: 'exchange', title: '清算行门口排了整整一夜的队',
+      text: '清算行门口排了一夜的队，队伍里有七八个人拿着同一份合同的复印件。合同是同一天签的，签的位置在第三页，第三页的页眉颜色和其他页不一样。早上八点开门，柜台只开了两个窗口，第一个窗口挂出的牌子写着「本日仅办理注销」。柜台后面挂着一块白板，写着今天的额度，被擦过一半。',
+      options: [
+        { label: '插队进去，问合同的事', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你挤到窗口前，柜员翻了三页就合上了，说这份合同的第三页是后补的，补页人签的是你的部门编号。你回头找那几个拿复印件的人，队伍已经散了，只留下地上一层湿脚印。' },
+        { label: '陪着排，记下每个人的工牌', run: { intel: 3, track: { renown: 1, loyalty: -1 } },
+          after: '你排了两个小时，记下六个工牌号，其中三个属于一个已经解散的子公司。你把号记在纸上，交给你认识的一个柜员，他看了一眼，说这几个人上周刚办过注销，注销原因是资产转让。' },
+        { label: '不排队，把这份合同的复印件买一份', run: { money: -25, intel: 3, track: { sin: 1 } },
+          after: '你花了一笔钱从队伍里买到一份复印件。第三页确实是后补的，骑缝章对不上。你把复印件摊在桌上看了很久，发现页眉那行小字的字号，比上一页大了半磅，像是从别处剪过来又贴上去的。' },
+      ] },
+    { id: 'y16', portrait: 'portrait-dai', district: 'exchange', title: '一份自愿放弃补偿的空白声明',
+      text: '一份自愿放弃补偿的声明摆在传送带上，一共四十份，签名整齐，日期集中在同一天。声明里提到的补偿，是下半年的岗位调整补偿。签完字的这些人，今天都还在正常上班。传送带走到尽头，等着下一道盖章，章在你手边。传送带的滚轮上缠着一根线头，转了两圈才掉。',
+      options: [
+        { label: '盖章，让流程走完', run: { track: { loyalty: 2, sin: 2, renown: -1 } },
+          after: '你盖了章，四十份声明入库。下个月岗位调整启动时，签字的人没有一个拿到补偿，他们去问，答复是本人已自愿放弃。名单里有两个人的工位，就在你隔壁。' },
+        { label: '扣下，逐份找人对笔迹', run: { intel: 4, vitality: -1, track: { renown: 2, loyalty: -2 } },
+          after: '你把四十份压了两天，抽出七份对上人。七个人里有五个说没见过这张纸。你把两份证据交到合规部，剩下的原样退回。退回当天，你收到一份岗位调整通知，调整去向写着「待定」。' },
+        { label: '抽走自己认识的那几份，其余照盖', run: { intel: 2, track: { sin: 1, power: 1 } },
+          after: '你抽走三份，塞进碎纸机，其余的全盖了。三个月后公司被查，那四十份声明的清单上没有你动过三份的痕迹。你留下的那一份复印件，纸张已经泛黄，签名那栏的墨迹比别处深。' },
+      ] },
+    { id: 'y17', portrait: 'portrait-peng', district: 'lab', title: '三号冷库门上那张没编号的封条',
+      text: '三号冷库的封条是新贴的，胶面还没干，编号栏空着。彭戬说这不是他贴的，所里今天没有人领过封条。冷库里面存着上周送来的十七份样本，温度计一直在跳，从负十八跳到负十四，再跳回去。值班表上，昨夜那班的人写着「已调岗」，调令是今天早上才补的。',
+      options: [
+        { label: '撕开封条，进去点样', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你进去点了三遍，十七份变成十六份，少的那份编号被刮掉了。冷库最深处的货架上有一层薄霜被人擦过。你把编号记下，出来时把封条按原样贴回去，胶已经不太粘了。' },
+        { label: '不动封条，先去补一张调令', run: { intel: 3, track: { loyalty: 2, sin: -1 } },
+          after: '你去人事补了那份调令的副件，副件上的时间戳和值班表对不上，早了六个小时。把副件交上去时，彭戬看了一眼，说以后这种事直接找他，然后把它锁进了自己的抽屉。' },
+        { label: '上报安保，让彭戬带队开门', run: { chips: 1, track: { loyalty: 3, power: 1, renown: -1 } },
+          after: '彭戬带了四个人来，开门、清点、录像，全程按规程走。清点结果是十七份，一份不少。他把录像封存，编号写进了记录。你站在门口，看着那份本来少掉的样本重新出现在货架上。' },
+      ] },
+    { id: 'y18', portrait: 'portrait-scientist', district: 'lab', title: '程砚递过来的一支断掉的笔',
+      text: '程砚把一支断掉的笔放在你面前，笔帽上刻着一串编号，是上一批志愿者的。她说这支笔在实验记录里出现过十九次，签的都是不同的人名，而笔的主人在第十一次之后就再没出现过。她问你，这份记录要不要按流程归档。走廊上的送样车正一辆接一辆过去。',
+      options: [
+        { label: '按流程归档，一个字不改', run: { track: { loyalty: 3, renown: 1, sin: -1 } },
+          after: '你把记录原样归了档，编号连号，看不出缺口。归档后第七天，那批志愿者名单被整体转入长期项目，状态一栏统一写着进行中。程砚把断笔收回了上衣口袋，没有再说这件事。' },
+        { label: '扣下记录，替她重做一份', run: { grantCard: { n: 1, path: 'purge' }, intel: 3, track: { power: 2, sin: 2, loyalty: -1 } },
+          after: '你重做了一份，把第十一次之后的签名并入了同一栏。程砚看完，夹了一张清洗指令卡在里面，目标写着「四号样本间值守」。她说这张是上周发下来没人接的。记录归档那天，四号间的值守换了人。' },
+        { label: '把断笔和记录一起交到伦理审查', run: { intel: 4, chips: 1, track: { loyalty: 2, power: -1, sin: 1 } },
+          after: '戴思远亲自来取件，登记完说了一句话：这批记录两年前就该到这里。审查启动了，四个月后出了结论，结论只有两页，第一页列的是流程瑕疵，第二页整页是空的。' },
+      ] },
+    { id: 'y19', portrait: 'portrait-scientist', district: 'lab', title: '培养箱编号牌上多出的一格',
+      text: '培养箱的编号牌上少了一格，编号从 14 直接跳到 16。值班员说前天还是连的。柜门上的日志显示，昨晚两点到两点四十之间有人开过箱，刷卡号是空号，门禁系统里没有这个号。你手上的温度记录写着这段时间箱内恒定，恒定得像是没人开过。墙上的值班表和这份日志差了三分钟，表是新换的。',
+      options: [
+        { label: '调出这段门禁原始日志', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '日志导出来的是一段乱码，时间戳还在。技术科说这是读卡器故障，换了个新的。你把乱码存下，用老版本的解码器跑了一遍，跑出来的是一个九位工号，前两位是研究所代号。' },
+        { label: '重新编号，把 15 号补上', run: { gear: 1, track: { loyalty: 2, sin: 1 } },
+          after: '你补了一个 15 号上去，牌子是现打的，字体对不上。第二天早上，编号牌又少了一格，这次缺的是 17 号。你把新旧两块牌子并排放着，发现它们的钻孔位置差了半毫米。' },
+        { label: '不动，把这件事写在交接班本上', run: { intel: 2, track: { renown: 1, loyalty: -1 } },
+          after: '你写了三行字，交接班本当天就被收走了，人事说要换新版。三天后新本子发下来，最后一页有一条手写的抄录，内容和你写的一样，笔迹不是你的，日期是昨天。' },
+      ] },
+    { id: 'y20', portrait: 'portrait-peng', district: 'lab', title: '一辆停在样本门外的黑色推车',
+      text: '一辆黑色推车停在样本门外，车轮上沾着泥，实验室里没有泥。推车上盖着防尘布，布角压着一张收据，收据上的时间是凌晨一点十七分，货名一栏写的是「耗材」。你查了当天所有的收货记录，没有这一单。推车的把手是温的。收据的纸边是毛的，像是从本子上撕下来的。',
+      options: [
+        { label: '掀开布，打开最上面那箱', run: { gear: 1, intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '最上面那箱是密封袋，袋子里是十几副还没拆的义体关节，编号被磨掉了。你合上箱盖，把布重新盖好。第二天早上推车不见了，门外的地面被冲过一遍，水迹是从墙根往外扫的。' },
+        { label: '拍照留证，交给彭戬', run: { intel: 2, chips: 1, track: { loyalty: 3, renown: -1 } },
+          after: '彭戬看了照片，说这条通道夜里十点断电，推车进不来。他调了后门的记录，凌晨那段时间一片空白。他把照片存进安保档案，编号后面加了两个字：待查。' },
+        { label: '绕开走，当没看见', run: { track: { sin: 1, loyalty: -1 } },
+          after: '你绕开了，走进样本间，把门带上。当天下午，你的门禁记录被系统标记为一次「例行巡检」，是你从没做过的动作。标记是你自己权限写的，写的时候你正在开会。' },
+      ] },
+    { id: 'y21', portrait: 'portrait-peng', district: 'lab', title: '一个被挖掉一页的伦理委员会名录',
+      text: '伦理委员会的名录挂在研究所一层，今天第四页被整齐地挖掉了一块，缺口边缘很平，像是用刀切的。缺掉的那一格对应三行名字，前两行还能看见半个姓。前台说早上来就那样了，监控在那段时间正好检修，检修单是上周批的。缺口的四边对着走廊的光，反光很平。',
+      options: [
+        { label: '找旧版名录，比对缺的名字', run: { intel: 4, track: { sin: 1 } },
+          after: '你在档案室的废纸箱里翻到一份三年前的旧名录，比对下来缺的是三个外聘委员。三个人的联系方式都已经注销，注销手续是同一周办的。旧名录的第四页，也被挖掉过一块。' },
+        { label: '报修，要求补全名录', run: { track: { loyalty: 2, renown: 1, sin: -1 } },
+          after: '你报了修，行政补印了一份新的，缺的那一行换成两个在职内审。补印版挂上去的当天下午，有人在新名录前站了十几分钟，把第四页那两行抄进了本子。你看见了，但没看清脸。' },
+        { label: '把缺口那块的形状描下来存证', run: { intel: 3, chips: 1, track: { power: 1, sin: 1 } },
+          after: '你把缺口描在纸上，量了尺寸。三天后，新名录上出现了同样的缺口，尺寸一模一样，位置往下移了半行。你把两张描图叠在一起，缺口重叠的部分，正好是一个完整的名字。' },
+      ] },
+    { id: 'y22', portrait: 'portrait-scientist', district: 'lab', title: '一位十年后回来的外聘专家',
+      text: '一位外聘专家来所里做技术交流，讲了四十分钟，全程没有用幻灯片，所有的数据都背下来。散场后他没走，站在三号走廊尽头看了很久那扇没有编号的门。他说他十年前在这里工作过，那扇门当时不在这。接待单上，他的到访理由写的是「学术合作」。',
+      options: [
+        { label: '带他去看那扇门', run: { intel: 3, grantCard: { n: 1, path: 'purge' }, track: { sin: 1, power: 1 } },
+          after: '他站在门前看了两分钟，说门后的东西他拆过。他从内袋里抽出一张指令卡塞给你，说这是当年剩的，他早就不做这行了。卡面目标写着「环带检修班」，路径是清洗。他当天下午就离城了。' },
+        { label: '安排他提前返程', run: { track: { loyalty: 3, renown: -1, sin: 1 } },
+          after: '你给他改签了当天最晚一班轨道船。他上船前说了一句：那扇门后面有风，你站久了能感觉到。你回所里看了一眼，门缝确实凉。接待单上他的行程被标注为「提前结束，无后续」。' },
+        { label: '把他引荐给程砚', run: { intel: 3, track: { power: 1, loyalty: -1 } },
+          after: '两个人关在会议室里谈了两个小时。出来时程砚把一份旧课题的编号抄给了你，说这是那个人当年的项目号，项目结项日期是十年前，结项结论六个字：不具备可行性。' },
+      ] },
+    { id: 'y23', portrait: 'portrait-peng', district: 'lab', title: '消防演习名单上的三个工号',
+      text: '研究所要搞一次消防演习，名单发到每个组，你组里多出三个工号，编制都在，人从来没有出现过。行政说他们是外派，外派去向一栏空着。演习当天要按名单点名，缺勤的要写情况说明，说明表已经印好了，缺勤人签字栏留白。说明表的格式和上一版有一点差别，编号少了一栏。',
+      options: [
+        { label: '按名单报缺勤，如实写说明', run: { intel: 3, track: { loyalty: 2, sin: -1 } },
+          after: '你交了三份说明，缺勤人签字栏空着。行政收下，说这种外派的一般不算缺勤，让你重写。你重写了一份，用词照旧。三份说明最后躺在档案袋里，袋子上写着「暂缓处理」。' },
+        { label: '把三个人从名单上划掉', run: { track: { sin: 1, loyalty: -1 } },
+          after: '你划掉三个工号，行政没有追问。演习当天人数报上去和名单一致，锐减三个也没人发现。两周后，这三个人中的两个出现在了另一个组的名单上，工号后面多了一个后缀。' },
+        { label: '顺着工号查这三个人存不存在', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '编内系统里三个人都在，照片都是同一底片翻印的，肩宽差了两像素。你查到他们的入职日期是同一天，入职手续是同一台终端提交的。那台终端三年前的资产编号，属于被拆掉的旧机房。' },
+      ] },
+    { id: 'y24', portrait: 'portrait-scientist', district: 'lab', title: '程砚在凌晨两点留下的便条',
+      text: '凌晨两点，程砚在你桌角压了一张便条，写着三行字，是三个实验编号。她自己已经进了无菌区，预计六小时。便条背面写着：不管哪一组数据先出来，别让第三个人知道。所里的夜班只有三个人在，一个刚换了班，一个在看监控。便条的墨迹有一处被手抹过，字还在。',
+      options: [
+        { label: '等数据，全程自己盯着', run: { intel: 4, vitality: -2, track: { sin: 1 } },
+          after: '你守了六个半小时，三组数据出了两组，第三组的曲线在第四小时断了一截。程砚出来时看了一眼屏幕，把断掉的那段单独导出，删了原始文件。她说这截本来就是不该有的。' },
+        { label: '把便条交到伦理审查备案', run: { intel: 2, chips: 1, track: { loyalty: 3, power: -1, sin: 1 } },
+          after: '戴思远收到便条后当天就来了所里，站在无菌区外面等了一个上午。程砚出来时他什么也没说，只让她补一份实验说明。那份说明的编号，比另外两组数据的编号各早了一天。' },
+        { label: '照她说的做，但把三组数据各留一份底', run: { intel: 3, chips: 2, track: { power: 1, sin: 1 } },
+          after: '你导了三份底，一份存离线盘，两份压在办公桌夹层。程砚交付数据时只交了前两份。半年后集团来查课题，第一份数据被完整采信，第二份被要求重做，第三份你始终没有拿出来。' },
+      ] },
+    { id: 'y25', portrait: 'portrait-lu', district: 'slum', title: '诊所上门送来的第二张账单',
+      text: '陆晚自己找上办公室，手里捏着一张已经付过的旧账单。账单上的金额被人改过一次，改的数字和原件差十一块，笔迹比你平时的潦草。她说这是从你们公司财务那头退回来的，退回理由写着「金额与备案不符」。改金额的那一栏，经手人编号是你的。',
+      options: [
+        { label: '承认是自己改的，把钱补上', run: { money: -15, track: { renown: 2, loyalty: -1 } },
+          after: '你补上十一块，陆晚把账单撕成两半塞进口袋，说这事算了。回公司后你才发现，那份备案的提交时间比你收到账单早两天。备案表上的签名，比你平时写得工整。' },
+        { label: '不承认，让她按原单再报一次', run: { track: { sin: 1, renown: -1 } },
+          after: '让她重报，第二次财务通过了，附属说明写着「金额已核实」。她没有再提是谁改的。两个月后，你的诊疗记录里多了一栏备注，写着「结算存在争议」，这栏以前从来没有开过。' },
+        { label: '查公司那头是谁退的单', run: { intel: 4, track: { sin: 1 } },
+          after: '退单的操作人是一个已经离职的结算员，账号还在用。你顺着会话记录往上翻，翻到一条他给别人的消息：这个人的单子先别过。消息发出去的日期，比你第一次去那家诊所还早。' },
+      ] },
+    { id: 'y26', portrait: 'portrait-fixer', district: 'slum', title: '老鸦把抽头从两成改成三成',
+      text: '你替灰市跑的那条线，抽头一直是两成。今天老鸦把你叫到巷子里，说要改成三成，从这个星期开始。他说上面换了人，他自己的份子也从三成变成四成。巷口停着一辆电车，车上两个人在等他的答复，一个在看表，一个在看你。巷子里的地面是湿的，电车没有熄火。',
+      options: [
+        { label: '答应，但要把上面的线介绍给你', run: { grantCard: { n: 1, path: 'control' }, track: { sin: 2, power: 1 } },
+          after: '老鸦愣了一下就答应了。第二天他领你去见了一个不报名字的人，对方递来一张操控指令卡，目标写着「下层三街自来水阀」。这张卡的纸质比灰市平时流水用的好得多。抽头从此三成，你没有再谈过。' },
+        { label: '不答应，这条线换人做', run: { money: -30, track: { renown: 1, loyalty: -1 } },
+          after: '你退出这条线，把原来的三个下线带走。老鸦没有拦，只是当着你的面把抽头写在墙上，还是三成。三个月后那条线散了，接手的两个人一个进了回收场，一个再也没有出现过。' },
+        { label: '答应，但要求账目每月当面对', run: { intel: 3, track: { power: 1, sin: 1 } },
+          after: '老鸦每个月十号跟你对账，头两次账目很干净。第三个月多出一笔你没见过的支出，名目写着「场地」。你问场地在哪，他说是给别人腾的地方。这句话说完，他把账本合上了。' },
+      ] },
+    { id: 'y27', portrait: 'portrait-lu', district: 'slum', title: '后巷诊所里一场没有登记的截肢',
+      text: '后巷的诊所里在动一场没有登记的手术，屋里只点了两盏灯。陆晚出来过一次，手套上是血，让你帮忙把一辆推车推到后门，推车上的东西盖着白布，形状不是人的形状，但重得不像器械。远处有巡逻车的声音，正在往这条巷子拐。远处那声音不连续，隔着两堵墙才听得出是车。',
+      options: [
+        { label: '把推车推走，推到最远的那条巷', run: { intel: 2, vitality: -1, track: { sin: 2, power: 1 } },
+          after: '你把车推到巷尾，掀开布看了一眼，是一只改装过的义体腿，编号被人刮掉了。你在原地等了一刻钟，巡逻车没进巷子。第二天，这辆车出现在回收场的拆解台上，编号那一栏已经磨平。' },
+        { label: '不推，把诊所的事报给巡逻', run: { track: { loyalty: 2, renown: -2, sin: 1 } },
+          after: '你报了，巡逻队来了三个人，在其中一盏灯下面站了一会儿，没有进屋，只贴了一张整改通知。第二天，这家诊所的窗子用木板钉上了半扇。陆晚没有问是不是你报的，你也没有说。' },
+        { label: '推走，但把车上的东西换下来一件', run: { gear: 1, intel: 2, track: { sin: 2 } },
+          after: '你换下来一只还没拆封的关节，塞进外套，剩下的推到地方。陆晚后来清点时看了你一眼，什么也没说。那只关节你一直没敢用，放在柜子里，包装上那串编号你查过一次，查不到。' },
+      ] },
+    { id: 'y28', portrait: 'portrait-enforcer', district: 'slum', title: '一张贴错了楼号的回收通知',
+      text: '一张回收通知贴在你住的那栋楼门口，楼号写的是隔壁，但名单上有你的名字，字很小，排在第九位。名单上其他人你都认识，都是这半年陆续搬走的。贴通知的人没有留联系方式，胶水抹得很厚，撕下来会带掉一层墙皮。浆糊抹得很厚，边角已经翘起一处。',
+      options: [
+        { label: '撕掉，去隔壁楼问一圈', run: { intel: 3, grantCard: { n: 1, path: 'purge' }, track: { renown: 1, sin: 1 } },
+          after: '隔壁楼的名单上也有九个名字，头一个就是你那份上排第一的。两栋楼合起来十七个人。楼里的管理员说不认得这张单子，临走却塞给你一张清洗指令卡，目标写着「三号楼夜间巡查」，说是上面发下来没人接的。' },
+        { label: '拍照留证，报给集团内审', run: { intel: 2, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '内审回了你一份受理编号，说这张通知不是集团制式，可能是仿印。你按编号又问了两次，答复都是正在核实。那面墙上的胶印留着，过了一冬也没人清过，来年下雨才泡掉。' },
+        { label: '当没看见，照旧过日子', run: { track: { sin: 1, loyalty: -1 } },
+          after: '你没有撕它，也没再看第二眼。三个月里，名单上第九位之后的三个名字都搬走了，理由栏统一写着「个人原因」。你的名字一直在第九位，纸角翘起来，字迹被雨泡过又干了。' },
+      ] },
+    { id: 'y29', portrait: 'portrait-ghost', district: 'slum', title: '楼道里轮值保管的一只药箱',
+      text: '三个地下诊所共用一只药箱，今晚轮到你保管。药箱的铜挂锁换成了一把磁扣锁，锁上印着集团医材的编号。打开看了一眼，底层多了一排没有标签的小瓶，瓶子外面还贴着一张追踪标签，标签的激活状态是开启的。挂锁的钥匙只有两把，另一把在别人手里。',
+      options: [
+        { label: '撕掉追踪标签，留几瓶备用', run: { gear: 1, intel: 2, track: { sin: 2 } },
+          after: '你把标签撕下来贴在楼下的垃圾桶上，瓶子留下三支。第二天早上那只垃圾桶不在原位，被换成了新的。三天里没人再找你，但那三支瓶子你再没敢动过，一直塞在药箱的最底下。' },
+        { label: '不拆封，原箱交给下一班', run: { track: { renown: 1, sin: -1 } },
+          after: '你把箱子原样交出去，交接时数了三遍，数目都对。下一班的医生当着你的面打开箱子，那排没标签的瓶子还在。她看了一眼就合上了，说：这批不是我们的。' },
+        { label: '把药箱整个退回给医材部', run: { track: { loyalty: 2, renown: -2 } },
+          after: '医材部收下了箱子，登记时把整箱划为「报废回收」。两周后，三个地下诊所的常用药同时断了三种，你要用的那种排在第一。医材部的答复是补货周期四十五天，没有加急通道。' },
+      ] },
+    { id: 'y30', portrait: 'portrait-lu', district: 'slum', title: '一个抱孩子的女人要借你的身份',
+      text: '一个女人在诊所门口拦住你，抱着一个五六岁的孩子，要用你的身份登记住院。她说自己的身份在三天前被划成了「已注销」，任何一家诊所收她都是违规。孩子的额头很烫，抱着人的手在抖。登记终端就摆在门口的台子上，读卡口亮着。终端上的读卡口红着，一直在等一张卡。',
+      options: [
+        { label: '用自己的身份登记', run: { money: -25, vitality: -1, track: { renown: 3, loyalty: -2, sin: 1 } },
+          after: '登记通过了，孩子的名字挂在你名下，护士看了你两眼，没有多问。孩子的烧当天就退了。三天后，你的档案里多出一条亲属关系记录，你申请删除，行政说要走三道审核，目前还挂着。' },
+        { label: '不登记，给她钱走别的门路', run: { money: -35, track: { renown: 1, sin: 1 } },
+          after: '你给了钱，让她去找陆晚。陆晚收下了孩子，用的是诊所自己的应急额度，额度这个季度已经透支了两次。你在巷口站了一会儿，孩子被抱进去的时候没有哭。' },
+        { label: '拒绝，让她去找社区登记点', run: { track: { loyalty: 1, renown: -2 } },
+          after: '你指了路，登记点在两条街外，晚上八点关门。你没有再看她。第二天早上路过那家登记点，门口的长椅上没有人。诊所那天照常开门，陆晚比平时早了半小时。' },
+      ] },
+    { id: 'y31', portrait: 'portrait-fixer', district: 'slum', title: '灰市牌桌上出现的一份单子',
+      text: '灰市的墙上今天贴出一份单子，写着七个名字和对应的价码，最贵的一个排在第三。你的名字在第六位，价码是四百二。老鸦说这是给外地来的买主看的，谁也说不准买主会挑哪个。他把一支笔递给你，说想划掉的话现在就可以划。单子用的是灰市惯用的那种纸，边上有毛刺。',
+      options: [
+        { label: '划掉自己的名字', run: { money: -40, track: { sin: 1, loyalty: -1 } },
+          after: '你划了，老鸦当着你的面把单子重新抄了一遍，第六位换成了一个你不认识的名字。划掉是要给钱的，这规矩你知道。三周后，那位替代者的名字出现在了一则回收简报里，位置很靠后。' },
+        { label: '不划，但把买主的来路问清', run: { intel: 4, track: { sin: 1, power: 1 } },
+          after: '老鸦说买主是通过三个中间人找上来的，验资用的是清算行的临时户。你顺着临时户的编号查到开户行，开户那天有一条备注：仅限一次性使用。这笔户头在单子贴出来的第二天就销了。' },
+        { label: '自己买下那三个人，让他们别接这单', run: { money: -80, grantCard: { n: 1 }, track: { renown: 2, sin: 2, power: 1 } },
+          after: '你出钱买下前三个人，让他们这单别接，白拿一份钱。老鸦照办。第二天那位买主亲自来了，递给你一张没有署名的指令卡，说既然你把活退了，就自己干。卡面目标写着「灰市三巷库房」。' },
+      ] },
+    { id: 'y32', portrait: 'portrait-clerk', district: 'slum', title: '楼栋管理员要收一笔安静费',
+      text: '楼栋管理员在一层贴了通知，说本楼这个季度的「噪音投诉」超标，每户补交一笔安静费。通知是复印件，没有公章，落款日期是三天后。他自己站在通知旁边，手里拿着一沓收据，收据是手写的，编号连号。他认得楼里每一个人，包括你。收据的数字写得很快，有几个压到了下一行。',
+      options: [
+        { label: '交钱，拿一张收据', run: { money: -20, track: { renown: 1, sin: -1 } },
+          after: '你交了钱，收据上写着「安静费」，编号是 0071。你把它夹进门缝里的电费单一起。三天后，楼里的公告栏换了一张新通知，说安静费取消，已交的凭收据退款。你没有去退，那张收据第二年还在门缝里。' },
+        { label: '不交，把这件事报给管委会', run: { track: { renown: 2, loyalty: -1 } },
+          after: '管委会说管理员不是他们的人。你回头去找，一层那个位置换了人，新来的是个年轻人，收据本也换成了带公章的。他把新旧两本放在一起，编号连不起来，中间少了三十多号。' },
+        { label: '不交，反过来问他这笔钱归谁', run: { intel: 3, track: { power: 1, sin: 1 } },
+          after: '他说归楼栋自管小组，小组的账户你去查了，开户不到两个月，流水七笔，全部是整数。他第二天就把通知撕了，收据本也收走了。楼里再没人提过安静费，只是走廊的灯换成了更暗的一款。' },
+      ] },
+    { id: 'y33', portrait: 'portrait-tie', district: 'docks', title: '一张凌晨三点被人改过的过磅单',
+      text: '过磅单压在门房的玻璃下面，时间是凌晨三点零六分，重量一栏被人用铅笔改过一次，改后的数字比原数多了十四吨。门房的人说这单是铁贵签的字，可铁贵这个星期一直在医院。单子背面有一串手写的柜号，柜号开头的字母，是已经停用的老码头编号。',
+      options: [
+        { label: '去老码头找那个柜子', run: { intel: 3, gear: 1, vitality: -1, track: { sin: 1 } },
+          after: '柜子停在废轨上，锁是新的。你撬开一条缝，里面是空箱，箱底铺着一层防潮纸，纸上有压过的痕迹，形状像两排并列的圆筒。你合上柜门时，远处传来一声短促的汽笛，没有船进港。' },
+        { label: '把单子交给铁贵手下的人', run: { intel: 2, track: { renown: 1, loyalty: -1 } },
+          after: '你把单子递过去，对方看了三秒就撕了，撕得很碎，扔进了卸货口的排水沟。他说这几天别来港区。第二天，老码头那段废轨被封，理由是结构检修，工期四十五天。' },
+        { label: '照单把重量差额填进自己的库存', run: { money: 45, track: { sin: 2 } },
+          after: '你把十四吨挂在自己名下，随货一起出港。这笔账在系统里躺了两个月，没人碰。第三个月码头盘库，盘出来的差额正好十四吨，盘库报告上写的是「历史遗留误差，不建议追查」。' },
+      ] },
+    { id: 'y34', portrait: 'portrait-tie', district: 'docks', title: '一箱从吊机上下来的无标货',
+      text: '吊机吊下来一箱没有标签的货，箱门缝里渗出类似血的气味。值班的人全都不见了，只剩下你和这箱东西。按规定，无标签货物要在两小时内退港，退港单要两个人签字，另一个签字人今天调休。箱门缝里渗出来的气味越来越重，值班室的门还开着。',
+      options: [
+        { label: '开箱，看一眼再决定', run: { gear: 2, intel: 3, vitality: -2, track: { sin: 1 } },
+          after: '箱里是十二副冷冻保存的脏器，每副都带着编号，编号体系和研究所的样本一致。你重新钉好箱盖，把气味最重的那一角擦了一遍。退港单你一个人签了，另一个人那栏画了一道横。' },
+        { label: '按规程退港，把单子递上去', run: { chips: 1, track: { loyalty: 2, sin: -1 } },
+          after: '你一个人走完全套流程，退港单被受理，编号进了当日台账。三天后，港区发来一份通报表扬，表扬人写的是你的部门。同一天，那箱货出现在了另一班船的舱单上，货名一栏是空的。' },
+        { label: '拖到冷库深处，等风头过去', run: { money: 40, intel: 2, track: { sin: 2, power: 1 } },
+          after: '你把箱子推进冷库最里面，用一批旧托盘挡住。五天后来了一辆没有牌照的车，把箱子拉走，付款用的现金。来人什么都没说，只留了半张名片，上面印着一个已经注销的转运公司。' },
+      ] },
+    { id: 'y35', portrait: 'portrait-enforcer', district: 'docks', title: '港区罢工进行到第四天的上午',
+      text: '罢工进入第四天，装卸区停了十六条船，其中三条是急货。董事会的通知是三天内复工，工人要的是一句准话。铁贵让人带话给你：只要你说这次不是他们先动的手，他就让夜班先上人。今天中午之前必须给出答复。夜班的人已经到齐了一半，都站在铁门后面。',
+      options: [
+        { label: '替他这句话背书', run: { grantCard: { n: 1, path: 'expand' }, track: { renown: 3, loyalty: -3, power: 1 } },
+          after: '你在港区食堂当着八十个人的面说了这句。夜班当晚复工，急货装完两条。铁贵塞给你一张扩张指令卡，目标写着「三号装卸班组」，说这是他自己那副牌里不用的。董事会那边当天下午把你从急货对接人里划掉了。' },
+        { label: '按董事会口径强推复工', run: { track: { loyalty: 3, power: 2, renown: -2, sin: 1 } },
+          after: '安保入场，两条船当天装完，第三条拖到第二天凌晨。复工率报上去是九成，实际到岗的只有六成。之后一个月，港区的交接班记录里出现了十一次「设备故障」，每次都在夜班。' },
+        { label: '不表态，私下垫一笔钱', run: { money: -45, track: { renown: 1, sin: 1 } },
+          after: '你让老鸦把钱发下去，用停工补贴的名目，来源写成外部捐赠。工人们拿了钱，第三天勉强复工。董事会问起钱从哪来，你说不知道，事后也没有人再查这笔账。' },
+      ] },
+    { id: 'y36', portrait: 'portrait-ghost', district: 'docks', title: '港区调度系统在凌晨重排了一次',
+      text: '港区调度系统在凌晨两点自动重排了一次泊位，把三条船的靠泊顺序整体倒了过来，重排理由一栏是空的。重排后，三号泊位上多出一个四小时的窗口。值班调度员说这不是他做的，他的账号那一夜只登录了一次，登录地显示在环带。重排后的表格里，三号泊位那一行底色是灰的。',
+      options: [
+        { label: '在窗口期去三号泊位蹲一晚', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '你在集装箱后面蹲了三小时，两点四十来了一辆高架车，卸下两只箱子就撤了。箱子上没有船名，只有一串手写的粉笔号。天亮后调度系统又重排了一次，把泊位顺序恢复成了原来的样子。' },
+        { label: '把重排日志报给信息安全', run: { intel: 2, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '信息安全受理了，回复说这是一次例行优化，日志已归档。你申请调阅，拿到的是摘要版，三点四十分那一段被标成了「系统自动维护」。摘要版最后一页有个人名，是签发人，签的是你的名字。' },
+        { label: '不动系统，只在三号泊位加装一个摄像头', run: { gear: 1, intel: 3, track: { power: 1, sin: 1 } },
+          after: '摄像头装好，第三天凌晨拍到了一段影像，你取回来播放，画面里只有两只箱子在动，没有看到人也没有看到车。你把录像循环放了四遍，才发现地面上的影子是从泊位外侧斜着进来的。' },
+      ] },
+    { id: 'y37', portrait: 'portrait-tie', district: 'docks', title: '装卸工会这一届的头目选举',
+      text: '装卸工会要换一届头目，这次有两个人报名，一个是铁贵推的旧人，一个是码头上新冒出来的年轻人。选票印好了，一共八百张，投票明天开始。两个人都来找过你，一个要你出人维持秩序，一个要你出面说句话。选票的纸是回收场裁的，边上留着毛边。',
+      options: [
+        { label: '替铁贵的人出头', run: { money: 35, track: { power: 2, renown: -1 } },
+          after: '你调了六十个人维持秩序，投票当天没出岔子，旧人以四百七十票当选。三天后，你收到一份装卸费分成的新比例，比原来高半个百分点。年轻人的名字从会员名册上消失了，注销理由是「主动退会」。' },
+        { label: '替年轻人说一句话', run: { grantCard: { n: 1, path: 'control' }, track: { renown: 3, power: 1, loyalty: -2 } },
+          after: '你在交接班会上说了一句，说码头该让新人试试。年轻人最后以十一票之差输掉。输完那天晚上他找到你，把一张操控指令卡放在桌上，目标写着「工人食堂三档口」，说这是他在牌桌上赢来的，用不上。' },
+        { label: '两边都不见', run: { track: { sin: -1, renown: 1 } },
+          after: '你两天没去码头。投票结果照旧，旧人赢，票数比预计的少了四十。事后两个人都没有再来找你。港区的交接班照常，只有食堂的价目表在一个月后涨了一档。' },
+      ] },
+    { id: 'y38', portrait: 'portrait-enforcer', district: 'docks', title: '一艘船身上没有名字的货船',
+      text: '船靠了岸，船身上没有名字，吃水线比载重表上画的深。船上的人点名要见你，说是老鸦介绍的。他们带来的东西既能救一些人，也能让很多人闭嘴，货还压在舱底，天亮前必须卸完。船靠得比规定位置往里两米，跳板是自己搭的，抽水机一直在响，响得很有规律。',
+      options: [
+        { label: '见，接下这单', run: { money: 60, gear: 1, track: { sin: 2 } },
+          after: '货是三十箱没有批号的抗生素，你当晚卸完，钱当场结清。这批药一周后出现在三个地下诊所，价格比市面低一半。你要的那一箱留在港区库房最里侧，现在还没有开过。' },
+        { label: '见，然后举报', run: { intel: 2, chips: 1, track: { loyalty: 3, renown: -2 } },
+          after: '你把船位和卸货时间报了上去。巡查队凌晨四点到了，船已经空了，舱底只剩下压舱水。你的举报记录被受理，编号很高。老鸦那边当天断了你一条线，第二天又接上了，只是抽头涨到了三成五。' },
+        { label: '不见，让人把船赶走', run: { track: { sin: -1, renown: 1, loyalty: -1 } },
+          after: '你让值班的人放话，船半小时后离港。第二天海上起了雾，那条航道封了半天。你听说那天夜里有一艘小船在防波堤外漂了很久，天亮时不见了。港区没有人提这件事。' },
+      ] },
+    { id: 'y39', portrait: 'portrait-tie', district: 'docks', title: '七号冷库那批货要放一次风',
+      text: '七号冷库的压缩机今天凌晨报了一次警，修好以后温度回升了两度，停了四十分钟。库里存着一批需要恒温的货，货主是清算行的关联公司。按规定，温控异常要在两小时内报备，报备以后这批货要做报废处理。货主那边已经来了人，站在办公室外面等着。',
+      options: [
+        { label: '按规程报备，让这批货走报废', run: { intel: 2, track: { loyalty: 3, renown: 1, sin: -1 } },
+          after: '你报了备，报废流程当天启动，货主在场全程录像。报废结论出来那天，清算行发来一份函，说这批货已完成核销。函件里附了一张明细，明细上的数量比你库里实际存的多了两箱。' },
+        { label: '不报，把四十分钟改成十二分钟', run: { money: 55, track: { sin: 2, power: 1 } },
+          after: '你在记录上改了时间，货主那边的签收人也改了。这批货顺利放行，到港时温度正常。半个月后，货主公司的质检报告里多了一行小字，说该批次存在「记录存疑」。这份报告没有流出他们内部。' },
+        { label: '报备，但要求清算行出一份补充保证', run: { intel: 3, track: { power: 1, renown: -1, sin: 1 } },
+          after: '你要了一份补充保证，清算行的人当天就签了，落款用的是印章而不是签名。这份保证你收进抽屉。三个月后，同一批货在另一个港区出了事，你那份保证被调走，调走单上是戴思远的名字。' },
+      ] },
+    { id: 'y40', portrait: 'portrait-enforcer', district: 'docks', title: '港区夜班整整一个班组丢了九个人',
+      text: '夜班第四班组一共九个人，交接的时候进来五个，签退一个也没有。调度说九个人都在系统里正常签退过，签退时间集中在凌晨四点十二分。五点整，有人看见四班组的工具包整整齐齐摆在休息室地上，九个，一个不少。休息室的灯还亮着，插座上插着九个充电头。',
+      options: [
+        { label: '把人一个个查到底', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你查到六个人，剩下的三个地址一栏都是同一个门牌号，这个地址在环带维修层，是一间已经废弃的配电间。你去过一次，门上挂着一把没有锁孔的锁。九个人的工具包最终按无人认领处理了。' },
+        { label: '报案，把记录交给巡查队', run: { chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '巡查队来了两个人，做了笔录，登记了九个工号。三周后结案，结论写的是「集体离职，程序合规」。你申请看签退记录原件，原件已按流程销毁，销毁审批人签名潦草，看不清姓。' },
+        { label: '先压下这件事，私下问铁贵', run: { intel: 3, track: { power: 1, sin: 1 } },
+          after: '铁贵说这九个人里，有四个上个月找过他问过去环带的门路，他没答应。说完他把烟掐了，说四班组以后不要了。第二天，港区招工启事贴出来，四班组那一栏被整块涂掉。' },
+      ] },
+    { id: 'y41', portrait: 'portrait-clerk', district: 'orbit', title: '候补名单上被划掉又补上的一行',
+      text: '候补名单重新公示了一次，你的名字还在，只是往后挪了十七位。挪的位置上换成了一个编号，编号后面写着「优先」。排在你前面的人这半年一个一个被叫到，叫到以后没有一个回来过。公示栏的玻璃今天裂了一道，裂缝正压着你的名字。公示栏前面没人站，玻璃上的裂缝是从下往上走的。',
+      options: [
+        { label: '接住那张「优先」，把名额换成东西', run: { intel: 2, chips: 2, vitality: -1, track: { loyalty: -1, sin: 1 } },
+          after: '你把优先权转给了一家中介，换回两份信息和一个不记名的通行条。第三天那家中介的门锁着，玻璃上贴着一张手写的通知，说本店暂停营业。你的名字仍在名单上，只是后面那个「优先」不见了。' },
+        { label: '查是谁把你挪下去的', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '挪动记录在一个已经停用的调度账号名下，那个账号的最后一次操作是两年前。你顺着它往下查，查到一串转岗名单，八个人都在这半年内的同一周被划掉，划掉用的同一支笔。' },
+        { label: '自己申请从名单上撤下来', run: { track: { loyalty: 2, renown: -1, power: -1 } },
+          after: '你递交了撤榜申请，需要两道签字，第一道当天就过了。第二道一直卡着。一周后，引航处来了一个人，问你为什么要撤，他说他记得你，你去年替别人排过一次队。' },
+      ] },
+    { id: 'y42', portrait: 'portrait-yuke', district: 'orbit', title: '引航票务退回来的一张旧票根',
+      text: '引航处退回来一张票，乘客一栏是你的名字，航次是七年前的首班。票根上的座位号被划掉又写了一遍，写的是另一个人的姓。退票理由写着「乘客未到达」，可这张票从来没有人使用过，也没有人取消过。柜台后面的机器今天打不出新票。机器出票口的纸卷还剩一半，边上卡着一角旧票。',
+      options: [
+        { label: '查这张票的原持有人', run: { intel: 4, track: { sin: 1 } },
+          after: '原持有人的档案里照片是空的，只有一栏备注：随首批离站。首批的日期比你入职早三个月。你去看那次航班的舱单，舱单上这个姓氏出现了两次，另一个名字被涂掉了，涂得很厚。' },
+        { label: '把票留着，不追', run: { gear: 1, intel: 2, track: { sin: 1 } },
+          after: '你把票根夹进工作证夹层，此后每次过闸机都会响一声，安保查了两次也没查出问题。半年后你在清理夹层时发现，票根上的座位号又变了，这一次写的是一个你不认识的名字。' },
+        { label: '把票交回引航处并登记异议', run: { track: { loyalty: 2, renown: 1 } },
+          after: '你交了异议，引航处当场受理，编号留了底。三天后他们回复，说这张票是制票机的余票，属于系统误差。回复便签的签名栏，盖的是引航处的旧公章，这个章两年前就换掉了。' },
+      ] },
+    { id: 'y43', portrait: 'portrait-witch', district: 'orbit', title: '穹顶外侧停住不动的一小片云',
+      text: '观景窗外的云今天压得很低，能在云里看见一条直线，像被谁用尺子量过。值班的人说这是气流，不是气流。云走得很慢，走到四十一号接缝外侧时停了一下，停了大概两分钟，然后继续往东。观景层的游客都举着终端在录。玻璃上留着一层薄雾，是有人在上面站久了留下的。',
+      options: [
+        { label: '把这段影像买下来', run: { intel: 3, track: { sin: 1 } },
+          after: '你从一个游客手里买下了原始影像，付现金。回去逐帧看，云停的那两分钟里，四十一号接缝外侧的雨是往上走的。你把这段单独剪出来，锁进了离线盘，再没有打开过。' },
+        { label: '上报观测记录', run: { chips: 1, track: { loyalty: 3, renown: -1 } },
+          after: '你把记录提交给观景层管理方，管理方转给了一个你查不到的部门。三天后，观景层贴出告示，说近日设备存在成像偏差，已修复。你再看那片云，云是直的，没有再停。' },
+        { label: '去四十一号接缝外侧站到云走的那个位置', run: { intel: 4, vitality: -2, grantCard: { n: 1, path: 'purge' }, track: { sin: 2, loyalty: -2 } },
+          after: '你在接缝外侧站了四十分钟，雨把外套泡软了。回来时袖口里多了一张清洗指令卡，纸质粗糙，边角发绿，卡面目标写着「观景层巡场」。你不知道它是什么时候塞进去的，那件外套后来你烧了。' },
+      ] },
+    { id: 'y44', portrait: 'portrait-ghost', district: 'orbit', title: '舱单上多出的一位无名乘客',
+      text: '一艘定期客船的舱单上多了一个乘客，姓名栏是空的，座位号却填得很实，就在你去年坐过的那个位置上。船务的人说这个位置这一趟没卖票。名单是系统出的，系统里那行记录的开头，跟你去年的订单号只差最后一位。座位号是三等舱靠窗那一个，票样是上一代的。',
+      options: [
+        { label: '按名单上船，坐到那个位置上', run: { intel: 4, vitality: -1, track: { sin: 1, loyalty: -1 } },
+          after: '你换了票上船，那个座位靠着舷窗，桌板下面贴着一张旧标签，是你的字迹。船开了四十分钟，广播念了一遍乘客名单，念到空姓那一栏时跳了过去。你在终点站下车，没有人查你的票。' },
+        { label: '把异常报给船务调度', run: { intel: 2, chips: 1, track: { loyalty: 2, renown: -1 } },
+          after: '调度查了一遍，说那行记录是缓存残留，已经清了。你要求打印清库前的日志，拿到手的是两页，中间少了一页，页码还断在 2 和 4 之间。你把它折好放进口袋，没有再问。' },
+        { label: '记下座位号，把票退掉', run: { intel: 2, money: 15, track: { sin: -1, renown: 1 } },
+          after: '你把票退掉，拿回了大半票款。退票那天下了一场小雨，穹顶内侧的地面是干的。你把座位号写在便签上贴进抽屉，一年后再看，那串数字在纸上淡了一半，像被水洇过。' },
+      ] },
+    { id: 'y45', portrait: 'portrait-yuke', district: 'orbit', title: '离港检疫隔间的一张复检单',
+      text: '离港检疫隔间里挂着一张复检单，编号是当天最早的。单子上的人昨天进过隔间，今天又进了同一个隔间，两次的检疫员签名不一样，笔迹却是同一只手写的。隔间的窗帘拉了一半，里面的灯一直亮着，没有人出来。隔间的排风一直开着，门缝下面有纸片在动。',
+      options: [
+        { label: '敲门进去，看是谁', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '里面是一个中年男人，坐在椅子上，手臂上插着两支采血管。他说他每天来，已经来了十一天，单子是别人替他填的。你看了眼单子，编号栏从 1 写到 11，都是同一天的日期。' },
+        { label: '把复检单抄一份带走', run: { intel: 3, chips: 1, track: { sin: 1, power: 1 } },
+          after: '你抄下编号和人名，走的时候没有回头。三天后，隔间里的那个人不在了，检疫单也换成了空白的。你把抄写的纸拿给陆晚看，她说这个病她见过，不该出现在这里。' },
+        { label: '不介入，把隔间报给巡查', run: { track: { loyalty: 2, renown: -1 } },
+          after: '巡查来了四个人，把隔间封了半天，重新做了一次登记。当天下午所有离港检疫流程提速了一倍，排队的人抱怨，没有人再提那个隔间。窗帘这次是全部拉上的。' },
+      ] },
+    { id: 'y46', portrait: 'portrait-witch', district: 'orbit', title: '女术士的代理人在候机厅坐了一天',
+      text: '银面坐在候机厅第三排，什么都没带，也没有买票。它从上午坐到现在，看着每一班离港的人过闸。等你经过的时候，它说了一句话，说你上周在交易所点过头的那个人，今天不会登机。广播正在念登机号。候机厅里播了三遍登机通知，第三遍漏了两个名字。',
+      options: [
+        { label: '问它为什么告诉你', run: { intel: 3, track: { power: 1, sin: 1 } },
+          after: '它说因为它收过那个人的钱，收钱办事，事没办成，钱要退。说完它把一枚旧筹码放在椅子上就走了。你捡起筹码，背面刻着一个编号，这个编号属于一个已经注销的俱乐部。' },
+        { label: '去登机口拦住那个人', run: { vitality: -1, track: { renown: 2, sin: 1, power: -1 } },
+          after: '你在闸机前拦住了他，他愣了几秒，转身改签。当天那班船起飞后四十分钟，通讯里播报了一次舱压异常，没有人员伤亡。他第二天请你喝了一次茶，没提为什么。' },
+        { label: '什么也不做，照常登机', run: { track: { sin: 1, loyalty: 1 } },
+          after: '你上了船，舱里有一半的空位。落地后你听说那班船延误了两个小时，原因没有公布。候机厅第三排那把椅子，椅面上留着一块圆形的印子，像是有人坐了很久。' },
+      ] },
+    { id: 'y47', portrait: 'portrait-clerk', district: 'orbit', title: '轨道港冷舱停电的那六个小时',
+      text: '冷舱停电六小时，里面存着要运往外站的两百份样本。备用电源切进来时，温度已经回到零上。样本的货主是研究所，研究所那边没有打电话来问，倒是清算行先来了人，站在冷舱门口对着一份清单核对。冷舱门上的温度计还停在零上，指针歪了一点。',
+      options: [
+        { label: '照实报损，并附温控记录', run: { intel: 2, track: { loyalty: 3, renown: 1, power: -1 } },
+          after: '你把记录附着一起报上去，研究所当天回函，说这批样本同意报废。清算行的人站在旁边看完了整个过程，临走时把清单收走了一份。报废清单上多出来的两箱，最后也没有人解释。' },
+        { label: '挑出还能用的，重新贴标', run: { money: 40, grantCard: { n: 1, path: 'expand' }, track: { sin: 2, power: 1 } },
+          after: '你挑出九十份看着没问题的，重新贴了批次标，发往外站。三周后外站回传的接收单上一切正常。清算行的人第三次来的时候，给了你一张扩张指令卡，目标写着「轨道港二号冷舱」。' },
+        { label: '让清算行的人自己去数', run: { intel: 3, track: { sin: 1, loyalty: -1 } },
+          after: '你把冷舱钥匙交出去，自己在办公室等。他们数了五个小时，出来的数字比你记录的多三十份。他们向你要签字确认，你没有签。第二天那份清单被编入内部档案，编号是你的部门号加一串流水。' },
+      ] },
+    { id: 'y48', portrait: 'portrait-out', district: 'orbit', title: '观景层投诉箱里的一封实名信',
+      text: '观景层的投诉箱里躺着一封信，投诉对象写的是穹顶本身。写信人说，透过观景窗看到的雨是斜的，可落在玻璃上的声音是直的。信纸背面贴着一小块干掉的苔，绿色的，不是穹顶内侧会长的东西。信是实名投的，署名写在你部门。投诉箱的投口朝下开，信要折三折才塞得进去。',
+      options: [
+        { label: '去找到写信的人', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '写信的人已经不在观景层了。他的工号在系统里显示为「已转岗」，去向是一栏空白。你把那块苔带在身上，回来查了图鉴，说这种苔只长在常年潮湿、酸度高的地方，穹顶内侧没有这种地方。' },
+        { label: '把信转给舆情科并附说明', run: { track: { loyalty: 3, renown: 1, sin: -1 } },
+          after: '舆情科受理了，回执上写着「已按常规信处理」。三周后观景层换了一批玻璃，换成更厚的。投诉箱还在原位，锈了一层，箱口朝下开，往下倒的时候会卡住。' },
+        { label: '自己写一份回复，投回信箱', run: { track: { renown: 2, sin: -1, loyalty: -1 } },
+          after: '你写了两百字，告诉他雨声的事没有问题，是风的缘故。投回去的时候箱子是满的。第二天你把箱子里的信都倒了，一共十九封，其中八封写的是同一件事，署名各不一样。' },
+      ] },
+    { id: 'y49', portrait: 'portrait-ring', district: 'ring', title: '环带维修层里那处往上爬的渗水',
+      text: '四十一号接缝内侧有一处渗水，从上周开始，水位线每天都往上抬半厘米。巡检记录里写着「微量渗出，观察」。渗出来的水是绿的，味道很淡，落在管壁上留一道白痕。荀戒说他值了四年夜班，没见过这一处渗水。渗水的地方管壁发白，白痕一直往下走了一米多。',
+      options: [
+        { label: '把渗水点单独取样', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你取了一小瓶，第二天瓶壁出现了一层绿膜，瓶子已经换过两个。你把样本交给陆晚，她看了一眼说这不是雨水，比雨水酸得多。样本最后封在诊所的冷藏柜里，标签上只写了日期。' },
+        { label: '照记录填「继续观察」', run: { track: { loyalty: 2, sin: 1 } },
+          after: '你按原样填了。两星期后那一处旁边又出现了第二处。巡检班的人开始从那段走廊绕行，绕行记录的路程比原来多了两百米，考勤上没人提这件事。水位线继续抬。' },
+        { label: '上报警报，要求整段停用', run: { chips: 1, track: { loyalty: 2, renown: 1, power: -1, sin: -1 } },
+          after: '警报上去了，那一段封了四天，做了一次全面检查。结论是接缝密封件老化，已更换。新的密封件型号和生产日期你查了一下，是七年前的批次，出库单上没有。' },
+      ] },
+    { id: 'y50', portrait: 'portrait-ring', district: 'ring', title: '巡检记录里被涂黑的一整个班次',
+      text: '这个季度的巡检记录里有一整个班次被涂黑了，用的是标准修改液，涂得很平。那一班应该是上周三的夜班，当班的人现在是三个人，涂黑后的表格里只剩两个人。第三个名字在纸背面压出的凹痕里还看得出来，姓荀。修改液的反光是哑的，别处的纸面有光。',
+      options: [
+        { label: '把纸对着灯照，抄下凹痕里的名字', run: { intel: 4, grantCard: { n: 1, path: 'expand' }, track: { sin: 1 } },
+          after: '凹痕里是两个字，是荀戒带了三年的徒弟。名字你记下了，那一晚的门禁记录干净得反常。荀戒第二天照常上班，把一张扩张指令卡放在你桌上，目标写着「巡检班三号段」，说他留了半年没人接。' },
+        { label: '把记录送去安保复核', run: { intel: 2, chips: 1, track: { loyalty: 3, renown: -1 } },
+          after: '安保复核了一遍，出具书面意见说记录涂改属于笔误，已由当班组长确认。书面意见上签批的当班组长是荀戒。他签完之后来找过你一次，站在门口没进来，只说了一句：那天有风。' },
+        { label: '按涂黑后的版本重新誊一份', run: { track: { sin: 2, loyalty: -1, power: 1 } },
+          after: '你重誊了一份，字迹和原件很像。原件你收进抽屉。三个月后集团来查巡检档案，你交的是誊本，查的人翻了两页就合上了。原件在你抽屉里，涂黑那一处慢慢泛出了底下的格子线。' },
+      ] },
+    { id: 'y51', portrait: 'portrait-peng', district: 'ring', title: '控制室墙上不见的那把阀门钥匙',
+      text: '四十一号接缝控制台的备用钥匙有两把，一把在控制室墙上，一把按规定存在研究所保险柜。今天控制室那把不见了，墙上留着一个挂钩印，挂钩还在。监控显示昨夜两点有人进来过，那人戴着手套，走的路线避开了所有明亮区域。墙上的挂钩空着，旁边挂着一条抹布，是干的。',
+      options: [
+        { label: '封住这一段，等钥匙自己回来', run: { intel: 2, chips: 1, track: { loyalty: 2, power: -1 } },
+          after: '你把门锁换成新的，钥匙孔也换了。第三天早上，旧钥匙插在新锁旁边的墙上，插得很正。整段走廊的照明那一天全坏了，报修单是你填的，维修记录上写着「光管批次问题」。' },
+        { label: '带着人去查另一把钥匙', run: { intel: 3, vitality: -1, track: { sin: 1, power: 1 } },
+          after: '保险柜看不出被开过，里面的钥匙还在，只是齿口被磨过一遍，磨得很轻。彭戬把钥匙拿去比对，说磨损方向不对，像是被反着插了很多次。他没有把这句话写进报告。' },
+        { label: '当作丢失上报，承担失窃责任', run: { money: -35, track: { loyalty: 3, sin: -1, renown: 1 } },
+          after: '你在报告里写了自己保管不严。集团扣了一笔赔偿，数目比钥匙的市价高很多。半个月后，那把钥匙出现在回收场的旧件堆里，编号被磨掉了，荀戒认出来是因为齿口上有一道他做的记号。' },
+      ] },
+    { id: 'y52', portrait: 'portrait-ring', district: 'ring', title: '备用件柜上少了一批密封圈',
+      text: '备用件柜上少了三百个密封圈，账面上写的是「现场领用」。领用单的编号连号，签字栏是同一个人，七天里领了六次。你今天在走廊上碰到这个人，他手里什么都没有，工装洗得很干净，指甲缝里也没有黑。柜子那一格里剩下的密封圈码得很整齐，方向一致。',
+      options: [
+        { label: '跟踪他一整天', run: { intel: 3, vitality: -1, track: { sin: 1, power: 1 } },
+          after: '他下班后去了下层居住区，在一家五金铺门口站了一会儿，没有进去，又原路返回。他跟的这个人在领用单上写的是检修三班，可检修三班的名单里没有他。你把当天的路线记下，全在监控盲区。' },
+        { label: '照单销账，向他要一张现场照片', run: { intel: 2, track: { loyalty: 2, sin: 1 } },
+          after: '他给了你一张照片，拍的是四十一号接缝内侧，密封圈摆了一排，数目看着差不多。照片的拍摄时间比领用单早两天。你把照片存进档案，销账当天完成，柜子上那一格空了很久。' },
+        { label: '按账追责，报给物资部', run: { chips: 1, track: { loyalty: 3, renown: -1, power: 1 } },
+          after: '物资部派人来盘了一次，结论是账实相符。你不信，自己又数了一遍，柜子里确实有三百个新的，包装纸都没拆。领用单上那个人你后来再没见过，检修三班的考勤里也从来没有过这个名字。' },
+      ] },
+    { id: 'y53', portrait: 'portrait-ring', district: 'ring', title: '环带里的一间没有编号的配电间',
+      text: '环带维修层有一段走廊，图纸上标的是配电间，实际走的是一扇钢板门，门上没有编号，也没有锁孔。门缝下面有点光，光在动，是有人走动挡住的那种。荀戒说他接班第一年就见过这扇门，那时门口还挂着「高压危险」的牌子，牌子后来摘了。走廊尽头的应急灯这两天一直亮着，没人来换。',
+      options: [
+        { label: '守到门开', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '你守了两个多小时，门是自己开的，里面没有人。房间中间摆着一张长桌，桌上摊着七八份名单，都是环带巡检班的排班表，用红笔圈了不少名字。你拍了两张，退回原位，门在你身后合上，没有响。' },
+        { label: '把这件事写进巡检异常记录', run: { intel: 2, track: { loyalty: 3, sin: -1 } },
+          after: '你写了三行字，册子交上去的第二天就换成了新版，异常那一页被撕掉了。新册子第一页印着「发现异常请立即上报」，落款日期是三年前。荀戒在新册子上替你补了那三行，笔迹仿得很像。' },
+        { label: '带人进去，把灯具拆掉', run: { gear: 1, track: { power: 2, sin: 2, renown: -1 } },
+          after: '你带了三个人，拆了里面的灯管。拆到第四根时，灯灭了整段走廊，只有门口那盏应急灯亮。你们退出来，门关上，走廊安静得能听见管壁里的水声。第二天门缝下面还是有光。' },
+      ] },
+    { id: 'y54', portrait: 'portrait-peng', district: 'ring', title: '巡检班这个月丢的两顶安全帽',
+      text: '环带巡检班这个月报丢了两顶安全帽，报损单上写的是「意外损坏」。库房管理员说这两顶帽子其实是同一个编号换过一次，领了三次。帽子里侧的姓名贴被撕掉过，胶印还留着，撕下来的位置正对着额头。库房的领用本摊在台面上，压角的是个空杯子。',
+      options: [
+        { label: '顺着编号查这三次领用', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '三次领用分属三个人，其中两个现在还在环带，第三个的人事状态是「外派待回」，外派地写的是穹顶之外。你去查这个人的班表，他最后一次进环带是四十一天前，进去以后再没有刷卡记录。' },
+        { label: '给库房补一批新帽，不再追', run: { money: -20, track: { loyalty: 1, renown: 1, sin: -1 } },
+          after: '你自掏腰包补了一批，库房管理员说没必要。新帽子发下去三天，那顶被撕过姓名贴的旧帽子又出现在挂钩上，内侧干干净净，看不出撕过的痕迹。' },
+        { label: '把报损单原样签了', run: { track: { sin: 1, loyalty: -1 } },
+          after: '你签了，报损流程当天走完。一个月后，环带那年年底的物资盘点里，安全帽一项少了七顶，报损理由统一写着「意外损坏」，签批人里的第一个名字是你。' },
+      ] },
+    { id: 'y55', portrait: 'portrait-ring', district: 'ring', title: '凌晨三点管壁里传出来的敲击声',
+      text: '夜班三点，管壁里传出敲击声，三下一组，隔十几秒一组，敲了半个多小时。整段走廊只有你一个人。主管道里走的是冷却液，不该有这种声音。你贴着管壁听，声音是从两个检修口中间传出来的，那一段没有检修口。管壁是凉的，敲上去的声音比平时闷。',
+      options: [
+        { label: '敲回去，看有没有回应', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '你敲了三下，对面停了很久，接着回了两下。你继续敲，对面把两组变成了四下。你记下节奏，去找巡检班对，荀戒听完沉默了一会儿，说这个节奏是三十年前环带检修用的老信号。' },
+        { label: '把这一段报修', run: { intel: 2, track: { loyalty: 2, sin: -1 } },
+          after: '报修单第二天就被接了，维修队把那段管壁刷了一层密封胶，敲击声当夜就没了。三天后你经过那里，胶面鼓起一个指头大的泡，用手按是硬的。维修记录上写的是「管内气泡，已排除」。' },
+        { label: '不管，把耳塞塞上', run: { track: { sin: 1, renown: -1 } },
+          after: '你塞上耳塞，剩下四个小时听不见动静。交班时你看见交接本上多了一行别人的字：昨夜三点至三点四十，管内有敲击。这一行不是荀戒写的，也不是你的班。' },
+      ] },
+    { id: 'y56', portrait: 'portrait-ring', district: 'ring', title: '一个月里申请第三次换班的巡道工',
+      text: '巡道工这个月第三次申请换班，理由写的是「身体不适」，附带一张没盖章的病假条。他管的正是四十一号接缝那一段，走了三年，路线熟得闭着眼都能走。今天他站在调度室门口，手里捏着那张病假条，没有递进来。调度室门口的签到表上，他那一栏已经空了三天。',
+      options: [
+        { label: '批他换班，问清为什么', run: { intel: 3, track: { renown: 2, sin: 1, power: -1 } },
+          after: '他说那段走廊最近多了个东西，走到第一百四十步就会听见有人跟上来，回头没有人。他数过，每次都是一百四十步。你替他把班换了，当天下午自己走了一遍，走到第一百四十步，管壁响了一下。' },
+        { label: '按制度打回，让他继续走', run: { track: { loyalty: 2, sin: 2, renown: -2 } },
+          after: '你把病假条推回去，说没盖章不行。他第二天照常上班，第三天请假，第四天开始旷工。第五天调度室收到他的辞工单，理由一栏空着，交表的人是荀戒。' },
+        { label: '给他一张指令卡，让他自己去办', run: { grantCard: { n: 1, path: 'expand' }, track: { power: 2, sin: 2, loyalty: -1 } },
+          after: '你从抽屉里抽出一张扩张指令卡给他，目标写着「接缝巡检班」，说这张牌能让他名正言顺地留下，也能让那段走廊归他管。他收下卡，换了班，一周后提着两把新锁回来，说一百四十步那个地方，他锁上了。' },
+      ] },
+    { id: 'y57', portrait: 'portrait-dai', district: 'memory', title: '记忆柜台前排着一份拆检中的备份',
+      text: '记忆银行负十八度的走廊里，恒温柜第三排有一格在拆检，柜门开着，冷气往外冒白雾。柜位标签上是一个七年前的日期。柜里的备份被取走了一半，剩下的半份标签还贴在里面，写着一个姓，这个姓在集团的任职记录里已经查不到了。白雾顺着地面往外爬，爬到门槛就散开了。',
+      options: [
+        { label: '调出这一格的存取记录', run: { intel: 4, track: { sin: 1 } },
+          after: '存取记录一共两条，第一条是七年前存入，第二条是三天前取出，操作人一栏是空号。你把这个空号和交易所那台旧终端上的空号对了一下，是同一位。柜位标签上那个姓，同样出现在环带巡检班的旧名册里。' },
+        { label: '把柜门关上，把标签抄下来', run: { intel: 3, chips: 1, track: { sin: 1, power: 1 } },
+          after: '你关上柜门，抄下标签。第二天那一格的标签换成了一张空白的，柜位号往后挪了一格。你把抄下的条子给无面看，无面看了很久，说这个姓是内部的写法，外面的档案上不会这么写。' },
+        { label: '上报拆检异常', run: { intel: 2, track: { loyalty: 3, renown: -1, sin: -1 } },
+          after: '管理方回复说这一格属于长期委托保管，委托方已到期未续，按规定拆检销毁。回复函的落款日期是上个月，比你发现柜门开的那天早了九天。你把函件归档，那一格从此再没有亮过灯。' },
+      ] },
+    { id: 'y58', portrait: 'portrait-mem', district: 'memory', title: '拿着旧纸凭条来取备份的老人',
+      text: '柜台前站着一位老人，出示的取件凭证是纸质的，编号是旧制式。系统里查不到这张凭条，无面说按新规只能作废。老人说这份备份是他妻子的，存进去的时候说好是七年，今天正好七年整，约定的日子一天都没差。老人把凭条放在台面上，纸已经被手帕擦过很多次。',
+      options: [
+        { label: '替他手动调档，把备份取出来', run: { grantCard: { n: 1, path: 'control' }, track: { renown: 3, loyalty: -2, sin: 1 } },
+          after: '你走了一次特殊流程，把档调出来了。老人捧着那盒备份在走廊里坐了一刻钟，没有打开。走之前他从怀里抽出一张操控指令卡给你，目标写着「记忆柜台二号窗口」，说这是当年托他保管的，如今用不上了。' },
+        { label: '按新规作废，替他登记预约', run: { track: { loyalty: 3, renown: -2 } },
+          after: '你替他登了预约，排期在四个月后。他点了点头，把纸凭条折成四折收好。四个月后那天他没有来，系统提示预约逾期自动失效。那一格备份在柜子里又存了一年，最后按无主处理。' },
+        { label: '先查这家属关系是否成立', run: { intel: 4, track: { sin: 1, loyalty: -1 } },
+          after: '你查到了那份委托的原件，委托人签名和老人出示的凭条上一致。家属关系那一栏是空的，备注写着「依本人意愿不予登记」。老人等你查完，说了一句：登记了就不会让我来取了。' },
+      ] },
+    { id: 'y59', portrait: 'portrait-mem', district: 'memory', title: '负十七层冷柜报警器又响了一次',
+      text: '冷柜报警器响了一次，持续四十秒，是负十七层的三号柜段。值班的人跑去看了，温度正常，压缩机正常，柜门锁得好好的。报警记录里那四十秒被标成了「误报」，标的人不是当晚值班的那个。这个月已经误报过四次，每次都是负十七层。值班记录本压在柜台上，上一页有半行字被撕掉。',
+      options: [
+        { label: '把四次误报的时间点排出来', run: { intel: 4, track: { sin: 1 } },
+          after: '四次分别在四个不同的星期，间隔都是七天零几个小时，时间越来越靠后。你按这个间隔推到下一次，那天夜里你守在负十七层。三号柜段响的时候，你看见最里面那一格的指示灯灭了一下，又亮起来。' },
+        { label: '报修压缩机，要求全面检修', run: { money: -30, chips: 1, track: { loyalty: 2, renown: 1, sin: -1 } },
+          after: '检修花了两天，换了两个传感器。之后三个月没有再误报。第四个月开始，误报从负十七层挪到了负十八层，间隔还是七天。检修报告被归进设备档案，结论一栏写着「运行良好」。' },
+        { label: '把报警记录删掉，只在交接本上写一笔', run: { intel: 2, track: { sin: 2, power: 1 } },
+          after: '你删了那四十秒，交接本上只写了「巡检正常」。当晚的值班员第二天调休，接他班的人不认识三号柜段的位置。后来那一格里存的东西被提过一次，提取单上没有签名，只有一个日期。' },
+      ] },
+    { id: 'y60', portrait: 'portrait-yu', district: 'memory', title: '交易所里一份人格副本的挂牌价',
+      text: '人格副本交易所挂出一份副本，挂牌价比上个月高了四成，说明里写着「来源清晰，无纠纷」。这份副本的编号前缀是一串字母，对应的是集团内部的编制序列。交易所的买家席位里，有三个是最近才开的户。交易所的挂屏一个小时刷新一次，这行字没动。',
+      options: [
+        { label: '查这份副本的前缀对应谁', run: { intel: 4, chips: 1, track: { sin: 1 } },
+          after: '前缀对应的编制号你查到了，这个人在两个月前被列为「清退」，清退原因一栏空着。你去调他的备份托管记录，记录显示存入时间是十年前，存入人签名那一栏，写的是他自己的名字。' },
+        { label: '买下这份副本', run: { money: -70, grantCard: { n: 1, path: 'capital' }, intel: 3, track: { power: 2, sin: 2 } },
+          after: '你付了全款，交易所交付的除了副本还有一张资本指令卡，说这是打包标的的附赠。副本你一直没有打开。卡面目标写着「交易所席位三席」，是当晚就生效的那种。' },
+        { label: '把挂牌信息报到合规部', run: { intel: 2, track: { loyalty: 3, renown: 1, power: -1 } },
+          after: '合规部查了三天，说挂牌程序合规，来源证明齐全。他们退回来的材料里多了一页，是来源证明的复印件。证明上的签名和委托书上的签名，笔画走向不太一样，但格式完全一致。' },
+      ] },
+    { id: 'y61', portrait: 'portrait-dai', district: 'memory', title: '托管库里有份备份今天到期了',
+      text: '托管库有一份备份的托管期今天到期，托管的是一家已经注销的公司。按规定，到期后要通知委托人，通知方式是在库里的公告板上贴三十天。这份备份已经贴了三十天，没有人来。今天要决定是销毁，还是转为无主保管。公告板上压着一张旧通知，边角是七年前的章。',
+      options: [
+        { label: '转为无主保管，先不销毁', run: { money: -25, intel: 3, track: { sin: 1, renown: 1 } },
+          after: '你办了转存，费用按无主保管的最低档收，从你的部门预算里出。两年后再查这份备份的托管记录，续存人一栏多了一个编号，这个编号属于一家去年新成立的公司，经营范围写着信息服务。' },
+        { label: '按规程销毁', run: { track: { loyalty: 2, sin: 1 } },
+          after: '你签了销毁单，操作在当天下午执行。销毁记录上有一行需要填「销毁见证人」，你填了自己。一个月后清算行来调这份销毁记录，看完之后问了一句：销毁时你有没有在场。你说有。' },
+        { label: '先打开看一眼，确认内容', run: { intel: 5, vitality: -1, track: { sin: 2, loyalty: -1 } },
+          after: '你打开了一角，看到的是格式化的行为记录，日期最近的一条在五年前。记录里出现了一个人名，是郁南枝。你合上资料，把它原样封好，按无主保管转存。这件事你谁也没有提。' },
+      ] },
+    { id: 'y62', portrait: 'portrait-ghost', district: 'memory', title: '负十八度走廊里的一段脚印',
+      text: '记忆银行的走廊地面做了防凝处理，不会留脚印。今天早上负十八度那段地面上留了一串，从电梯口一直走到托管库最里面那一排，然后停住。脚印只有去的，没有回的。当晚值班的两个人都在岗，谁也没看见有人进来。防凝处理的地面反光很强，那串脚印比周围暗。',
+      options: [
+        { label: '跟着脚印走一遍', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '你跟着走到那一排，脚印停在一格柜门前，柜门是锁的，柜位号和你上周抄下的那张标签差一个数字。你把手贴上去，柜门是凉的，比旁边几格凉得多。回头看，你的脚印也没有留下。' },
+        { label: '拍照，先把地面处理掉', run: { intel: 2, chips: 1, track: { sin: 2, power: 1 } },
+          after: '你拍了照，让清洁班把地面重做了一遍。清洁记录上写的是「例行除霜」。当天下午，托管库的温控参数被改过一次，改的人用的是值班账号，那个账号当晚没有登录记录。' },
+        { label: '报给管理方，要求调监控', run: { intel: 3, track: { loyalty: 2, renown: -1 } },
+          after: '监控调出来了，负十八度那几个摄像头在凌晨两点到两点十分之间黑屏，黑屏的触发方式是机房侧断电，断电单是前一天上午批的。批单人签的是你的工号，那张单子你见过，但你没有签。' },
+      ] },
+    { id: 'y63', portrait: 'portrait-mem', district: 'memory', title: '记忆柜台玻璃内侧的一行字',
+      text: '记忆柜台的玻璃内侧起了一层雾，雾上有人用手指写过一行字，写得很小：三号柜段不要开。柜台外面排着队，没有人往里看。无面把玻璃擦了一遍，雾很快又起来了，字没有跟着回来，但玻璃上留着一道手指抹过的痕。柜台前排队的人低头看着自己的号，号码跳得很慢。',
+      options: [
+        { label: '去负十七层看三号柜段', run: { intel: 4, vitality: -1, grantCard: { n: 1, path: 'purge' }, track: { sin: 2, loyalty: -1 } },
+          after: '三号柜段最里面那一格的锁是好的，柜门上的霜比别处厚。你擦开霜，柜门内侧贴着一张清洗指令卡，目标写着「负十八度夜班」，路径是清洗。你把卡收下，把霜重新抹平，出来时走廊上没有人。' },
+        { label: '问无面是谁写的', run: { intel: 3, track: { sin: 1 } },
+          after: '无面说玻璃内侧只有他们能碰到，但它不记得写过。它把手举到玻璃前比了一下，手指比字迹长了半节。它说自己这半年换过一次班，换班那天的事，一点都想不起来。' },
+        { label: '把这件事写进当班日志，不再管', run: { track: { loyalty: 2, sin: -1 } },
+          after: '你写了三句，注明时间地点。日志归档时被编进了季度常规记录，没有任何后续。三个月后柜台的玻璃整体换成了磨砂的，雾再也起不来了，谁写什么都看不见。' },
+      ] },
+    { id: 'y64', portrait: 'portrait-dai', district: 'memory', title: '一笔走了三道审批的清除申请',
+      text: '托管库里有一份备份被提交了清除申请，申请单走了三道审批，三道都过了，只差执行。申请人一栏是公司名，公司三个月前注销。备份的所有人编号，和你在交易所见过的那个编号只差一位。执行单今天下午两点前必须回签。执行单是纸质的，纸角压着一枚回形针，已经生锈。',
+      options: [
+        { label: '签，把清除做完', run: { track: { loyalty: 2, sin: 2, power: 1 } },
+          after: '你签了，清除在两点零七分完成。清除日志里多了一条备注，写着「执行人已备份，可追溯」。这句备注不是你填的。一周后，清算行调取了这条日志，调取申请上的理由是「账目复核」。' },
+        { label: '压下不签，让申请过期', run: { intel: 3, track: { renown: 1, loyalty: -2 } },
+          after: '你没有签，申请在当天两点正式失效。失效通知自动发给了申请人，那个已注销的公司邮箱居然回了一封自动回复，内容是一串编号。你把编号记下，托管库里那一份备份，从此没有动过。' },
+        { label: '签，但把执行对象改成另一份', run: { grantCard: { n: 1, path: 'control' }, intel: 3, track: { sin: 2, power: 2 } },
+          after: '你换了一份无主备份顶上，操作记录做得干净。清除完成后，申请人那边没有再回话，倒是无面把一个信封推给你，里面是一张操控指令卡，目标写着「记忆柜台夜班」，是它自己的名义。' },
+      ] },
+    { id: 'y65', portrait: 'portrait-enforcer', district: 'salvage', title: '分拣带上滚过来的一只手臂',
+      text: '分拣带今天卡了一次，卡住的东西是一只还连着神经接口的义体手臂，肘部有编号，编号是三年前的批次。班头说不值得报，按废件处理就行。这只手臂的编号，和你在研究所档案里见过的一份志愿者名单，前缀一致。分拣带的滚轮上还挂着几根线，卡住时拉的。',
+      options: [
+        { label: '把手臂留下，拆接口读编号', run: { gear: 1, intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '接口里存着一段短的记录，只有四个小时，都是走路的画面，天一直是灰的。你把记录导出来，画面最后一帧停在一扇钢板门前。那只手臂没有编号的那一侧，皮肤色比另一侧新。' },
+        { label: '按废件处理，让带子继续走', run: { money: 20, track: { sin: 1, loyalty: 1 } },
+          after: '你把它推回带上，班头当着你的面把它砸平，编号那一段砸得最重。当天这条带的出件量比平时多两成。下班时班头说了一句，说这种货最近多了，来源都一样，你问是哪里，他没答。' },
+        { label: '拍照，把编号报给研究所', run: { intel: 4, chips: 1, track: { loyalty: 2, power: -1, sin: 1 } },
+          after: '研究所回了函，说这个编号的样本已全部注销，请按废件处理。你申请核对注销清单，清单上这一批一共四十七件，注销日期是同一天，办理人签名那一栏被涂黑过，涂得很厚。' },
+      ] },
+    { id: 'y66', portrait: 'portrait-fixer', district: 'salvage', title: '班头要你签一车翻新枪的出库单',
+      text: '班头推来一车翻新过的枪，一共十四支，编号是后刻的，刻痕比原编号浅。出库单上写着「五金件」，收货方是一家修理厂。他说这车货要你签一个字，签完就跟你没关系。分拣棚外面停着一辆没有喷字的货车。磅秤就在棚子门口，秤面上还留着一层薄灰。',
+      options: [
+        { label: '签，什么都不问', run: { money: 50, track: { sin: 2, power: 1 } },
+          after: '你签了，货车十分钟后开走。当天晚上，回收场外的路灯坏了两盏，第二天修好。这车枪三周后出现在下层居住区的两起纠纷里，用的是同一批后刻编号。单子在档案室放了半年，没有人来查。' },
+        { label: '不签，让他自己出库', run: { track: { renown: 1, loyalty: -1, sin: -1 } },
+          after: '你没签，班头没说什么，自己找人签了。之后他的出库单再没往你桌上放，回收场里有三样你要用的旧件，报价都比以前高了两成。他见到你照常点头，只不递烟了。' },
+        { label: '签，但要求这十四支的编号全抄一份', run: { intel: 3, chips: 1, grantCard: { n: 1, path: 'purge' }, track: { sin: 2, power: 2 } },
+          after: '你抄了十四串编号，班头看着你抄完，从口袋里掏出一张清洗指令卡放在单子上，说这是场里压着的废牌，送你。目标写着「回收场夜巡岗」。你签了单，卡也收了，抄下来的那页纸你锁进了柜子。' },
+      ] },
+    { id: 'y67', portrait: 'portrait-sal', district: 'salvage', title: '一个拾荒者从灰堆里扒出的东西',
+      text: '萨尔在灰堆里扒出一只金属盒，盒子是密封的，外壁被烧过一层。她不认识上面的标记，只认得盒子沉。她问你要不要，说不要她就砸开当废铁卖。盒子的锁扣是军规款，回收场的常规废件里没有这一种。灰堆冒着很淡的烟，白天没人管，晚上才浇一次水。',
+      options: [
+        { label: '出钱买下，原封不动带走', run: { money: -30, gear: 1, intel: 2, track: { sin: 1 } },
+          after: '你付了钱，把盒子带回住处，放在床底。一个月后你打开看了一眼，里面是一块烧变形的存储片，读不出任何东西。你把存储片扔了，盒子留着，用来装旧钥匙。' },
+        { label: '让她当场砸开', run: { intel: 3, vitality: -1, track: { sin: 1, renown: -1 } },
+          after: '盒子砸开了，里面是两枚印章和半包烟。印章上的字被烧糊了，能认出两个字，是公司名的后半截。萨尔拿走了烟，说你早该让她砸。那两枚印章第二天出现在灰市的摊上，标价很便宜。' },
+        { label: '不买，把位置报给回收场', run: { intel: 2, track: { loyalty: 2, renown: -1 } },
+          after: '你报了位置，回收场当天清了一遍那堆灰，扒出四只一样的盒子，全部按危废处理。萨尔那几天没再露面。清完以后，灰堆那块地方的地面颜色比周围浅了一圈，像被人刮掉过一层。' },
+      ] },
+    { id: 'y68', portrait: 'portrait-enforcer', district: 'salvage', title: '一个来认领哥哥义体的男人',
+      text: '一个男人来回收场认领一副义体，说那是他哥哥的，三个月前在港区出事。他出示的材料齐全，签收栏也填好了，只差场里的确认章。这副义体在昨天已经被拆成了零件，分装在三只筐里，标签是按重量走的。三只筐摆在验收台下面，标签是按重量贴的。',
+      options: [
+        { label: '把零件拼回去，让他带走', run: { money: -25, track: { renown: 3, loyalty: -1, sin: -1 } },
+          after: '你让两个工人拼了三个小时，拼回来八成的件。男人把东西装上车，走前留了一个地址。三个月后你路过那个地址，是一间还在营业的小修理铺，招牌上写着义体两个字，字是新刷的。' },
+        { label: '按重量结账，让他自己挑', run: { money: 35, track: { renown: -2, sin: 1 } },
+          after: '你按废件价给他结了账，三筐全归他。他挑了半小时，装走了两筐，把最重的那筐留下了。留下的那筐里有一枚工牌，工牌上的照片被磨花了，工号还能看清，属于港区夜班。' },
+        { label: '查他那份材料的真伪', run: { intel: 3, track: { loyalty: 3, renown: 1, sin: -1 } },
+          after: '材料是真的，事故记录却查不到，港区那一栏只写了「自愿离职」。你把这个结果告诉他，他在门口站了很久，最后什么也没带走。那副义体的零件在那三只筐里又放了两个月。' },
+      ] },
+    { id: 'y69', portrait: 'portrait-fixer', district: 'salvage', title: '灰堆里的一个还在响的终端',
+      text: '分拣区最东头有一只旧终端，屏幕碎了，机箱还在通电，每隔一会儿响一声。拆到它的时候工人不敢动手，因为屏幕虽然碎了，底下那行光标还在闪。终端背面贴着一张资产标签，标签是研究所的，编号被水泡过。响的间隔越来越长，从十几秒拉到了将近一分钟。',
+      options: [
+        { label: '断电，拆开看里面的东西', run: { gear: 1, intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '机箱里多了一块不是原厂的板子，走线接得很粗。板子上插着一张卡，卡面写着「待交付」。你把卡拔下来装进口袋，终端再没响过。那张卡你后来给老鸦看过，他摇了摇头说不接这种货。' },
+        { label: '不拆，直接交给研究所', run: { intel: 2, chips: 1, grantCard: { n: 1, path: 'expand' }, track: { loyalty: 2, power: 1, renown: -1 } },
+          after: '研究所当天来了两个人把终端取走，登记时给了一张回执，回执背面夹着一张扩张指令卡，目标写着「回收场东区分拣带」。取件的人没有解释这张卡的来路，只说要你收好。' },
+        { label: '把机箱灌进废料车，连响一起埋', run: { track: { sin: 2, loyalty: -1 } },
+          after: '你让车把它压在了最底下。当天下午那趟废料车的过磅数比平时多了四十公斤。第二天开始，东区那条龙门吊的限位开关老是乱跳，修了三次，最后是把那一整段轨道换掉才好。' },
+      ] },
+    { id: 'y70', portrait: 'portrait-sal', district: 'salvage', title: '萨尔要借回收场的一间棚子过夜',
+      text: '萨尔今天不回灰堆了，要在回收场借一间棚子过夜。她说灰堆那边今夜有人清场，来的不是巡查，是几家一起动手。班头说棚子不借外人，借了明天要写说明。棚子的门锁着，钥匙在班头腰上。棚子的顶是新换的，四周堆着没有收走的废料，铁皮上还有余温。',
+      options: [
+        { label: '把棚子借出去，说明自己写', run: { track: { renown: 2, loyalty: -2, sin: 1 } },
+          after: '你自己写了说明，措辞是临时存放物资。萨尔在棚里待了一夜，早上走的时候把地扫了一遍。当天中午，灰堆那边清完场，扒出的东西装了两车。班长在食堂看了你一眼，没说话。' },
+        { label: '不借，按规矩来', run: { track: { loyalty: 2, renown: -2 } },
+          after: '你把钥匙还回去，萨尔转身就走，没有多说。三天后你又见到她，她从穹顶外侧那边回来，衣服全湿了。她说那晚她在水渠边蹲了一夜，蹲到天亮，谁也没找到她。' },
+        { label: '带她进场里最里面的那间库房', run: { intel: 3, gear: 1, track: { sin: 2, power: 1 } },
+          after: '你把她安排在存放危废的里间，那间没有监控。第二天早上她走了，留下的不是钱，是一小卷旧图纸。图纸上画的是四十一号接缝的结构，画得比现在用的版本细，落款日期是十四年前。' },
+      ] },
+    { id: 'y71', portrait: 'portrait-enforcer', district: 'salvage', title: '一批过期的义体电池要回流',
+      text: '库房里有一批过了保质期的义体电池，性能掉到六成，按规程应当销毁。今天有人来报价，说要全收，价格比销毁费用高不少。来的人是老鸦介绍的，谈的时候一直看着门口，不谈交货，只谈出库单怎么开。报价单压在茶杯下面，数字是用铅笔写的，能擦掉。',
+      options: [
+        { label: '卖，出库单按废件开', run: { money: 65, track: { sin: 2, renown: -1 } },
+          after: '货当天拉走，出库单开的是废件，重量对得上。三个月后，下层居住区有三个人因为电池爆燃受伤，用的批次和你出库的那一批对得上。单子上的用途栏写着「再生材料」，签字人是你。' },
+        { label: '不卖，按规程销毁', run: { money: -20, track: { loyalty: 3, renown: 1 } },
+          after: '销毁走的是标准流程，录像全程留档。买方代表走的时候说了一句：你会后悔的。之后一个月，你的库房申请连续三次被驳回，理由都是「流程待完善」，第四次批下来时，批的是一间更小的库房。' },
+        { label: '卖，但要求所有电池先做一次放电处理', run: { money: 45, intel: 2, track: { sin: 1, power: 1 } },
+          after: '你让人把每块电池都放了一遍电，留了记录。买方收了货，价格降了两成。放电记录你存了一份，后来港区那起火灾调查时，这份记录被调走过一次，调走单上没有理由。' },
+      ] },
+    { id: 'y72', portrait: 'portrait-sal', district: 'salvage', title: '回收场夜里丢了一整排货架',
+      text: '回收场北区夜里丢了一整排货架，连货架带东西，地脚螺栓是齐根断的，断面很干净。值守的人说一夜没听见动静。第二天早上，那块地面的划痕是从里往外拖的，拖痕只有半截，到水泥台边就断了，像是被抬了上去。北区的水泥台边上有两道白痕，像是货架角磨过。',
+      options: [
+        { label: '顺着拖痕往场外找', run: { intel: 3, vitality: -1, grantCard: { n: 1, path: 'expand' }, track: { sin: 1 } },
+          after: '拖痕在场外的土路上消失，留下两组轮胎印，间距比常规货车宽，跟港区的高架车接近。班头追出来，塞给你一张扩张指令卡，目标写着「回收场北区」，说货架找不回来，这张牌赔给你。' },
+        { label: '把这件事按下，自己补上账', run: { money: -30, intel: 2, track: { sin: 2, power: 1 } },
+          after: '你按废件价把这一排补进了账，走了内部损耗。一个月后，北区又丢了一排，这次连螺栓都留在原地，货架是整排抬走的。值守从那以后改成两个人，工资是从你的部门预算里出的。' },
+        { label: '报案，要求查当晚的门禁', run: { intel: 2, chips: 1, track: { loyalty: 3, renown: -1 } },
+          after: '门禁记录显示当晚有两次开门，间隔十一分钟，刷卡用的是场里的临时卡。临时卡的申领记录上写着「外部协作单位」，单位名称一栏是空的。报案结案时，结论写的是「物资清运，手续不全」。' },
+      ] },
+    { id: 'y73', portrait: 'portrait-yuke', district: 'outside', title: '接缝外侧墙根下的一排赤脚印',
+      text: '穹顶外侧的接缝根下有一排脚印，从水渠那边过来，走到墙根就停了。脚印是赤脚的，尺寸不大，雨把边缘泡得发软。停住的那面墙上有几道划痕，很浅，和穹顶内侧维修工用的撬棍痕迹一模一样。墙根的砖缝里塞着几根断绳，绳头是新的，剪口很齐。',
+      options: [
+        { label: '顺着脚印往回走到水渠', run: { intel: 3, vitality: -2, track: { sin: 1 } },
+          after: '脚印在水渠边上变成两段，一段往下游走，一段往回。下游那段尽头有一只翻倒的塑料桶，桶里是空的，桶底有一层绿苔。你站了一会儿，酸雨把外套的袖口咬出了毛边。' },
+        { label: '把这处划痕报给环带巡检', run: { intel: 2, track: { loyalty: 2, renown: -1, sin: -1 } },
+          after: '巡检来了一次，把划痕填平，抹了一层密封料。填完以后那面墙的颜色比旁边深一点，像一块补丁。你下次去的时候，脚印没有了，划痕也没有了，补丁的颜色已经晒得跟旁边一样。' },
+        { label: '在墙根守一夜', run: { intel: 4, vitality: -2, grantCard: { n: 1, path: 'expand' }, track: { sin: 2, loyalty: -1 } },
+          after: '后半夜雨停了，一个人从水渠那边过来，赤脚，走到墙根就蹲下，用手在墙上摸了很久。他没有发现你。天亮后你回到墙根，砖缝里塞着一张湿透的扩张指令卡，目标写着「雨线落脚棚」。' },
+      ] },
+    { id: 'y74', portrait: 'portrait-sal', district: 'outside', title: '一辆架在接缝斜坡上的空平板车',
+      text: '一辆平板车架在接缝外侧的斜坡上，车轮用石头垫住，车上是空的，绳还挂着。车头朝里，说明有人从这里把东西拉进了穹顶。垫车的石头是从里面搬出来的，边角带着切割的痕迹，是环带检修用的那种料。斜坡是土夯的，这两天没有下雨，车辙还在。',
+      options: [
+        { label: '把车推下水渠，断掉这条路', run: { track: { loyalty: 2, renown: 1, sin: -1 } },
+          after: '你把车推下去，车翻在水渠里，轮子还在转。第二天车不见了，水渠里的淤沙多了厚厚一层。那条斜坡上的绳子也换了新的，比原来粗。这条路三天后就又通了。' },
+        { label: '把车留着，蹲在附近看谁来拉', run: { intel: 3, vitality: -1, track: { sin: 1 } },
+          after: '你蹲了两个下午，第二天傍晚来了三个人，两男一女，都不说话，把车拉进斜坡里去了。进去以后没有出来。你把三个人的鞋印记下来，其中一双鞋底是环带检修的制式。' },
+        { label: '把石头搬开，看车会不会滑', run: { intel: 2, track: { sin: 1, power: 1 } },
+          after: '石头搬开，车没动，垫得很紧。你数了数石头，一共七块，都是从同一面墙上敲下来的。那面墙在斜坡下面，敲出来的缺口被雨泡成了黑色，缺口的高度和你肩膀差不多。' },
+      ] },
+    { id: 'y75', portrait: 'portrait-out', district: 'outside', title: '穹顶外侧水渠边的一处集水坑',
+      text: '水渠边有一处集水坑，坑底积着绿色的水，水面很静。坑壁上刻着刻度，从底下往上数，一共十一格，最新的一格刻痕很新。刻痕旁边的石头缝里塞着一小块布，布是灰的，边角有缝线，像是从工装裤上撕下来的。水面上浮着一层灰膜，风一吹就散开再合上。',
+      options: [
+        { label: '把布取出来，查是谁的工装', run: { intel: 4, vitality: -1, track: { sin: 1 } },
+          after: '布上的缝线是双针，制式是十年前的旧款，编号早就停用了。你拿着布去回收场问，班头看了一眼说是巡检班的旧工装。巡检班现在的制服用的是单针，换过两回。' },
+        { label: '按水位的刻度推算上涨速度', run: { intel: 3, chips: 1, track: { sin: 1 } },
+          after: '按刻痕的间距推算，水位两年前就开始涨，最近三个月涨得最快。你把日期记在本子上。雨季结束以后你再去，坑里的水明显低了一格，底下那几道旧刻痕露出来了，刻得比新的浅。' },
+        { label: '填掉这个坑，免得有人掉进去', run: { track: { renown: 1, loyalty: 1, sin: -1 } },
+          after: '你搬了十几块石头把坑填了，填完手上有两道口子。半个月后再去，坑被重新挖开了，挖得比原来大，坑壁上多了一道新的刻痕。你填的那些石头整齐地码在一旁，一块没少。' },
+      ] },
+    { id: 'y76', portrait: 'portrait-yuke', district: 'outside', title: '雨客约在接缝外的一次见面',
+      text: '雨客约在穹顶外侧见面，地点是一段废掉的高架桥墩下面。他带来了两个人，都不说话，站在雨里。他说潮那边想知道穹顶内侧的换气周期，问你能不能给。作为交换，他可以给你一样东西，现在就放在他脚边。桥墩的钢筋露在外面，断口上凝着一层水珠。',
+      options: [
+        { label: '给，把换气周期写在纸上', run: { intel: 2, gear: 1, grantCard: { n: 1, path: 'expand' }, track: { loyalty: -3, sin: 2 } },
+          after: '你把周期写在纸上交出去。他脚边是一张扩张指令卡，目标写着「接缝四十一号控制台」，纸质粗糙，边角发绿。他把卡递给你时说了一句：这个不是我们这边的做法。身后的两个人始终没动。' },
+        { label: '不给，但提出换别的东西', run: { intel: 3, track: { power: 1, sin: 1 } },
+          after: '你提出用环带巡检的排班表换。雨客想了很久，说可以，但要三天时间。三周后他给了你一份排班表，是两年前的版本。他说这是他们手里最新的一份，换气周期他们自己去数。' },
+        { label: '拒绝，转身回穹顶', run: { track: { loyalty: 3, renown: -1, sin: -1 } },
+          after: '你没有接话，转身走了。走出二十米，身后还是没有人动。第二天你在办公室收到一只信封，里面是半张高架桥的图纸，画到一半就停了，停笔的位置正好是墩脚。' },
+      ] },
+    { id: 'y77', portrait: 'portrait-sal', district: 'outside', title: '斜坡下面挂着一具被雨泡胀的工装',
+      text: '接缝外的斜坡下面挂着一具工装，被雨泡得发胀，里面没有人。衣服是整套的，扣子扣到最上面一颗，兜里有一张湿透的门禁卡，卡上的照片已经看不清，工号还能读。这套工装挂的位置，人够不到，除非从上面下来。衣服上的扣子是用铜线缠的，缠法不是厂里的做法。',
+      options: [
+        { label: '把门禁卡取下来，查工号', run: { intel: 4, grantCard: { n: 1, path: 'control' }, track: { sin: 1 } },
+          after: '工号属于环带巡检班，人在职，考勤没断，工装就穿在他身上。你没有去问他。当天夜里门缝里塞进来一张操控指令卡，目标写着「接驳斜坡值守」，卡面潮湿，边角发绿，没人来认。' },
+        { label: '保持原样，拍下位置', run: { intel: 3, chips: 1, track: { sin: 1, power: 1 } },
+          after: '你拍了照，把位置记在水渠那条线的坐标上。两星期后再去，工装还在，被风吹得转了个方向，正面朝墙了。你复看了照片，发现衣领内侧有一道线，是手工缝的，缝法跟制式的不一样。' },
+        { label: '把工装取下，烧掉', run: { track: { sin: 2, renown: -1, loyalty: -1 } },
+          after: '你把它取下来，在水渠边烧了。衣服泡透了，烧得很慢，冒出的烟是白的。烧完剩下两颗金属扣子，你踢进了水里。那天夜里穹顶那边报了一次空气质量异常，持续二十分钟，没有查出原因。' },
+      ] },
+    { id: 'y78', portrait: 'portrait-out', district: 'outside', title: '碎石里埋着的一段被人切断的旧铁轨',
+      text: '接缝外侧的碎石里埋着一段旧铁轨，轨枕已经烂了，轨面还算平。铁轨往前走一段就断了，断口是切开的，切面很新，切口上还留着刀痕的毛刺。这一段铁轨在穹顶的图纸上没有标注，在旧地图上标的是货运线。碎石缝里长着薄薄一层绿苔，比别处的颜色深。',
+      options: [
+        { label: '顺着铁轨往断口那头走', run: { intel: 4, vitality: -2, track: { sin: 1 } },
+          after: '断口那边是一片塌陷的地基，混凝土块下面压着几根钢梁，钢梁上还有编号。你搬开一块，下面露出一段封死的隧道口，封口的水泥很新，比旁边的混凝土干净得多。雨开始大起来，你退回来了。' },
+        { label: '把断口拍照，交给环带', run: { intel: 2, chips: 1, track: { loyalty: 2, sin: -1 } },
+          after: '环带收到照片，回复说这一段属于历史遗留，无需处理。两周后你再去看，断口被一块钢板盖住了，钢板没有编号，四角打了膨胀螺栓，螺栓上还有出厂油。' },
+        { label: '撬一根轨枕带回去，当废铁卖', run: { money: 30, track: { sin: 1, renown: -1 } },
+          after: '轨枕烂得只剩一半，你扛了一公里。回收场按废木料收，价格很低，钱还不够来回的车费。班头看了一眼说这料他见过，是十四年前的货，那一批只铺了很短一段，后来全拆了。' },
+      ] },
+    { id: 'y79', portrait: 'portrait-yuke', district: 'outside', title: '潮的拾荒队这周要过穹顶一次',
+      text: '雨客带来口信，说潮的拾荒队这周要过穹顶一次，走的是接缝外侧那条旧水渠，一共九个人，回来的时候可能多也可能少。他要你这一晚把水渠内侧的那盏巡检灯关掉，灯关十分钟就够。灯的开关在环带的配电盘上。水渠内侧的灯装得很低，光只照到水面上一小片。',
+      options: [
+        { label: '关灯，什么都不问', run: { money: 55, intel: 2, track: { loyalty: -3, sin: 2 } },
+          after: '你把灯关了十一分钟，水渠那边没有声音。第二天早上配电盘上多了一张纸条，压着一沓现金。九个人进去了，那天晚上出来的只有六个，另外三个的名字雨客没有提，你也没有问。' },
+        { label: '不关灯，但把巡检班调到别处', run: { intel: 3, track: { power: 1, sin: 1, loyalty: -2 } },
+          after: '你把当晚的巡检路线往北挪了四百米，理由是北区管壁渗水。九个人过渠时灯还亮着，走得很慢。事后荀戒问过你为什么挪班，你说渗水。他看了你一会儿，把排班本合上了。' },
+        { label: '报给安保，让他们自己决定', run: { chips: 1, track: { loyalty: 3, renown: -2, sin: 1 } },
+          after: '安保当晚在水渠内侧布了人。九个人只进来了两个，其余的在接缝外侧就折回去了。两个进来的人被带走登记，登记表上的理由写的是「误入」。雨客此后没有再联系过你，一句也没有。' },
+      ] },
+    { id: 'y80', portrait: 'portrait-out', district: 'outside', title: '穹顶第 41 号接缝的一次响动',
+      text: '四十一号接缝在外侧响了一次，声音很闷，像是有人从里面敲。响声之后，接缝上那块补过的密封料鼓起一小块，鼓的位置正对着环带那条走廊。巡检记录这一栏写的是「正常」，是昨夜下班前填的，填的人是荀戒。响声之后有半分钟，管壁是安静的，然后又是水声。',
+      options: [
+        { label: '自己爬上去，摸那块鼓起的地方', run: { intel: 4, vitality: -2, track: { sin: 1 } },
+          after: '密封料是软的，按下去会回弹，底下有气流。你把耳朵贴上去，能听见管壁里的水声，水声的节奏和穹顶内侧的换气周期一致。你退下来时手上沾了一层绿粉，回家洗了两遍才掉。' },
+        { label: '把这一处记进巡检异常本', run: { intel: 2, chips: 1, track: { loyalty: 3, renown: -1 } },
+          after: '你写在异常本上，编号连号。三天后异常本被收走，换成了新的，你写的那一页没有出现在旧本子里。荀戒把新本子放在桌上时说：这本子一个月一换，别写太多。' },
+        { label: '把鼓包按回去，再用密封料补一层', run: { gear: 1, track: { sin: 2, power: 1, renown: -1 } },
+          after: '你把鼓包按平，补了一层新料，抹得和旁边一样。补完那天夜里，四十一号接缝内侧的渗水量比平时少了一半。集团年报里那一段的维修项被划掉了，划的人不是巡检班。' },
+      ] },
+  ];
+})();
+
+
+/* ===== game/afterstory.js ===== */
+/* 结局后日谈。每个结局之后，世界变成了什么样。 */
+(function () {
+  'use strict';
+  window.AFTERSTORY = {
+    'v2_fake': '三个月后，你原来的工位换了人，桌上多了一张培训通知，签发人写的是你。那副新牌没人再提，它确实存在，收在第十一层的柜子里，第一张的编号已经被划掉重写。楼里的人开始用「最配合的那个」指代整整一批人，指谁都可以。下层的墙上有人写过一次你的名字，第二天被刷掉，第三天又出现，写在同一个位置。发牌机上个月重新上过油，声音比从前轻。没人注意到它的进纸口里还卡着半张空白卡，取不出来，也没人去取。',
+
+    'v2_true': '发牌机拆走以后，那层会议室改成了档案室，第一年只放了一排空柜。回收名单清空那天，广播念到最后一名时停了一下，念的人自己也不知道该不该停。程砚在名册背面签了第一次字，签的是名册上原本没有的东西。管线里不再下发新的编号，例行检修表换成了一张空白表格，没人知道该填什么。有人在广场上问，牌不发了以后我们做什么。没有人回答，因为确实还没有答案。港区夜班的散件照旧走，一吨三百二。',
+
+    'v2_bad': '你走以后，陆晚把登记本上你那一页划掉，没写原因，只在边角补了一个日期，日期是她第一次见你的那天。诊所门口那把椅子被搬到里屋，后来雨大，椅子腿泡涨了，没人修。你的通行记录里多出三年空白，系统按惯例标成请假。例会照常发牌，轮到第十二个人的位置时，主持人叫的是你后面那个名字，念得很顺。你的旧邻居说见过你一次，在雨里，没打伞，走得不快也不慢。',
+
+    'sultan': '董事的椅子尺寸确实刚好。你上任第一件事是改例会时间，从那以后所有人都提前十分钟到。雨落下来还是那场雨，只是公告里多了「分区降雨」四个字。巡检的定额从每天两次改成三次，经费那栏写着可接受损耗。老鸦摊子秤底下那角旧公告被人翻了个面，背面什么都没有。接缝档案重新编了号，第四十一号排到了第九。散会时有人发现，会议桌尽头空着一把椅子，一整年没人搬走，也没人问是谁的。',
+
+    'dog': '你的权限卡每天换一次，换卡的人从来不看你的脸。下层开始用「那条」指代你，说的时候声音很轻，怕被听见。程砚的名册上，你那一行写的是工号不是名字，签字栏一直空着。公司年度表彰给了你一个奖，奖状上的称呼是中层员工的模范。走廊尽头有一排备用挂钩，你的工牌挂在最右边那个位置，周末保洁也不取。之后每一批新人进来，都会被带到那个挂钩前面看上一眼。',
+
+    'hero': '碑立起来那天，来的人不多，走的人比来的多。碑上没有名字，所以也没有哪一天算祭日。陆晚的诊所账上多了一笔匿名款，她没查，一直垫在抽屉最下面。监事会把你移出重点观察，档案那一栏写的是已失效。街上有人拿「可回收」当骂人的话，说了两年才慢慢不说了。碑上的字被雨泡掉一半，剩下那一半是谁刻的，谁都没有说，也没人肯说是自己刻的。',
+
+    'ghost_out': '轨道港侧门的记录仪三年没换过，里面最后一条是空的。你的工号没有注销，直接转给了下一批新人，第一个领到卡的人说卡面上有别人的指纹印。宿舍那张床后来睡了第三个人，前两个都搬走了，一个往北，一个不知道往哪。你房里的那盆植物撑了四十天，之后被搬到走廊，没人认领。档案里你那一行留着空白，按规矩，空白可以填任何东西。监事会在核对时停了一秒，然后翻过去了。',
+
+    'purged': '你的账户清零用了不到四分钟，门禁是当天下班后换的。工号末尾那位数字从七改成一，第二天有人照着签了巡检单，规程里没写不许签。程砚在名册上找到过你的名字一次，划掉，没有写替代的编号。床铺第二天就分出去了，第三个住进来的人姓什么，写在排班表第二列。回收单第三栏始终空着，说要填的那个人后来也没有填。归档结论那一行是打印体，只有「已回收」三个字是手写。',
+
+    'broken': '你的门禁卡在当天下午就作废了，办公室三点搬空，四点有人进去量窗帘尺寸。自愿退出那张表归档时盖了章，章是圆的，看不出是哪个部门。你的社保号在月底注销，原因那栏填的是正常。会客室换了新地毯，颜色比原来深，遮得住脚印。下层诊所里，陆晚问过你一句话，没有人记得是哪一句。你最后提的那个问题，档案里没有记，问了也没有人答。',
+
+    'emperor': '新章程的封面印了你的名字，字体比正文大两号。雨从那以后按区下，高塔那一片全年降雨天数从一百零四天减到八十九天，下层那一片没变。程砚被调去做老化测试复核，报告要求写两版，一版上报，一版留底。老鸦的摊子后来有了编号，写在灯箱背面，写得歪。章程第二页上有一行签名，字迹是你的，名字不是。翻章程的人大多翻到第二页就停了，后面没人看。',
+
+    'w1': '清算行连夜改的报价里，执行人那一栏删得很干净，连模板都换成了新的。广场上那张写你名字的纸第三天被雨泡烂，扫街的把它和其他垃圾一起收走。那本账被人翻过，中间少了几页，正好是记着人名的那几页。下层后来有人按账本上没写的方式做事，做得比写着的还顺。你走出高塔那天电梯没停，这个细节被写进当年的一份内部简报。账本最后一页是空的，压在会议桌抽屉里，锁没上。',
+
+    'w2': '签收栏终于有字以后，那件东西安静地待在下面，等的日子比做完的日子长。程砚调去了别的楼，工牌换过一次颜色，之后没人再提她签过什么。你桌上那份新指令放了两个月，编号那一栏一直是空的，没有人来填。例会照开，发牌不再叫发牌，改叫例行下发。有人在档案里查过你替谁签过字，查了三次都没查到，第三次连名字都记错了。',
+
+    'w3': '第四十一号接缝那一段再没修过，巡检的定额从每天两次退回一次，因为他擦的是别处。第一场雨落在下层居住区时，前十七秒里没有人跑，往后三天都是如此。集团的公告把那一年写成接缝检修，旁边同一页是降雨量统计，数字比往年好看。雨客说他不再往接缝外面走了，因为潮已经进来了，进来得比人快。下层的孩子管那几天叫放晴，大人叫灰潮，两边吵过一阵，后来不吵了。',
+
+    'w4': '那副牌洗过之后就没人认得出是哪一副了，发牌顺序照旧按工号排。例会主持人的名单后来添的新名字比划掉的多。走廊尽头的椅子被人数过一次，数出十三把，记的人自己都笑，说大概多算了一把。会议室里的香槟杯收走了三只，其中一只杯口有裂。你和他后来在别的会上见过两次，都点头，没有握手。桌上那副新牌的第一张，编号栏留白。',
+
+    'w5': '陆晚买的骨灰盒是最便宜的那种，收据她留了三年才丢。老鸦替你出的运费记在自己本上，旁边写「不催」，之后再没翻过那一页。名单里你那一栏被划掉，括号里写着非回收，这行字是别人补的，笔迹很新。巷口的雨确实比别处轻，轻到有人专门去那儿站过。老鸦摊子秤底下压的那张纸后来又多了二张，是名单的另一份抄本。抄到一半停了，剩下的半页空着。',
+
+    'w6': '第二天你回到工位，茶还在窗台上，凉着，杯底有一圈水痕。发牌没有停，排期表上的格子照旧一天一格，填得规规矩矩。你的工号末尾没改，这一栏在整层楼里很常见，谁的名字后面都一样。下层的队在早上七点排到巷口，长度和上个月差不多。监事会那一年没有增补椅子，也没有减。有人问你七日里改了什么，你说没改。这句话后来被写进年终简报的讨论部分，写在最末一段。',
+
+    'survivor': '第十三张牌发到你手上那天，天气和第十二张那天一模一样。你名下在陆晚诊所记着的一笔账还没清，她也没催。老鸦问过你一次要不要办第三栏的单子，你说不用，他就没再问，也没记下来。排期表上你的名字后面那一格永远是空的，签的人签了几十年，从没在那格上落过笔。你还是坐在原来的椅子上喝茶，茶比从前泡得久一点。楼里的人换了两茬，新来的不知道你折过十二张牌。',
+  };
+})();
+
 /* ===== game/rng.js ===== */
 /* ==========================================================
    《七日指令》随机数层
@@ -3955,6 +7153,8 @@ window.GAME_DATA = (function () {
     });
     pushEv(window.EVENTS_EXTRA);
     pushEv(window.EVENTS_MEET);
+    pushEv(window.EVENTS_V5);
+    pushEv(window.EVENTS_V6);
 
     // 结局：三类定调结局条件最具体，排最前；其余扩展插在兜底之前
     const tiered = take(window.ENDINGS_EXTRA2);
@@ -4044,13 +7244,22 @@ window.GAME_DATA = (function () {
     let uid = 0;
     D.PATHS.forEach((p) => {
       D.TIERS.forEach((t) => {
-        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张，抽 12 张入场
+        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张
         for (let i = 0; i < count; i++) {
           deck.push({ uid: 'c' + (uid++), pathId: p.id, tier: t.id, need: t.need, target: null });
         }
       });
     });
-    return shuffle(deck);
+    // 开局的三张要保证是可折的：先各路径取一张最低品级，打乱后放最前
+    const easy = [];
+    D.PATHS.forEach((p) => {
+      const c = deck.find((x) => x.pathId === p.id && x.tier === 1 && !easy.includes(x));
+      if (c) easy.push(c);
+    });
+    shuffle(easy);
+    const rest = deck.filter((c) => easy.indexOf(c) < 0);
+    shuffle(rest);
+    return easy.concat(rest);
   }
 
   /* ==========================================================
@@ -4080,8 +7289,10 @@ window.GAME_DATA = (function () {
       gear: 0,
       boostDiscount: 0,
       foresight: false,
-      hand: all.slice(0, 5),
-      deck: all.slice(5),
+      /* 开局只发三张：牌是挣来的，不是发全的。
+         其余十七张留在牌堆，靠主线、关系、委托、城区动作逐张拿到。 */
+      hand: all.slice(0, C.startHand),
+      deck: all.slice(C.startHand),
       folded: 0,
       fortune: 0,
       log: [],
@@ -4114,6 +7325,136 @@ window.GAME_DATA = (function () {
   // 补牌：带地区权重，让目标分布随本局随机
   function seedHand(s) {
     s.hand.forEach((c) => { if (!c.target) c.target = pickTarget(s, c); });
+  }
+
+  /* ==========================================================
+     四·五、卡牌获取
+     牌不再开局发全。所有新牌都从牌堆里按条件抽出来，
+     来源记在 s.cardLog 里，玩家能看到每一张是怎么来的。
+     ========================================================== */
+  function grantCard(s, opts) {
+    const o = opts || {};
+    const n = o.n || 1;
+    const got = [];
+    for (let i = 0; i < n; i++) {
+      if (!s.deck.length) break;
+      if (s.hand.length >= (C.handMax || 7)) break;
+
+      let idx = -1;
+      // 优先匹配偏好：先按路径+品级，再按路径，再按品级，最后随便一张
+      if (o.path) {
+        idx = s.deck.findIndex((c) => c.pathId === o.path && (!o.tier || c.tier === o.tier));
+        if (idx < 0) idx = s.deck.findIndex((c) => c.pathId === o.path);
+      }
+      if (idx < 0 && o.tier) idx = s.deck.findIndex((c) => c.tier === o.tier);
+      if (idx < 0) idx = 0;
+
+      const card = s.deck.splice(idx, 1)[0];
+      card.target = pickTarget(s, card);
+      card.from = o.reason || '来源不明';
+      card.gotDay = s.day;
+      s.hand.push(card);
+      got.push(card);
+      s.cardLog = s.cardLog || [];
+      s.cardLog.push({ day: s.day, card: label(card), reason: card.from });
+      if (s.cardLog.length > 40) s.cardLog.shift();
+    }
+    if (got.length) {
+      pushLog(s, 'good', '获得 ' + got.map((c) => '「' + label(c) + '」').join('、') +
+        '（' + (o.reason || '来源不明') + '）');
+    }
+    return got;
+  }
+
+
+  /* ---------------- 申领：保底牌源 ----------------
+     折不动牌的时候，还能走一趟流程再要一张。
+     代价是 2 点行动，等于放弃当天的一半行动力。
+  ------------------------------------------------------------ */
+  function drawCard(s) {
+    if (!s.deck || !s.deck.length) return { ok: false, why: '董事会那边也没有余牌了。' };
+    if (s.hand.length >= (C.handMax || 7)) return { ok: false, why: '手上拿不下了，先折掉几张。' };
+    const cost = 2;
+    if (s.ap < cost) return { ok: false, why: '申领要走三道流程，至少要 2 点行动。' };
+    s.ap -= cost;
+    const lines = [];
+    const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
+    if (!got.length) return { ok: false, why: '没领到。' };
+    lines.push('你把申请递上去，等了四十分钟，窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。');
+    lines.push('消耗 2 点行动。牌堆还剩 ' + s.deck.length + ' 张。');
+    pushLog(s, 'info', '申领到一张 ' + label(got[0]));
+    return { ok: true, lines: lines, card: got[0], ap: s.ap };
+  }
+
+  /* ---------------- 按来源库检查是否有新牌可拿 ----------------
+     CARD_SOURCES 里的每条都带 trigger，满足就给。
+     每条只给一次，记在 s.cardSourceUsed 里。
+  ------------------------------------------------------------ */
+  function checkCardSources(s) {
+    const list = Array.isArray(window.CARD_SOURCES) ? window.CARD_SOURCES : [];
+    if (!list.length) return [];
+    s.cardSourceUsed = s.cardSourceUsed || {};
+    s.cardLog = s.cardLog || [];
+    const got = [];
+    for (let i = 0; i < list.length; i++) {
+      const cs = list[i];
+      if (!cs || !cs.id || s.cardSourceUsed[cs.id]) continue;
+      /* 兼容两种写法：kind/need 与 source/trigger */
+      const kind = cs.kind || cs.source || 'npc';
+      const t = cs.trigger || {};
+      const need = cs.need != null ? cs.need : null;
+      let ok = false;
+
+      if (kind === 'npc') {
+        const who = cs.npc || t.npc;
+        if (!who || !(s.metNpcs && s.metNpcs[who])) continue;
+        ok = ST_rel(s, who) >= (need != null ? need : (t.minRel != null ? t.minRel : 1));
+      } else if (kind === 'district') {
+        const hits = (s.briefDistrictHits && s.briefDistrictHits[cs.district]) || 0;
+        ok = hits >= (need != null ? need : (t.minHits != null ? t.minHits : 2));
+      } else if (kind === 'stat') {
+        ok = (s.stats[cs.stat] || 0) >= (need != null ? need : 7);
+      } else if (kind === 'track') {
+        ok = (s.tracks[cs.track] || 0) >= (need != null ? need : 6);
+      } else if (kind === 'day') {
+        ok = s.day >= (need != null ? need : (t.minDay != null ? t.minDay : 5));
+      } else {
+        /* 兜底：仍支持旧的 trigger 写法 */
+        ok = true;
+        if (t.minRel != null && (!csrf_npc(cs) || ST_rel(s, csrf_npc(cs)) < t.minRel)) ok = false;
+        if (ok && t.minFolded != null && s.folded < t.minFolded) ok = false;
+        if (ok && t.minDay != null && s.day < t.minDay) ok = false;
+        if (ok && t.flag && !(s.storyFlags && s.storyFlags[t.flag])) ok = false;
+        if (ok && t.met && !(s.metNpcs && s.metNpcs[t.met])) ok = false;
+      }
+      if (!ok) continue;
+
+      const n = cs.n || (cs.grant && cs.grant.n) || 1;
+      const path = cs.path || (cs.grant && cs.grant.path) || null;
+      const tier = cs.tier || (cs.grant && cs.grant.tier) || null;
+      const cards = grantCard(s, { reason: cs.hint || cs.title || '来源', n: n, path: path, tier: tier });
+      if (cards.length) {
+        s.cardSourceUsed[cs.id] = 1;
+        got.push({ src: cs, cards: cards });
+      }
+    }
+    return got;
+  }
+  /* 旧写法里 npc 可能写在 trigger 上，取出来备用 */
+  function csrf_npc(cs) { return cs.npc || (cs.trigger && cs.trigger.npc) || null; }
+
+  /* 只读关系值，避免循环依赖 */
+  function ST_rel(s, npcId) {
+    if (!s.relations) s.relations = {};
+    return Number(s.relations[npcId]) || 0;
+  }
+
+  /** 供外部查询：还能拿到几张 */
+  function cardsLeft(s) { return s.deck ? s.deck.length : 0; }
+
+  /** 按路径统计手牌，给"某条路径需要几张"这类条件用 */
+  function handPathCount(s, pathId) {
+    return (s.hand || []).filter((c) => c.pathId === pathId).length;
   }
 
   /* ==========================================================
@@ -4243,15 +7584,16 @@ window.GAME_DATA = (function () {
       s.pathFoldCount[path.id] = (s.pathFoldCount[path.id] || 0) + 1;
       if (target.district) s.briefDistrictHits[target.district] = (s.briefDistrictHits[target.district] || 0) + 1;
 
-      if (s.deck.length && s.hand.length < 5) {
-        const nc = s.deck.shift();
-        nc.target = pickTarget(s, nc);
-        s.hand.push(nc);
-      }
+      // 不再自动补牌：折掉一张就少一张，新牌要自己去挣
       if (s.folded % 2 === 0) {
         s.chips += 3;
         s.apMax = Math.min(6, C.apPerDay + Math.floor(s.folded / 4));
         res.lines.push('董事会追加授权：+3 芯片。');
+      }
+      // 每折两张，董事会补发一张（这是最稳的牌源）
+      if (s.folded % 2 === 0) {
+        const got = grantCard(s, { reason: '董事会按进度补发', n: 1 });
+        if (got.length) res.lines.push('董事会补发一张：' + label(got[0]) + '。');
       }
       if (s.folded >= C.deckGoal) res.lines.push('十二张牌，全部折断。');
     } else {
@@ -4335,6 +7677,14 @@ window.GAME_DATA = (function () {
       lines.push('进修完成：' + statName(k) + ' +1。');
     }
     if (r.field) lines.push(fieldOp(s));
+    if (r.draw) {
+      const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
+      if (got.length) {
+        lines.push('窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。牌堆还剩 ' + s.deck.length + ' 张。');
+      } else {
+        lines.push('董事会那边也没有余牌了。');
+      }
+    }
     if (r.deal) {
       if (s.intel >= 3) { s.intel -= 3; s.chips += 3; lines.push('用 3 情报换来 3 枚指令芯片。'); }
       else if (s.money >= 25) { s.money -= 25; s.intel += 4; lines.push('花 25 信用点买到 4 份情报。'); }
@@ -4411,6 +7761,15 @@ window.GAME_DATA = (function () {
     if (!s.briefDistrictHits) s.briefDistrictHits = {};
     if (!s.pathFoldCount) s.pathFoldCount = {};
 
+    /* --- 牌源：满足条件的人会开始给你牌 --- */
+    const newCards = checkCardSources(s);
+    if (newCards.length) {
+      newCards.forEach((x) => {
+        pushLog(s, 'good', '「' + (x.src.title || '') + '」→ 得到 ' +
+          x.cards.map((c) => label(c)).join('、'));
+      });
+    }
+
     /* --- 委托：先结算超期，再看是否来新的 --- */
     const expired = window.GAME_BRIEFS ? window.GAME_BRIEFS.tick(s) : [];
     const incoming = window.GAME_BRIEFS ? window.GAME_BRIEFS.maybeSpawn(s) : null;
@@ -4481,7 +7840,9 @@ window.GAME_DATA = (function () {
     s.phase = 'play';
     pushLog(s, 'event', ev.title + ' → ' + opt.label);
     checkEnd(s);
-    return { ok: true, lines: lines };
+    /* 选项的 after：选完之后实际发生了什么。
+       单独带出来，由界面接在结果后面显示，不混进数值行。 */
+    return { ok: true, lines: lines, after: opt.after || null, ev: ev, opt: opt };
   }
 
   function applyEffect(s, eff, lines) {
@@ -4497,6 +7858,11 @@ window.GAME_DATA = (function () {
     if (eff.chips) { s.chips = Math.max(0, s.chips + eff.chips); lines.push('芯片 ' + (eff.chips > 0 ? '+' : '') + eff.chips + '。'); }
     if (eff.vitality) { s.stats.vitality = clamp(s.stats.vitality + eff.vitality, 0, C.statCap); lines.push('体魄 ' + eff.vitality + '。'); }
     if (eff.gear) { s.gear += eff.gear; lines.push('装备 +' + eff.gear + '。'); }
+    if (eff.grantCard) {
+      const g = eff.grantCard || {};
+      const got = grantCard(s, { reason: '这趟没有白跑', n: g.n || 1, path: g.path || null, tier: g.tier || null });
+      if (got.length) lines.push('拿到一张：' + got.map((c) => label(c)).join('、') + '。');
+    }
     if (eff.resetDeadline) { s.deadline = C.deadlineDays; lines.push('期限重置为 7 天。'); }
     if (eff.statRandom) {
       const k = pick(D.STATS).id;
@@ -4574,7 +7940,7 @@ window.GAME_DATA = (function () {
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    resolveStory, pickStory, applyEffectPublic,
+    resolveStory, pickStory, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,
@@ -4599,7 +7965,8 @@ window.GAME_DATA = (function () {
 
   /* ---------------- 取内容库 ---------------- */
   function pool() {
-    const p = Array.isArray(window.BRIEFS) ? window.BRIEFS : [];
+    const p = Array.isArray(window.BRIEFS) ? window.BRIEFS.slice() : [];
+    if (Array.isArray(window.BRIEFS2)) p.push.apply(p, window.BRIEFS2);
     return p.filter((b) => b && b.id && b.kind && b.solve);
   }
 
@@ -4791,6 +8158,18 @@ window.GAME_DATA = (function () {
     }
 
     applyEffect(S, b.onSolve, lines);
+
+    // 交差的人会再给你一点东西：一半概率多给一张牌
+    const rng = S.rng || window.GAME_RNG.create(String(Date.now()));
+    if (rng.chance(0.5) && S.deck && S.deck.length) {
+      const got = window.GAME_ENGINE.grantCard(S, {
+        reason: '委托交差后对方补的',
+        path: (b.solve && b.solve.path) || null,
+        n: 1,
+      });
+      if (got.length) lines.push('对方另外塞给你一张：' + window.GAME_ENGINE.label(got[0]) + '。');
+    }
+
     S.briefs.splice(idx, 1);
     S.briefDone = (S.briefDone || 0) + 1;
     S.fortune += 1 + b.days;
@@ -4916,15 +8295,36 @@ window.GAME_DATA = (function () {
     const out = [];
     if (Array.isArray(window.STORY_NPC_A)) out.push(...window.STORY_NPC_A);
     if (Array.isArray(window.STORY_NPC_B)) out.push(...window.STORY_NPC_B);
+    if (Array.isArray(window.STORY_NPC_A2)) out.push(...window.STORY_NPC_A2);
+    if (Array.isArray(window.STORY_NPC_B2)) out.push(...window.STORY_NPC_B2);
     return out;
   }
   function allScenes() { return mainScenes().concat(npcScenes()); }
 
   const fired = (S, id) => !!(S.storyFired && S.storyFired[id]);
 
-  /* ---------------- 条件求值 ---------------- */
+  /* ---------------- 条件求值 ----------------
+     支持四种条件族，策划写内容时不用碰引擎：
+       stat:  { folded: [5,12], day: [3,99], money: [0,20], intel: [3,99], chips: [0,2] }
+       track: { sin: [7,12], loyalty: [0,3], renown: [0,4], power: [8,12] }
+       have:  ['has_ledger', 'trusted_su']        剧情标记，全部满足
+       not:   ['broke_flow']                      排斥的标记
+     也兼容旧写法：act / minFolded / maxFolded / minDay / minRel / met / flag / notFlag
+  ------------------------------------------------ */
+  const STAT_KEYS = { folded: (s) => s.folded, day: (s) => s.day, money: (s) => s.money,
+    intel: (s) => s.intel, chips: (s) => s.chips, gear: (s) => s.gear,
+    cards: (s) => (s.hand ? s.hand.length : 0), deck: (s) => (s.deck ? s.deck.length : 0) };
+
+  function inRange(val, range) {
+    if (val == null) return false;
+    if (!Array.isArray(range)) return val === range;
+    return val >= range[0] && val <= range[1];
+  }
+
   function condOk(S, when) {
     if (!when) return true;
+
+    /* --- 旧写法（保留兼容） --- */
     if (when.act && actOf(S.folded).n !== when.act) return false;
     if (when.minFolded != null && S.folded < when.minFolded) return false;
     if (when.maxFolded != null && S.folded > when.maxFolded) return false;
@@ -4933,8 +8333,89 @@ window.GAME_DATA = (function () {
     if (when.flag && !(S.storyFlags && S.storyFlags[when.flag])) return false;
     if (when.notFlag && S.storyFlags && S.storyFlags[when.notFlag]) return false;
     if (when.met && !isMet(S, when.met)) return false;
+
+    /* --- 数值族 --- */
+    if (when.stat) {
+      for (const k in when.stat) {
+        const fn = STAT_KEYS[k];
+        if (!fn) continue;
+        if (!inRange(fn(S), when.stat[k])) return false;
+      }
+    }
+
+    /* --- 名望族 --- */
+    if (when.track) {
+      for (const k in when.track) {
+        const v = (S.tracks && S.tracks[k]) || 0;
+        if (!inRange(v, when.track[k])) return false;
+      }
+    }
+
+    /* --- 标记族 --- */
+    if (when.have) {
+      const list = Array.isArray(when.have) ? when.have : [when.have];
+      for (let i = 0; i < list.length; i++) {
+        if (!(S.storyFlags && S.storyFlags[list[i]])) return false;
+      }
+    }
+    if (when.not) {
+      const list = Array.isArray(when.not) ? when.not : [when.not];
+      for (let i = 0; i < list.length; i++) {
+        if (S.storyFlags && S.storyFlags[list[i]]) return false;
+      }
+    }
     return true;
   }
+
+  /* ---------------- 把条件翻译成人话，给界面显示 ---------------- */
+  function describeWhen(S, when) {
+    if (!when) return '';
+    const bits = [];
+    const rng = (r) => (Array.isArray(r) ? r[0] + '-' + r[1] : String(r));
+
+    if (when.act) bits.push('第 ' + when.act + ' 幕');
+    if (when.minFolded != null) bits.push('已折 ≥' + when.minFolded);
+    if (when.maxFolded != null) bits.push('已折 ≤' + when.maxFolded);
+    if (when.minDay != null) bits.push('第 ' + when.minDay + ' 天起');
+    if (when.minRel != null) {
+      const info = window.GAME_ENGINE.npcOf ? window.GAME_ENGINE.npcOf(when.npc) : null;
+      bits.push((info ? info.name : '他') + '关系 ≥' + when.minRel);
+    }
+    if (when.met) {
+      const info = window.GAME_ENGINE.npcOf ? window.GAME_ENGINE.npcOf(when.met) : null;
+      bits.push('已认识' + (info ? info.name : ''));
+    }
+    if (when.stat) for (const k in when.stat) {
+      const name = { folded: '已折牌', day: '天数', money: '信用点', intel: '情报',
+        chips: '芯片', gear: '装备', cards: '手牌', deck: '牌堆剩余' }[k] || k;
+      bits.push(name + ' ' + rng(when.stat[k]));
+    }
+    if (when.track) for (const k in when.track) {
+      const name = window.GAME_ENGINE.trackName ? window.GAME_ENGINE.trackName(k) : k;
+      bits.push(name + ' ' + rng(when.track[k]));
+    }
+    if (when.have) {
+      const list = Array.isArray(when.have) ? when.have : [when.have];
+      const names = list.map(flagName);
+      bits.push('需 ' + names.join('、'));
+    }
+    if (when.not) {
+      const list = Array.isArray(when.not) ? when.not : [when.not];
+      bits.push('不能 ' + list.map(flagName).join('、'));
+    }
+    return bits.join(' · ');
+  }
+
+  /* 剧情标记的可读名（只列常用的，其余直接显示 key） */
+  const FLAG_NAMES = {
+    ask_prev: '问过上一副牌', know_name: '记住了名录上的名字', kept_going: '被允许继续',
+    told_truth: '对监事说了实话', trusted_su: '把排期交给苏纹', has_ledger: '拿到了那本笔记',
+    blank_card: '收下了空白卡', out_of_flow: '把自己从流程里摘出', broke_flow: '删掉了整份流程',
+    left_together: '邀她一起离开',
+    wd_told_number: '向闻铎报了编号', sw_changed_table: '替苏纹改过表',
+    cy_signed: '替程砚签了收', ym_took_slip: '替银面扛下单子', yk_asked_him: '问过雨客本人',
+  };
+  function flagName(k) { return FLAG_NAMES[k] || k; }
 
   /* ---------------- 初见：把十六次初识排进前六天 ----------------
      玩家必须先认识人，委托和支线才有来源。
@@ -5126,6 +8607,7 @@ window.GAME_DATA = (function () {
   window.GAME_STORY = {
     GUIDE, ACTS, actOf, rel, addRel, relTier, isMet, markMet,
     nextScene, resolve, progress, ensureGuide, allScenes, mainScenes, npcScenes, condOk,
+    describeWhen, flagName, inRange,
   };
 })();
 
@@ -5197,6 +8679,55 @@ window.GAME_DATA = (function () {
     const pool = v[tier] || v.mid || v.low || [];
     const rng = S.rng || window.GAME_RNG.create(String(Date.now()));
     return { text: pool.length ? rng.pick(pool) : '', tier: tier };
+  }
+
+  /* ---------------- 把台词串成一段 ----------------
+     不是随机抽一句，而是按「铺垫 → 信息 → 后手」的顺序，
+     从该关系层级的池子里取 2-3 句，拼成一次完整的开口。
+     同一个人每次开口的句数和顺序都不同，读起来像在跟你说话，
+     而不是在播状态播报。
+  ------------------------------------------------ */
+  function compose(S, npcId, forceTier) {
+    const v = voiceOf(npcId);
+    if (!v) return null;
+    const rel = ST.rel(S, npcId);
+    const tier = forceTier || ST.relTier(rel);
+    const rng = S.rng || window.GAME_RNG.create(String(Date.now()));
+    const pools = {
+      low: (v.low || []).slice(),
+      mid: (v.mid || []).slice(),
+      high: (v.high || []).slice(),
+    };
+
+    /* 铺垫优先用低一层级的口气，信息用当前层级，后手用高一层级。
+       越熟的人，铺垫越短、后手越重。 */
+    const order = tier === 'low' ? ['low', 'low', 'mid']
+      : tier === 'mid' ? ['low', 'mid', 'mid', 'high']
+      : ['mid', 'high', 'high'];
+
+    const take = (k) => {
+      const a = pools[k];
+      if (!a || !a.length) return null;
+      const i = rng.next() * a.length | 0;
+      return a.splice(i, 1)[0];
+    };
+
+    const want = tier === 'high' ? 3 : (rng.next() < 0.55 ? 2 : 3);
+    const out = [];
+    for (let i = 0; i < order.length && out.length < want; i++) {
+      const line = take(order[i]);
+      if (line && out.indexOf(line) < 0) out.push(line);
+    }
+    if (!out.length) {
+      const fb = take(tier) || take('mid') || take('low');
+      if (fb) out.push(fb);
+    }
+
+    /* 处境反应优先压在最前面 —— 那是他看见你的第一眼 */
+    const ctx = greeting(S, npcId);
+    if (ctx && ctx.tier === 'react' && out.indexOf(ctx.text) < 0) out.unshift(ctx.text);
+
+    return { text: out.join('\n\n'), tier: tier, parts: out.length };
   }
 
   /* ---------------- 话题可用性 ---------------- */
@@ -5321,9 +8852,10 @@ window.GAME_DATA = (function () {
       return;
     }
 
-    const g = greeting(S, npcId);
     const first = firstLine(S, npcId);
-    const shown = first || (g ? g.text : '');
+    /* 不是抽一句，是把该层级的话串成一段：铺垫 → 信息 → 后手 */
+    const cmp = compose(S, npcId);
+    const shown = first || (cmp ? cmp.text : ((greeting(S, npcId) || {}).text || ''));
 
     const topicHtml = (v.topics || []).map((t) => {
       const st = topicState(S, npcId, t);
@@ -5439,7 +8971,7 @@ window.GAME_DATA = (function () {
     return { got: got, total: all.length };
   }
 
-  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
+  window.GAME_VOICE = { voiceOf, greeting, compose, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
 })();
 
 /* ===== game/meta.js ===== */
@@ -6131,8 +9663,13 @@ window.GAME_DATA = (function () {
       const p = window.GAME_STORY.progress(S);
       if (p.nextTitle) { el.textContent = '第 ' + p.act + ' 幕 · ' + p.name + '：' + p.nextTitle; return; }
     }
-    if (foldable.length) el.textContent = '还能折 ' + foldable.length + ' 张，还差 ' + need + ' 张通关';
-    else el.textContent = '暂时没有可折的牌，换牌或用行动攒资源';
+    if (foldable.length) {
+      el.textContent = '还能折 ' + foldable.length + ' 张，还差 ' + need + ' 张通关';
+    } else if (S.hand.length <= 1 && S.deck && S.deck.length) {
+      el.textContent = '手上没牌了，去「行动」里申领一张';
+    } else {
+      el.textContent = '暂时没有可折的牌，换牌或用行动攒资源';
+    }
   }
 
   function distNameOf(card) {
@@ -6170,6 +9707,14 @@ window.GAME_DATA = (function () {
     $('chip-show').textContent = range.value + '/' + maxChip;
     $('boost-cost').textContent = E.boostCost(S);
     $('chk-boost').disabled = S.money < E.boostCost(S);
+
+    // 牌堆与手牌：让「牌是挣来的」这件事可见
+    const deckEl = $('hud-deck');
+    if (deckEl && S.deck) {
+      deckEl.textContent = S.hand.length + ' / ' + S.deck.length;
+      deckEl.title = '手上 ' + S.hand.length + ' 张（上限 ' + (D.CONFIG.handMax || 7) + '）· 牌堆还有 ' + S.deck.length + ' 张';
+      deckEl.classList.toggle('low', S.hand.length <= 1);
+    }
 
     // 主线幕进度
     if (window.GAME_STORY) {
@@ -6585,6 +10130,29 @@ window.GAME_DATA = (function () {
     el.hidden = !on;
   }
 
+
+  /* ---------- 正文内联高亮 ----------
+     正文里写成【罪痕】【忠诚】这类方括号术语时，
+     渲染成高亮标记，玩家读到就知道这是面板上的哪个数。 */
+  const TERM_COLOR = {
+    '罪痕': 'sin', '忠诚': 'loyalty', '声望': 'renown', '权柄': 'power',
+    '信用点': 'money', '情报': 'intel', '指令芯片': 'chips', '芯片': 'chips',
+    '装备': 'gear', '体魄': 'vitality', '智慧': 'intellect', '魅力': 'charm',
+    '战斗': 'force', '隐匿': 'stealth',
+  };
+  function richText(raw) {
+    if (!raw) return '';
+    // 先转义，再替换方括号
+    let out = esc(raw);
+    out = out.replace(/【([^】]{1,10})】/g, (m, term) => {
+      const kind = TERM_COLOR[term];
+      const cls = kind ? ' term term-' + kind : ' term';
+      return '<b class="' + cls.trim() + '">' + term + '</b>';
+    });
+    // 段落换行保留
+    return out;
+  }
+
   function introScenes() {
     const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
     return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -6704,10 +10272,17 @@ window.GAME_DATA = (function () {
 
     // 正文
     $('story-title').textContent = scene.title || '';
-    $('story-text').textContent = scene.text || '';
+    $('story-text').innerHTML = richText(scene.text || '');
     $('story-body').scrollTop = 0;
 
     $('story-skip').hidden = !(storyIsIntro || scene.kind === 'intro');
+
+    // 触发条件：告诉玩家这段为什么现在发生
+    const condEl = $('story-cond');
+    const desc = scene.when && window.GAME_STORY
+      ? window.GAME_STORY.describeWhen(S, scene.when) : '';
+    if (desc) { condEl.textContent = '触发：' + desc; condEl.hidden = false; }
+    else { condEl.hidden = true; }
 
     // 选项
     renderChoices(scene.options, (o, i) => onStoryChoice(scene, o, i));
@@ -6831,7 +10406,10 @@ window.GAME_DATA = (function () {
         }
         show('screen-game');
         renderAll();
-        if (r.ok) showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null);
+        if (r.ok) {
+          /* 先看数值，再看后来发生了什么。有 after 就多一屏。 */
+          showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null, r.after);
+        }
         if (S.phase === 'end' && S.ending) showEnd();
       };
       wrap.appendChild(b);
@@ -6842,13 +10420,15 @@ window.GAME_DATA = (function () {
   /* ==========================================================
      弹窗
      ========================================================== */
-  function showResult(title, lines, ok) {
+  function showResult(title, lines, ok, after) {
     $('res-body').innerHTML =
       '<div class="res-big" style="color:' + (ok === true ? 'var(--ok)' : ok === false ? 'var(--red)' : 'var(--cyan)') + '">' + esc(title) + '</div>' +
       lines.map((l) => {
         const cls = /失败|崩盘|超期|还差/.test(l) ? 'fail' : (/成功|完成|^\+/.test(l) ? 'ok' : '');
         return '<div class="res-line ' + cls + '">' + esc(l) + '</div>';
-      }).join('');
+      }).join('') +
+      (after ? '<div class="res-after"><div class="res-after-t">后来</div>' +
+        '<p class="res-after-x">' + esc(after) + '</p></div>' : '');
     show('screen-result');
   }
   function toast(title, msg) { showResult(title, [msg], null); }
@@ -6869,6 +10449,13 @@ window.GAME_DATA = (function () {
     ];
     $('end-summary').innerHTML = bits.map((b) => '<span>' + esc(b) + '</span>').join('');
     if (!settled) settled = MET.settle(P, S);
+
+    // 后日谈：世界在你之后变成了什么样
+    const after = (window.AFTERSTORY || {})[e.id];
+    const box = $('end-after');
+    if (after) { $('end-after-text').textContent = after; box.hidden = false; }
+    else { box.hidden = true; }
+
     $('end-points').textContent = '+' + settled.earned;
     $('end-total').textContent = settled.total;
     show('screen-end');

@@ -59,15 +59,36 @@
     const out = [];
     if (Array.isArray(window.STORY_NPC_A)) out.push(...window.STORY_NPC_A);
     if (Array.isArray(window.STORY_NPC_B)) out.push(...window.STORY_NPC_B);
+    if (Array.isArray(window.STORY_NPC_A2)) out.push(...window.STORY_NPC_A2);
+    if (Array.isArray(window.STORY_NPC_B2)) out.push(...window.STORY_NPC_B2);
     return out;
   }
   function allScenes() { return mainScenes().concat(npcScenes()); }
 
   const fired = (S, id) => !!(S.storyFired && S.storyFired[id]);
 
-  /* ---------------- 条件求值 ---------------- */
+  /* ---------------- 条件求值 ----------------
+     支持四种条件族，策划写内容时不用碰引擎：
+       stat:  { folded: [5,12], day: [3,99], money: [0,20], intel: [3,99], chips: [0,2] }
+       track: { sin: [7,12], loyalty: [0,3], renown: [0,4], power: [8,12] }
+       have:  ['has_ledger', 'trusted_su']        剧情标记，全部满足
+       not:   ['broke_flow']                      排斥的标记
+     也兼容旧写法：act / minFolded / maxFolded / minDay / minRel / met / flag / notFlag
+  ------------------------------------------------ */
+  const STAT_KEYS = { folded: (s) => s.folded, day: (s) => s.day, money: (s) => s.money,
+    intel: (s) => s.intel, chips: (s) => s.chips, gear: (s) => s.gear,
+    cards: (s) => (s.hand ? s.hand.length : 0), deck: (s) => (s.deck ? s.deck.length : 0) };
+
+  function inRange(val, range) {
+    if (val == null) return false;
+    if (!Array.isArray(range)) return val === range;
+    return val >= range[0] && val <= range[1];
+  }
+
   function condOk(S, when) {
     if (!when) return true;
+
+    /* --- 旧写法（保留兼容） --- */
     if (when.act && actOf(S.folded).n !== when.act) return false;
     if (when.minFolded != null && S.folded < when.minFolded) return false;
     if (when.maxFolded != null && S.folded > when.maxFolded) return false;
@@ -76,8 +97,89 @@
     if (when.flag && !(S.storyFlags && S.storyFlags[when.flag])) return false;
     if (when.notFlag && S.storyFlags && S.storyFlags[when.notFlag]) return false;
     if (when.met && !isMet(S, when.met)) return false;
+
+    /* --- 数值族 --- */
+    if (when.stat) {
+      for (const k in when.stat) {
+        const fn = STAT_KEYS[k];
+        if (!fn) continue;
+        if (!inRange(fn(S), when.stat[k])) return false;
+      }
+    }
+
+    /* --- 名望族 --- */
+    if (when.track) {
+      for (const k in when.track) {
+        const v = (S.tracks && S.tracks[k]) || 0;
+        if (!inRange(v, when.track[k])) return false;
+      }
+    }
+
+    /* --- 标记族 --- */
+    if (when.have) {
+      const list = Array.isArray(when.have) ? when.have : [when.have];
+      for (let i = 0; i < list.length; i++) {
+        if (!(S.storyFlags && S.storyFlags[list[i]])) return false;
+      }
+    }
+    if (when.not) {
+      const list = Array.isArray(when.not) ? when.not : [when.not];
+      for (let i = 0; i < list.length; i++) {
+        if (S.storyFlags && S.storyFlags[list[i]]) return false;
+      }
+    }
     return true;
   }
+
+  /* ---------------- 把条件翻译成人话，给界面显示 ---------------- */
+  function describeWhen(S, when) {
+    if (!when) return '';
+    const bits = [];
+    const rng = (r) => (Array.isArray(r) ? r[0] + '-' + r[1] : String(r));
+
+    if (when.act) bits.push('第 ' + when.act + ' 幕');
+    if (when.minFolded != null) bits.push('已折 ≥' + when.minFolded);
+    if (when.maxFolded != null) bits.push('已折 ≤' + when.maxFolded);
+    if (when.minDay != null) bits.push('第 ' + when.minDay + ' 天起');
+    if (when.minRel != null) {
+      const info = window.GAME_ENGINE.npcOf ? window.GAME_ENGINE.npcOf(when.npc) : null;
+      bits.push((info ? info.name : '他') + '关系 ≥' + when.minRel);
+    }
+    if (when.met) {
+      const info = window.GAME_ENGINE.npcOf ? window.GAME_ENGINE.npcOf(when.met) : null;
+      bits.push('已认识' + (info ? info.name : ''));
+    }
+    if (when.stat) for (const k in when.stat) {
+      const name = { folded: '已折牌', day: '天数', money: '信用点', intel: '情报',
+        chips: '芯片', gear: '装备', cards: '手牌', deck: '牌堆剩余' }[k] || k;
+      bits.push(name + ' ' + rng(when.stat[k]));
+    }
+    if (when.track) for (const k in when.track) {
+      const name = window.GAME_ENGINE.trackName ? window.GAME_ENGINE.trackName(k) : k;
+      bits.push(name + ' ' + rng(when.track[k]));
+    }
+    if (when.have) {
+      const list = Array.isArray(when.have) ? when.have : [when.have];
+      const names = list.map(flagName);
+      bits.push('需 ' + names.join('、'));
+    }
+    if (when.not) {
+      const list = Array.isArray(when.not) ? when.not : [when.not];
+      bits.push('不能 ' + list.map(flagName).join('、'));
+    }
+    return bits.join(' · ');
+  }
+
+  /* 剧情标记的可读名（只列常用的，其余直接显示 key） */
+  const FLAG_NAMES = {
+    ask_prev: '问过上一副牌', know_name: '记住了名录上的名字', kept_going: '被允许继续',
+    told_truth: '对监事说了实话', trusted_su: '把排期交给苏纹', has_ledger: '拿到了那本笔记',
+    blank_card: '收下了空白卡', out_of_flow: '把自己从流程里摘出', broke_flow: '删掉了整份流程',
+    left_together: '邀她一起离开',
+    wd_told_number: '向闻铎报了编号', sw_changed_table: '替苏纹改过表',
+    cy_signed: '替程砚签了收', ym_took_slip: '替银面扛下单子', yk_asked_him: '问过雨客本人',
+  };
+  function flagName(k) { return FLAG_NAMES[k] || k; }
 
   /* ---------------- 初见：把十六次初识排进前六天 ----------------
      玩家必须先认识人，委托和支线才有来源。
@@ -269,5 +371,6 @@
   window.GAME_STORY = {
     GUIDE, ACTS, actOf, rel, addRel, relTier, isMet, markMet,
     nextScene, resolve, progress, ensureGuide, allScenes, mainScenes, npcScenes, condOk,
+    describeWhen, flagName, inRange,
   };
 })();

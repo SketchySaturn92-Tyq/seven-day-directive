@@ -9,10 +9,11 @@ window.GAME_DATA = (function () {
     deadlineDays: 7,        // 每张指令卡的期限
     apPerDay: 4,            // 每日行动点
     deckGoal: 12,           // 折完全部 12 张牌 = 通关
+    startHand: 3,           // 开局只发三张：牌是挣来的
+    handMax: 7,             // 手牌上限
     statCap: 10,
     trackCap: 12,
-    swapCost: 2,            // 换牌消耗行动点
-    version: '1.0.0',
+    version: '5.0.0',
   };
 
 
@@ -181,8 +182,13 @@ window.GAME_DATA = (function () {
     },
     {
       id: 'clean', name: '善后', cost: 1, icon: '⌫',
-      desc: '花 30 信用点买通关系，洗掉一层罪痕。',
+      desc: '花 45 信用点买通关系，洗掉一层罪痕。',
       run: {},
+    },
+    {
+      id: 'draw', name: '申领', cost: 2, icon: '▤',
+      desc: '走一遍流程，从董事会那里再要一张指令卡。牌不够时的保底来源。',
+      run: { draw: true },
     },
   ];
 

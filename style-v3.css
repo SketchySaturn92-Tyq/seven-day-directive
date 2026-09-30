@@ -630,3 +630,55 @@
 .story-layer[hidden]{display:none !important}
 .story-layer .story-panel{pointer-events:auto}
 .story-layer .story-pin{pointer-events:none}
+
+/* ==========================================================
+   v7：内联高亮 + 触发条件行
+   ========================================================== */
+.story-cond{
+  font-size:10.5px;color:var(--ink3);
+  border-left:2px solid var(--line2);
+  padding:2px 0 2px 9px;margin:0 0 10px;
+  line-height:1.6;
+}
+.story-cond[hidden]{display:none}
+
+/* 正文里的术语高亮：读到就知道这是面板上的哪个数 */
+.story-text .term{
+  font-weight:700;
+  border-radius:4px;
+  padding:0 3px;
+  background:rgba(255,255,255,.07);
+  color:#eaf5ff;
+}
+.story-text .term-sin{background:rgba(224,85,74,.20);color:#ffd0c9}
+.story-text .term-loyalty{background:rgba(74,208,200,.20);color:#bff3ee}
+.story-text .term-renown{background:rgba(122,162,247,.20);color:#cfe0ff}
+.story-text .term-power{background:rgba(224,180,74,.20);color:#f7e6bb}
+.story-text .term-money{background:rgba(224,180,74,.18);color:#f2ddad}
+.story-text .term-intel{background:rgba(122,162,247,.18);color:#cfe0ff}
+.story-text .term-chips{background:rgba(74,208,200,.18);color:#bff3ee}
+.story-text .term-vitality{background:rgba(224,85,74,.16);color:#ffd0c9}
+
+/* 后日谈区块 */
+.end-after{
+  margin-top:14px;border:1px solid var(--line2);border-radius:11px;
+  padding:13px 15px;background:rgba(255,255,255,.03);
+}
+.end-after h4{
+  margin:0 0 8px;font-size:11px;letter-spacing:.2em;
+  color:var(--cyan);font-weight:700;
+}
+.end-after p{
+  margin:0;font-size:13px;line-height:1.95;color:#cfdee9;
+  white-space:pre-wrap;
+}
+
+/* 牌堆指示：手牌/牌堆 */
+.res-deck{border-color:rgba(74,208,200,.4);background:rgba(74,208,200,.07)}
+.res-deck.low{border-color:rgba(224,85,74,.5);background:rgba(224,85,74,.12);animation:pulse 1.8s infinite}
+.i-deck{color:var(--cyan)}
+
+/* 事件选项的「后来」 */
+.res-after{margin-top:14px;padding:12px 14px;border-left:2px solid var(--cyan);background:rgba(74,208,200,.05)}
+.res-after-t{font-size:11px;letter-spacing:.16em;color:var(--cyan);margin-bottom:6px}
+.res-after-x{margin:0;line-height:1.85;color:var(--txt);font-size:14px}

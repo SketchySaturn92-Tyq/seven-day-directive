@@ -12,14 +12,20 @@ ORDER=(
   game/content-v2.js
   game/content-map2.js
   game/content-briefs.js
+  game/content-briefs2.js
   # 2) 剧情与语音：同样是纯数据
   game/intro.js
   game/story-main.js
   game/story-npc-a.js
   game/story-npc-b.js
+  game/story-npc-a2.js
+  game/story-npc-b2.js
   game/voice-a.js
   game/voice-b.js
   game/lore.js
+  game/card-sources.js
+  game/events-v6.js
+  game/afterstory.js
   # 3) 随机数层
   game/rng.js
   # 4) 引擎（会合并上面的数据）

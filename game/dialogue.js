@@ -67,6 +67,55 @@
     return { text: pool.length ? rng.pick(pool) : '', tier: tier };
   }
 
+  /* ---------------- 把台词串成一段 ----------------
+     不是随机抽一句，而是按「铺垫 → 信息 → 后手」的顺序，
+     从该关系层级的池子里取 2-3 句，拼成一次完整的开口。
+     同一个人每次开口的句数和顺序都不同，读起来像在跟你说话，
+     而不是在播状态播报。
+  ------------------------------------------------ */
+  function compose(S, npcId, forceTier) {
+    const v = voiceOf(npcId);
+    if (!v) return null;
+    const rel = ST.rel(S, npcId);
+    const tier = forceTier || ST.relTier(rel);
+    const rng = S.rng || window.GAME_RNG.create(String(Date.now()));
+    const pools = {
+      low: (v.low || []).slice(),
+      mid: (v.mid || []).slice(),
+      high: (v.high || []).slice(),
+    };
+
+    /* 铺垫优先用低一层级的口气，信息用当前层级，后手用高一层级。
+       越熟的人，铺垫越短、后手越重。 */
+    const order = tier === 'low' ? ['low', 'low', 'mid']
+      : tier === 'mid' ? ['low', 'mid', 'mid', 'high']
+      : ['mid', 'high', 'high'];
+
+    const take = (k) => {
+      const a = pools[k];
+      if (!a || !a.length) return null;
+      const i = rng.next() * a.length | 0;
+      return a.splice(i, 1)[0];
+    };
+
+    const want = tier === 'high' ? 3 : (rng.next() < 0.55 ? 2 : 3);
+    const out = [];
+    for (let i = 0; i < order.length && out.length < want; i++) {
+      const line = take(order[i]);
+      if (line && out.indexOf(line) < 0) out.push(line);
+    }
+    if (!out.length) {
+      const fb = take(tier) || take('mid') || take('low');
+      if (fb) out.push(fb);
+    }
+
+    /* 处境反应优先压在最前面 —— 那是他看见你的第一眼 */
+    const ctx = greeting(S, npcId);
+    if (ctx && ctx.tier === 'react' && out.indexOf(ctx.text) < 0) out.unshift(ctx.text);
+
+    return { text: out.join('\n\n'), tier: tier, parts: out.length };
+  }
+
   /* ---------------- 话题可用性 ---------------- */
   function topicState(S, npcId, t) {
     if (!S.talkedTopics) S.talkedTopics = {};
@@ -189,9 +238,10 @@
       return;
     }
 
-    const g = greeting(S, npcId);
     const first = firstLine(S, npcId);
-    const shown = first || (g ? g.text : '');
+    /* 不是抽一句，是把该层级的话串成一段：铺垫 → 信息 → 后手 */
+    const cmp = compose(S, npcId);
+    const shown = first || (cmp ? cmp.text : ((greeting(S, npcId) || {}).text || ''));
 
     const topicHtml = (v.topics || []).map((t) => {
       const st = topicState(S, npcId, t);
@@ -307,5 +357,5 @@
     return { got: got, total: all.length };
   }
 
-  window.GAME_VOICE = { voiceOf, greeting, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
+  window.GAME_VOICE = { voiceOf, greeting, compose, topicState, talk, firstLine, renderPeople, renderTalk, showReply, talkPercent, loreOf, loreState, hearLore, loreProgress };
 })();

@@ -238,8 +238,13 @@
       const p = window.GAME_STORY.progress(S);
       if (p.nextTitle) { el.textContent = '第 ' + p.act + ' 幕 · ' + p.name + '：' + p.nextTitle; return; }
     }
-    if (foldable.length) el.textContent = '还能折 ' + foldable.length + ' 张，还差 ' + need + ' 张通关';
-    else el.textContent = '暂时没有可折的牌，换牌或用行动攒资源';
+    if (foldable.length) {
+      el.textContent = '还能折 ' + foldable.length + ' 张，还差 ' + need + ' 张通关';
+    } else if (S.hand.length <= 1 && S.deck && S.deck.length) {
+      el.textContent = '手上没牌了，去「行动」里申领一张';
+    } else {
+      el.textContent = '暂时没有可折的牌，换牌或用行动攒资源';
+    }
   }
 
   function distNameOf(card) {
@@ -277,6 +282,14 @@
     $('chip-show').textContent = range.value + '/' + maxChip;
     $('boost-cost').textContent = E.boostCost(S);
     $('chk-boost').disabled = S.money < E.boostCost(S);
+
+    // 牌堆与手牌：让「牌是挣来的」这件事可见
+    const deckEl = $('hud-deck');
+    if (deckEl && S.deck) {
+      deckEl.textContent = S.hand.length + ' / ' + S.deck.length;
+      deckEl.title = '手上 ' + S.hand.length + ' 张（上限 ' + (D.CONFIG.handMax || 7) + '）· 牌堆还有 ' + S.deck.length + ' 张';
+      deckEl.classList.toggle('low', S.hand.length <= 1);
+    }
 
     // 主线幕进度
     if (window.GAME_STORY) {
@@ -692,6 +705,29 @@
     el.hidden = !on;
   }
 
+
+  /* ---------- 正文内联高亮 ----------
+     正文里写成【罪痕】【忠诚】这类方括号术语时，
+     渲染成高亮标记，玩家读到就知道这是面板上的哪个数。 */
+  const TERM_COLOR = {
+    '罪痕': 'sin', '忠诚': 'loyalty', '声望': 'renown', '权柄': 'power',
+    '信用点': 'money', '情报': 'intel', '指令芯片': 'chips', '芯片': 'chips',
+    '装备': 'gear', '体魄': 'vitality', '智慧': 'intellect', '魅力': 'charm',
+    '战斗': 'force', '隐匿': 'stealth',
+  };
+  function richText(raw) {
+    if (!raw) return '';
+    // 先转义，再替换方括号
+    let out = esc(raw);
+    out = out.replace(/【([^】]{1,10})】/g, (m, term) => {
+      const kind = TERM_COLOR[term];
+      const cls = kind ? ' term term-' + kind : ' term';
+      return '<b class="' + cls.trim() + '">' + term + '</b>';
+    });
+    // 段落换行保留
+    return out;
+  }
+
   function introScenes() {
     const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
     return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -811,10 +847,17 @@
 
     // 正文
     $('story-title').textContent = scene.title || '';
-    $('story-text').textContent = scene.text || '';
+    $('story-text').innerHTML = richText(scene.text || '');
     $('story-body').scrollTop = 0;
 
     $('story-skip').hidden = !(storyIsIntro || scene.kind === 'intro');
+
+    // 触发条件：告诉玩家这段为什么现在发生
+    const condEl = $('story-cond');
+    const desc = scene.when && window.GAME_STORY
+      ? window.GAME_STORY.describeWhen(S, scene.when) : '';
+    if (desc) { condEl.textContent = '触发：' + desc; condEl.hidden = false; }
+    else { condEl.hidden = true; }
 
     // 选项
     renderChoices(scene.options, (o, i) => onStoryChoice(scene, o, i));
@@ -938,7 +981,10 @@
         }
         show('screen-game');
         renderAll();
-        if (r.ok) showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null);
+        if (r.ok) {
+          /* 先看数值，再看后来发生了什么。有 after 就多一屏。 */
+          showResult(isStory ? (ev.kind === 'main' ? '主线推进' : '关系推进') : '结果', r.lines, null, r.after);
+        }
         if (S.phase === 'end' && S.ending) showEnd();
       };
       wrap.appendChild(b);
@@ -949,13 +995,15 @@
   /* ==========================================================
      弹窗
      ========================================================== */
-  function showResult(title, lines, ok) {
+  function showResult(title, lines, ok, after) {
     $('res-body').innerHTML =
       '<div class="res-big" style="color:' + (ok === true ? 'var(--ok)' : ok === false ? 'var(--red)' : 'var(--cyan)') + '">' + esc(title) + '</div>' +
       lines.map((l) => {
         const cls = /失败|崩盘|超期|还差/.test(l) ? 'fail' : (/成功|完成|^\+/.test(l) ? 'ok' : '');
         return '<div class="res-line ' + cls + '">' + esc(l) + '</div>';
-      }).join('');
+      }).join('') +
+      (after ? '<div class="res-after"><div class="res-after-t">后来</div>' +
+        '<p class="res-after-x">' + esc(after) + '</p></div>' : '');
     show('screen-result');
   }
   function toast(title, msg) { showResult(title, [msg], null); }
@@ -976,6 +1024,13 @@
     ];
     $('end-summary').innerHTML = bits.map((b) => '<span>' + esc(b) + '</span>').join('');
     if (!settled) settled = MET.settle(P, S);
+
+    // 后日谈：世界在你之后变成了什么样
+    const after = (window.AFTERSTORY || {})[e.id];
+    const box = $('end-after');
+    if (after) { $('end-after-text').textContent = after; box.hidden = false; }
+    else { box.hidden = true; }
+
     $('end-points').textContent = '+' + settled.earned;
     $('end-total').textContent = settled.total;
     show('screen-end');

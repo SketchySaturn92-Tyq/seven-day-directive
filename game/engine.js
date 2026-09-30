@@ -41,6 +41,8 @@
     });
     pushEv(window.EVENTS_EXTRA);
     pushEv(window.EVENTS_MEET);
+    pushEv(window.EVENTS_V5);
+    pushEv(window.EVENTS_V6);
 
     // 结局：三类定调结局条件最具体，排最前；其余扩展插在兜底之前
     const tiered = take(window.ENDINGS_EXTRA2);
@@ -130,13 +132,22 @@
     let uid = 0;
     D.PATHS.forEach((p) => {
       D.TIERS.forEach((t) => {
-        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张，抽 12 张入场
+        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张
         for (let i = 0; i < count; i++) {
           deck.push({ uid: 'c' + (uid++), pathId: p.id, tier: t.id, need: t.need, target: null });
         }
       });
     });
-    return shuffle(deck);
+    // 开局的三张要保证是可折的：先各路径取一张最低品级，打乱后放最前
+    const easy = [];
+    D.PATHS.forEach((p) => {
+      const c = deck.find((x) => x.pathId === p.id && x.tier === 1 && !easy.includes(x));
+      if (c) easy.push(c);
+    });
+    shuffle(easy);
+    const rest = deck.filter((c) => easy.indexOf(c) < 0);
+    shuffle(rest);
+    return easy.concat(rest);
   }
 
   /* ==========================================================
@@ -166,8 +177,10 @@
       gear: 0,
       boostDiscount: 0,
       foresight: false,
-      hand: all.slice(0, 5),
-      deck: all.slice(5),
+      /* 开局只发三张：牌是挣来的，不是发全的。
+         其余十七张留在牌堆，靠主线、关系、委托、城区动作逐张拿到。 */
+      hand: all.slice(0, C.startHand),
+      deck: all.slice(C.startHand),
       folded: 0,
       fortune: 0,
       log: [],
@@ -200,6 +213,136 @@
   // 补牌：带地区权重，让目标分布随本局随机
   function seedHand(s) {
     s.hand.forEach((c) => { if (!c.target) c.target = pickTarget(s, c); });
+  }
+
+  /* ==========================================================
+     四·五、卡牌获取
+     牌不再开局发全。所有新牌都从牌堆里按条件抽出来，
+     来源记在 s.cardLog 里，玩家能看到每一张是怎么来的。
+     ========================================================== */
+  function grantCard(s, opts) {
+    const o = opts || {};
+    const n = o.n || 1;
+    const got = [];
+    for (let i = 0; i < n; i++) {
+      if (!s.deck.length) break;
+      if (s.hand.length >= (C.handMax || 7)) break;
+
+      let idx = -1;
+      // 优先匹配偏好：先按路径+品级，再按路径，再按品级，最后随便一张
+      if (o.path) {
+        idx = s.deck.findIndex((c) => c.pathId === o.path && (!o.tier || c.tier === o.tier));
+        if (idx < 0) idx = s.deck.findIndex((c) => c.pathId === o.path);
+      }
+      if (idx < 0 && o.tier) idx = s.deck.findIndex((c) => c.tier === o.tier);
+      if (idx < 0) idx = 0;
+
+      const card = s.deck.splice(idx, 1)[0];
+      card.target = pickTarget(s, card);
+      card.from = o.reason || '来源不明';
+      card.gotDay = s.day;
+      s.hand.push(card);
+      got.push(card);
+      s.cardLog = s.cardLog || [];
+      s.cardLog.push({ day: s.day, card: label(card), reason: card.from });
+      if (s.cardLog.length > 40) s.cardLog.shift();
+    }
+    if (got.length) {
+      pushLog(s, 'good', '获得 ' + got.map((c) => '「' + label(c) + '」').join('、') +
+        '（' + (o.reason || '来源不明') + '）');
+    }
+    return got;
+  }
+
+
+  /* ---------------- 申领：保底牌源 ----------------
+     折不动牌的时候，还能走一趟流程再要一张。
+     代价是 2 点行动，等于放弃当天的一半行动力。
+  ------------------------------------------------------------ */
+  function drawCard(s) {
+    if (!s.deck || !s.deck.length) return { ok: false, why: '董事会那边也没有余牌了。' };
+    if (s.hand.length >= (C.handMax || 7)) return { ok: false, why: '手上拿不下了，先折掉几张。' };
+    const cost = 2;
+    if (s.ap < cost) return { ok: false, why: '申领要走三道流程，至少要 2 点行动。' };
+    s.ap -= cost;
+    const lines = [];
+    const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
+    if (!got.length) return { ok: false, why: '没领到。' };
+    lines.push('你把申请递上去，等了四十分钟，窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。');
+    lines.push('消耗 2 点行动。牌堆还剩 ' + s.deck.length + ' 张。');
+    pushLog(s, 'info', '申领到一张 ' + label(got[0]));
+    return { ok: true, lines: lines, card: got[0], ap: s.ap };
+  }
+
+  /* ---------------- 按来源库检查是否有新牌可拿 ----------------
+     CARD_SOURCES 里的每条都带 trigger，满足就给。
+     每条只给一次，记在 s.cardSourceUsed 里。
+  ------------------------------------------------------------ */
+  function checkCardSources(s) {
+    const list = Array.isArray(window.CARD_SOURCES) ? window.CARD_SOURCES : [];
+    if (!list.length) return [];
+    s.cardSourceUsed = s.cardSourceUsed || {};
+    s.cardLog = s.cardLog || [];
+    const got = [];
+    for (let i = 0; i < list.length; i++) {
+      const cs = list[i];
+      if (!cs || !cs.id || s.cardSourceUsed[cs.id]) continue;
+      /* 兼容两种写法：kind/need 与 source/trigger */
+      const kind = cs.kind || cs.source || 'npc';
+      const t = cs.trigger || {};
+      const need = cs.need != null ? cs.need : null;
+      let ok = false;
+
+      if (kind === 'npc') {
+        const who = cs.npc || t.npc;
+        if (!who || !(s.metNpcs && s.metNpcs[who])) continue;
+        ok = ST_rel(s, who) >= (need != null ? need : (t.minRel != null ? t.minRel : 1));
+      } else if (kind === 'district') {
+        const hits = (s.briefDistrictHits && s.briefDistrictHits[cs.district]) || 0;
+        ok = hits >= (need != null ? need : (t.minHits != null ? t.minHits : 2));
+      } else if (kind === 'stat') {
+        ok = (s.stats[cs.stat] || 0) >= (need != null ? need : 7);
+      } else if (kind === 'track') {
+        ok = (s.tracks[cs.track] || 0) >= (need != null ? need : 6);
+      } else if (kind === 'day') {
+        ok = s.day >= (need != null ? need : (t.minDay != null ? t.minDay : 5));
+      } else {
+        /* 兜底：仍支持旧的 trigger 写法 */
+        ok = true;
+        if (t.minRel != null && (!csrf_npc(cs) || ST_rel(s, csrf_npc(cs)) < t.minRel)) ok = false;
+        if (ok && t.minFolded != null && s.folded < t.minFolded) ok = false;
+        if (ok && t.minDay != null && s.day < t.minDay) ok = false;
+        if (ok && t.flag && !(s.storyFlags && s.storyFlags[t.flag])) ok = false;
+        if (ok && t.met && !(s.metNpcs && s.metNpcs[t.met])) ok = false;
+      }
+      if (!ok) continue;
+
+      const n = cs.n || (cs.grant && cs.grant.n) || 1;
+      const path = cs.path || (cs.grant && cs.grant.path) || null;
+      const tier = cs.tier || (cs.grant && cs.grant.tier) || null;
+      const cards = grantCard(s, { reason: cs.hint || cs.title || '来源', n: n, path: path, tier: tier });
+      if (cards.length) {
+        s.cardSourceUsed[cs.id] = 1;
+        got.push({ src: cs, cards: cards });
+      }
+    }
+    return got;
+  }
+  /* 旧写法里 npc 可能写在 trigger 上，取出来备用 */
+  function csrf_npc(cs) { return cs.npc || (cs.trigger && cs.trigger.npc) || null; }
+
+  /* 只读关系值，避免循环依赖 */
+  function ST_rel(s, npcId) {
+    if (!s.relations) s.relations = {};
+    return Number(s.relations[npcId]) || 0;
+  }
+
+  /** 供外部查询：还能拿到几张 */
+  function cardsLeft(s) { return s.deck ? s.deck.length : 0; }
+
+  /** 按路径统计手牌，给"某条路径需要几张"这类条件用 */
+  function handPathCount(s, pathId) {
+    return (s.hand || []).filter((c) => c.pathId === pathId).length;
   }
 
   /* ==========================================================
@@ -329,15 +472,16 @@
       s.pathFoldCount[path.id] = (s.pathFoldCount[path.id] || 0) + 1;
       if (target.district) s.briefDistrictHits[target.district] = (s.briefDistrictHits[target.district] || 0) + 1;
 
-      if (s.deck.length && s.hand.length < 5) {
-        const nc = s.deck.shift();
-        nc.target = pickTarget(s, nc);
-        s.hand.push(nc);
-      }
+      // 不再自动补牌：折掉一张就少一张，新牌要自己去挣
       if (s.folded % 2 === 0) {
         s.chips += 3;
         s.apMax = Math.min(6, C.apPerDay + Math.floor(s.folded / 4));
         res.lines.push('董事会追加授权：+3 芯片。');
+      }
+      // 每折两张，董事会补发一张（这是最稳的牌源）
+      if (s.folded % 2 === 0) {
+        const got = grantCard(s, { reason: '董事会按进度补发', n: 1 });
+        if (got.length) res.lines.push('董事会补发一张：' + label(got[0]) + '。');
       }
       if (s.folded >= C.deckGoal) res.lines.push('十二张牌，全部折断。');
     } else {
@@ -421,6 +565,14 @@
       lines.push('进修完成：' + statName(k) + ' +1。');
     }
     if (r.field) lines.push(fieldOp(s));
+    if (r.draw) {
+      const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
+      if (got.length) {
+        lines.push('窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。牌堆还剩 ' + s.deck.length + ' 张。');
+      } else {
+        lines.push('董事会那边也没有余牌了。');
+      }
+    }
     if (r.deal) {
       if (s.intel >= 3) { s.intel -= 3; s.chips += 3; lines.push('用 3 情报换来 3 枚指令芯片。'); }
       else if (s.money >= 25) { s.money -= 25; s.intel += 4; lines.push('花 25 信用点买到 4 份情报。'); }
@@ -497,6 +649,15 @@
     if (!s.briefDistrictHits) s.briefDistrictHits = {};
     if (!s.pathFoldCount) s.pathFoldCount = {};
 
+    /* --- 牌源：满足条件的人会开始给你牌 --- */
+    const newCards = checkCardSources(s);
+    if (newCards.length) {
+      newCards.forEach((x) => {
+        pushLog(s, 'good', '「' + (x.src.title || '') + '」→ 得到 ' +
+          x.cards.map((c) => label(c)).join('、'));
+      });
+    }
+
     /* --- 委托：先结算超期，再看是否来新的 --- */
     const expired = window.GAME_BRIEFS ? window.GAME_BRIEFS.tick(s) : [];
     const incoming = window.GAME_BRIEFS ? window.GAME_BRIEFS.maybeSpawn(s) : null;
@@ -567,7 +728,9 @@
     s.phase = 'play';
     pushLog(s, 'event', ev.title + ' → ' + opt.label);
     checkEnd(s);
-    return { ok: true, lines: lines };
+    /* 选项的 after：选完之后实际发生了什么。
+       单独带出来，由界面接在结果后面显示，不混进数值行。 */
+    return { ok: true, lines: lines, after: opt.after || null, ev: ev, opt: opt };
   }
 
   function applyEffect(s, eff, lines) {
@@ -583,6 +746,11 @@
     if (eff.chips) { s.chips = Math.max(0, s.chips + eff.chips); lines.push('芯片 ' + (eff.chips > 0 ? '+' : '') + eff.chips + '。'); }
     if (eff.vitality) { s.stats.vitality = clamp(s.stats.vitality + eff.vitality, 0, C.statCap); lines.push('体魄 ' + eff.vitality + '。'); }
     if (eff.gear) { s.gear += eff.gear; lines.push('装备 +' + eff.gear + '。'); }
+    if (eff.grantCard) {
+      const g = eff.grantCard || {};
+      const got = grantCard(s, { reason: '这趟没有白跑', n: g.n || 1, path: g.path || null, tier: g.tier || null });
+      if (got.length) lines.push('拿到一张：' + got.map((c) => label(c)).join('、') + '。');
+    }
     if (eff.resetDeadline) { s.deadline = C.deadlineDays; lines.push('期限重置为 7 天。'); }
     if (eff.statRandom) {
       const k = pick(D.STATS).id;
@@ -660,7 +828,7 @@
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    resolveStory, pickStory, applyEffectPublic,
+    resolveStory, pickStory, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,

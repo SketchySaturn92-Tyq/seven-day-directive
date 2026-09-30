@@ -123,6 +123,7 @@
       </div>
       <div class="hud-goal" id="hud-goal">拖一张卡到对应城区，折掉它</div>
       <div class="hud-res">
+        <span class="res res-deck" title="手牌 / 牌堆"><i class="i-deck">▤</i><b id="hud-deck">0/0</b></span>
         <span class="res" title="信用点"><i class="i-money">¥</i><b id="hud-money">0</b></span>
         <span class="res" title="情报"><i class="i-intel">◉</i><b id="hud-intel">0</b></span>
         <span class="res" title="指令芯片"><i class="i-chips">▣</i><b id="hud-chips">0</b></span>
@@ -256,6 +257,7 @@
         <img id="story-face" class="story-face" src="" alt="" hidden>
         <div class="story-main">
           <h2 id="story-title">——</h2>
+          <div id="story-cond" class="story-cond" hidden></div>
           <div id="story-text" class="story-text"></div>
         </div>
       </div>
@@ -303,6 +305,10 @@
       <div class="modal-tag">终局</div>
       <h2 id="end-title">——</h2>
       <p id="end-text" class="muted">——</p>
+      <div id="end-after" class="end-after" hidden>
+        <h4>后来</h4>
+        <p id="end-after-text"></p>
+      </div>
       <div id="end-summary" class="chips"></div>
       <div class="end-reward">
         <div class="er-row"><span>本局命运点</span><b id="end-points">+0</b></div>

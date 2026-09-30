@@ -13,7 +13,8 @@
 
   /* ---------------- 取内容库 ---------------- */
   function pool() {
-    const p = Array.isArray(window.BRIEFS) ? window.BRIEFS : [];
+    const p = Array.isArray(window.BRIEFS) ? window.BRIEFS.slice() : [];
+    if (Array.isArray(window.BRIEFS2)) p.push.apply(p, window.BRIEFS2);
     return p.filter((b) => b && b.id && b.kind && b.solve);
   }
 
@@ -205,6 +206,18 @@
     }
 
     applyEffect(S, b.onSolve, lines);
+
+    // 交差的人会再给你一点东西：一半概率多给一张牌
+    const rng = S.rng || window.GAME_RNG.create(String(Date.now()));
+    if (rng.chance(0.5) && S.deck && S.deck.length) {
+      const got = window.GAME_ENGINE.grantCard(S, {
+        reason: '委托交差后对方补的',
+        path: (b.solve && b.solve.path) || null,
+        n: 1,
+      });
+      if (got.length) lines.push('对方另外塞给你一张：' + window.GAME_ENGINE.label(got[0]) + '。');
+    }
+
     S.briefs.splice(idx, 1);
     S.briefDone = (S.briefDone || 0) + 1;
     S.fortune += 1 + b.days;
