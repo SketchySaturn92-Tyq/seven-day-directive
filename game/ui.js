@@ -697,6 +697,7 @@
   }
 
   function onNodeClick(distId) {
+    maybeIntro('firstNode');
     if (selectedUid) {
       const card = S.hand.find((c) => c.uid === selectedUid);
       const target = card ? E.assetOf(card.target) : null;
@@ -727,6 +728,7 @@
 
   function openDistrict(distId) {
     lastDistrict = distId;
+    maybeIntro('openDistrict');
     const info = M.districtDetail(S, distId);
     if (!info) return;
     $('dt-tag').textContent = info.district.en || '';
@@ -901,6 +903,8 @@
   let pendingEvent = null;
 
   function afterAction() {
+    /* 折完第一张之后补讲制度来历 —— 这时候他才看得懂 */
+    if (S && S.folded > 0) maybeIntro('firstFold');
     renderAll();
     if (S.phase === 'end' && S.ending) {
       /* 收场了就清掉存档，免得下次进来「继续」到一个已结束的局 */
@@ -957,28 +961,85 @@
     return out;
   }
 
+  /* ==========================================================
+     开场：读三段就能进牌局
+     原来开局一口气播完十二段、2304 字，玩家还没摸到牌就先读了五屏。
+     现在只留三段（世界、你的身份、你被点名的处境，约 570 字），
+     其余九段改成「按需补讲」——第一次遇到对应的事时才插进来。
+     在玩家正好要用到的时候讲，才记得住；
+     而且这个时候他手上已经有一张牌了，读起来是想知道，不是被灌。
+     ========================================================== */
+  const INTRO_OPENING = ['intro-1', 'intro-2', 'intro-4'];
+
+  const INTRO_LATER = {
+    /* 第一次点开地图上的城区：讲规则与四条路径 —— 此刻他正要出牌 */
+    'intro-5':  'firstNode',
+    'intro-6':  'firstNode',
+    'intro-7':  'firstNode',
+    /* 手上出现第一张折得动的牌：推他翻第一张 */
+    'intro-12': 'firstReady',
+    /* 第一次认识一个人：介绍苏纹 */
+    'intro-10': 'metAny',
+    'intro-11': 'metAny',
+    /* 第一次折完牌：这时候才看得懂制度是怎么来的 */
+    'intro-3':  'firstFold',
+    /* 第一次名望真的变动：两条不杀人的轨道才有意义 */
+    'intro-8':  'firstFold',
+    /* 第一次走进具体城区：工位与门禁的常识 */
+    'intro-9':  'openDistrict',
+  };
+
   function introScenes() {
     const list = Array.isArray(window.INTRO_SCENES) ? window.INTRO_SCENES : [];
     return list.slice().sort((a, b) => (a.order || 0) - (b.order || 0));
   }
 
-  /* 开局：把世界观入门排进队列 */
-  function startIntro() {
-    const list = introScenes();
-    if (!list.length) { storyLayer(false); return; }
-    S.introDone = S.introDone || {};
-    const fresh = list.filter((sc) => !S.introDone[sc.id]);
-    if (!fresh.length) { storyLayer(false); return; }
-    storyIsIntro = true;
-    storyQueue = fresh.map((sc, i) => ({
+  function introToScene(sc, i, total) {
+    return {
       story: true, kind: 'intro', id: sc.id, tag: sc.tag || '世界观',
       title: sc.title, text: sc.text, portrait: null, npc: null, npcName: '',
-      district: 'tower',                    // 入门剧情挂在引导者所在的城区
-      idx: i + 1, total: fresh.length,
+      district: 'tower',
+      idx: i + 1, total: total,
       options: (sc.choices || []).map((c) => ({ label: c.label, relation: c.relation, run: c.run, flag: c.flag })),
-    }));
+    };
+  }
+
+  /* 按 id 把还没看过的几段排进队列 */
+  function queueIntroIds(ids) {
+    S.introDone = S.introDone || {};
+    const all = introScenes();
+    const pick = ids
+      .map((id) => all.find((sc) => sc.id === id))
+      .filter((sc) => sc && !S.introDone[sc.id]);
+    if (!pick.length) return false;
+    storyIsIntro = true;
+    pick.forEach((sc, i) => storyQueue.push(introToScene(sc, i + 1, pick.length)));
     storyDone = () => { storyIsIntro = false; storyLayer(false); renderAll(); };
-    showStory(storyQueue.shift());
+    if ($('story-layer').hidden) showStory(storyQueue.shift());
+    return true;
+  }
+
+  /* 按需补讲的入口：某件事第一次发生时调一次 */
+  function maybeIntro(trigger) {
+    if (!S || S.phase === 'end') return false;
+    if (!storyLayerHidden()) return false;    // 正在读东西就别插队
+    const ids = Object.keys(INTRO_LATER).filter((id) => INTRO_LATER[id] === trigger);
+    if (!ids.length) return false;
+    return queueIntroIds(ids);
+  }
+  function storyLayerHidden() {
+    const el = $('story-layer');
+    return !el || el.hidden;
+  }
+
+  function startIntro() {
+    S.introDone = S.introDone || {};
+    /* 已经开过局的档（存档读回来）不再重播开场三段 */
+    const played = INTRO_OPENING.some((id) => S.introDone[id]);
+    if (played) { storyLayer(false); return; }
+    if (!queueIntroIds(INTRO_OPENING)) { storyLayer(false); return; }
+    /* 三段读完给他一句指引，别让他在空地图上发愣 */
+    setTimeout(() => hint('点开地图上任意一个城区，那里有你今天能做的事', 5200), 600);
   }
 
   /* ---------- 面板落点：优先贴着节点，其次左右侧，最后贴底 ---------- */
