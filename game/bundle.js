@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T08:44:50Z */
+/* 生成时间: 2026-09-30T09:08:03Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -154,47 +154,65 @@ window.GAME_DATA = (function () {
   /* ---------------- 日常行动 ---------------- */
   const ACTIONS = [
     {
-      id: 'brief', name: '董事会简报', cost: 1, icon: '⬢',
+      id: 'brief',
+      perDay: 2,
+      gain: '忠诚 +1 · 情报 +1', name: '董事会简报', cost: 1, icon: '⬢',
       desc: '列席早会，记下谁没来、谁在咳嗽。',
       run: { loyalty: 1, intel: 1 },
     },
     {
-      id: 'study', name: '进修', cost: 1, icon: '◈',
+      id: 'study',
+      perDay: 2,
+      gain: '随机一项属性 +1', name: '进修', cost: 1, icon: '◈',
       desc: '私人教席、黑市论文、被格式化的旧档案。',
       run: { statRandom: 1 },
     },
     {
-      id: 'intel', name: '情报网', cost: 1, icon: '◉',
+      id: 'intel',
+      perDay: 2,
+      gain: '情报 +2 · 所有指令目标显形', name: '情报网', cost: 1, icon: '◉',
       desc: '让线人把今天的话都吐出来。',
       run: { intel: 2, reveal: true },
     },
     {
-      id: 'biz', name: '家业', cost: 1, icon: '¥',
+      id: 'biz',
+      perDay: 2,
+      gain: '信用点 +8~18', name: '家业', cost: 1, icon: '¥',
       desc: '你名下那几家不干净的店在替你赚钱。',
       run: { money: [8, 18] },
     },
     {
-      id: 'field', name: '外勤', cost: 2, icon: '◤',
+      id: 'field',
+      perDay: 1,
+      gain: '随机收获：钱 / 情报 / 芯片，也可能带伤回来', name: '外勤', cost: 2, icon: '◤',
       desc: '亲自出门。可能带回来人、装备，或者伤。',
       run: { field: true },
     },
     {
-      id: 'social', name: '应酬', cost: 1, icon: '♡',
+      id: 'social',
+      perDay: 2,
+      gain: '魅力 +1 · 声望 +1', name: '应酬', cost: 1, icon: '♡',
       desc: '酒、灯光、包厢，以及恰到好处的沉默。',
       run: { charm: 1, renown: 1 },
     },
     {
-      id: 'deal', name: '黑市交易', cost: 1, icon: '⇄',
+      id: 'deal',
+      perDay: 1,
+      gain: '情报换芯片，或花钱买情报', name: '黑市交易', cost: 1, icon: '⇄',
       desc: '用钱换装备，用情报换钱。',
       run: { deal: true },
     },
     {
-      id: 'clean', name: '善后', cost: 1, icon: '⌫',
+      id: 'clean',
+      perDay: 1,
+      gain: '罪痕 -1（花 45 信用点）', name: '善后', cost: 1, icon: '⌫',
       desc: '花 45 信用点买通关系，洗掉一层罪痕。',
       run: {},
     },
     {
-      id: 'draw', name: '申领', cost: 2, icon: '▤',
+      id: 'draw',
+      perDay: 1,
+      gain: '从董事会再要一张指令卡', name: '申领', cost: 2, icon: '▤',
       desc: '走一遍流程，从董事会那里再要一张指令卡。牌不够时的保底来源。',
       run: { draw: true },
     },
@@ -204,47 +222,65 @@ window.GAME_DATA = (function () {
        于是地图和手牌都不重要了。现在每条行动挂在具体城区上，
        要办事就得点开那个地方。顺带把钱也变成能花出去的东西。 */
     {
-      id: 'bribe', name: '买通窗口', cost: 1, price: 40, icon: '⇢',
+      id: 'bribe',
+      perDay: 1,
+      gain: '情报 +2 · 忠诚 +1', name: '买通窗口', cost: 1, price: 40, icon: '⇢',
       desc: '花 40 信用点跳过一道手续。钱替掉的是人情。',
       run: { bribe: true },
     },
     {
-      id: 'meds', name: '买伤药', cost: 1, price: 30, icon: '✚',
+      id: 'meds',
+      perDay: 1,
+      gain: '体魄 +2', name: '买伤药', cost: 1, price: 30, icon: '✚',
       desc: '在无证诊所把伤处理掉。不留记录，也不用欠人情。',
       run: { meds: true },
     },
     {
-      id: 'pass', name: '买通行条', cost: 1, price: 35, icon: '▥',
+      id: 'pass',
+      perDay: 1,
+      gain: '情报 +1 · 拿到一张进场条', name: '买通行条', cost: 1, price: 35, icon: '▥',
       desc: '从港区弄一张本来不该有的进场条。',
       run: { pass: true },
     },
     {
-      id: 'rumor', name: '买消息', cost: 1, price: 30, icon: '◉',
+      id: 'rumor',
+      perDay: 1,
+      gain: '情报 +2', name: '买消息', cost: 1, price: 30, icon: '◉',
       desc: '花 30 信用点，问一件别人不想让人知道的事。',
       run: { rumor: true },
     },
     {
-      id: 'burn', name: '买纸', cost: 1, price: 80, icon: '⌫',
+      id: 'burn',
+      perDay: 1,
+      gain: '罪痕 -2', name: '买纸', cost: 1, price: 80, icon: '⌫',
       desc: '让记忆银行把一条记录处理掉。贵，但干净。',
       run: { burn: true },
     },
     {
-      id: 'keep', name: '买命', cost: 1, price: 100, icon: '♡',
+      id: 'keep',
+      perDay: 1,
+      gain: '那个人多留三天', name: '买命', cost: 1, price: 100, icon: '♡',
       desc: '把已经被判回收的人多留三天。救不了，只是往后挪。',
       run: { keep: true },
     },
     {
-      id: 'ticket', name: '押票', cost: 2, price: 120, icon: '➤',
+      id: 'ticket',
+      perDay: 1,
+      gain: '押下一张离城票', name: '押票', cost: 2, price: 120, icon: '➤',
       desc: '押一张离城的票。它是后路，不是出路。',
       run: { ticket: true },
     },
     {
-      id: 'patrol', name: '跟巡检', cost: 1, icon: '◎',
+      id: 'patrol',
+      perDay: 1,
+      gain: '看到一条对不上的巡检记录', name: '跟巡检', cost: 1, icon: '◎',
       desc: '跟着巡检走一段，看哪些记录对不上。',
       run: { patrol: true },
     },
     {
-      id: 'seam', name: '走到接缝', cost: 1, icon: '≋',
+      id: 'seam',
+      perDay: 1,
+      gain: '情报 +3 · 体魄 -1 · 罪痕 +1', name: '走到接缝', cost: 1, icon: '≋',
       desc: '在接缝外侧站一会儿。体魄 -1，情报 +3，罪痕 +1。',
       run: { seam: true },
     },
@@ -2134,6 +2170,15 @@ window.GAME_DATA = (function () {
       text: '苏纹给了你三样东西。一份排期表，上面标出哪些时段可以动手、哪些时段别出事；一个内部号码，每天凌晨两点十七分之后打过去有人接，接的人不一定说话；一句提醒，她只帮你把时间排对，牌得你自己按下去，她不会替你按。她说她见过太多人把力气花在问为什么上，问到最后七天过去了，牌还在手上，人已经不在名单上。说完她就起身，把那杯凉茶留在桌上，没让人收。走到门口她回头看了你一眼，像在看一份还没填完的表。',
       choices: [],
       tag: '人',
+      when: {}
+    },
+    {
+      id: 'intro-13',
+      order: 13,
+      title: '行动点，以及你手上那几样东西',
+      text: '你每天有四格行动点，天亮回满。折一张牌要吃掉两格，所以一天里真正能做的事只有两件上下，这不是限制，是账：你今天要么折牌，要么把力气攒成下一次折牌的底气。能攒的东西有四样。信用点最硬——折牌之前可以加注，一次二十点，把判定线往下压三点；窗口后面的人也只认它，四十点省一道手续，四十五点洗淡一层罪痕；它同时也在漏，每天固定开销随你折掉的牌数往上走，七张之后就很难再攒住。情报软一点，它本身不减判定线，但三份情报能在黑市换三枚芯片，委托人更要它——大部分委托的条件那一栏写的就是「情报若干」。芯片是直接的，折牌时投两枚，判定线降一点，最多投五对。装备最省事，它在系统里替你把难度改低，不用你动作。四样东西的分工就是：信用点买路，情报换牌，芯片压线，装备兜底。',
+      choices: [],
+      tag: '规则',
       when: {}
     },
     {
@@ -9603,10 +9648,20 @@ window.GAME_DATA = (function () {
       return { ok: false, why: a.name + '需要 ' + a.price + ' 信用点，你拿不出来。' };
     }
 
+    /* 每天能做几次。以前只有「善后」限了一次，别的行动都能连点，
+       玩家可以站在一个地方把 4 点行动全砸进同一件事 ——
+       看起来像在刷，其实是设计漏了上限。 */
+    s.dailyUsed = s.dailyUsed || {};
+    const cap = a.perDay || 1;
+    const used = s.dailyUsed[actionId] || 0;
+    if (used >= cap) {
+      return { ok: false, why: cap === 1
+        ? '今天这件事只能做一次。'
+        : '今天这件事最多做 ' + cap + ' 次，已经做满了。' };
+    }
+
     if (actionId === 'clean') {
       const c = 45;
-      s.dailyUsed = s.dailyUsed || {};
-      if (s.dailyUsed.clean) return { ok: false, why: '一天只能善后一次，监事会盯得紧。' };
       if (s.money < c) return { ok: false, why: '善后需要 ' + c + ' 信用点，你拿不出来。' };
     }
 
@@ -9650,7 +9705,6 @@ window.GAME_DATA = (function () {
     }
     if (actionId === 'clean') {
       s.money -= 45;
-      s.dailyUsed.clean = true;
       s.tracks.sin = Math.max(0, s.tracks.sin - 1);
       lines.push('花掉 45 信用点买通关系，罪痕 -1。这一天不能再做第二次。');
     }
@@ -9688,7 +9742,14 @@ window.GAME_DATA = (function () {
       lines.push('票押上了。它躺在你的档案里，像一行还没生效的注脚。');
     }
     if (r.patrol) {
+      /* 以前这条只往日志里塞一句话，没有任何数值效果 ——
+         花 1 点行动换一行字，玩家点完毫无感觉。巡检本来就是
+         「看哪些记录对不上」，所以给它情报收益，并且这个收益
+         随当天已折的牌数走：折得越多，能对上的东西越多。 */
+      const g = 2 + Math.min(2, Math.floor(s.folded / 4));
+      s.intel += g;
       lines.push('巡检本前三十格都是「合格」。第三十一格那道痕，是新的。');
+      lines.push('你记下了几处对不上的编号，情报 +' + g + '。');
     }
     if (r.seam) {
       s.intel += 3;
@@ -9706,8 +9767,10 @@ window.GAME_DATA = (function () {
       addTracks(s, { loyalty: 1 });
       lines.push('合规部资历：忠诚额外 +1。');
     }
+    /* 计一次数。放在最后，前面任何一条 return 都不会白白吃掉今天的额度。 */
+    s.dailyUsed[actionId] = used + 1;
     pushLog(s, 'info', a.name + '：' + lines.join(' '));
-    return { ok: true, lines: lines, ap: s.ap };
+    return { ok: true, lines: lines, ap: s.ap, left: Math.max(0, cap - used - 1) };
   }
 
   function fieldOp(s) {
@@ -12304,6 +12367,10 @@ window.GAME_DATA = (function () {
      以前九条行动挤在一个全局面板里，站在哪儿都能干同一批事，
      地图和手牌就都失去了意义；玩家也看不懂那些行动跟折牌什么关系。
      现在「办哪件事」和「去哪儿」绑在一起，点开城区才看得到。 */
+  /* 城区行动面板。
+     以前每行只写「1 行动点」，玩家点完不知道刚才换来了什么；
+     做过一次之后按钮还是亮的，点下去才弹一句「只能做一次」。
+     现在把「会得到什么」和「今天还剩几次」都印在按钮上。 */
   function renderDistrictActions(distId) {
     const wrap = $('dt-actions');
     if (!wrap) return;
@@ -12313,18 +12380,28 @@ window.GAME_DATA = (function () {
       wrap.innerHTML = '<p class="pane-hint">这个地方没有你能做的事。</p>';
       return;
     }
+    const used = S.dailyUsed || {};
     ids.forEach((id) => {
       const a = D.ACTIONS.find((x) => x.id === id);
       if (!a) return;
+      const cap = a.perDay || 1;
+      const done = used[id] || 0;
+      const left = Math.max(0, cap - done);
       const poor = !!a.price && S.money < a.price;
+      const noAp = S.ap < a.cost;
       const el = document.createElement('div');
-      el.className = 'act';
+      el.className = 'act' + (left <= 0 ? ' spent' : '');
       el.title = a.desc || '';
       el.innerHTML = '<span class="ic">' + a.icon + '</span>' +
-        '<div class="an">' + esc(a.name) + '</div>' +
+        '<div class="an">' + esc(a.name) +
+          (cap > 1 ? '<i class="act-left">今天还剩 ' + left + '/' + cap + '</i>' : '') + '</div>' +
         '<div class="ac">' + a.cost + ' 行动点' +
-        (a.price ? ' · ' + a.price + ' 信用点' : '') + '</div>';
-      if (S.ap < a.cost || poor) el.setAttribute('disabled', 'disabled');
+          (a.price ? ' · ' + a.price + ' 信用点' : '') + '</div>' +
+        '<div class="ag">' + esc(a.gain || '') + '</div>' +
+        (left <= 0 ? '<div class="act-why">今天做满了，明天再来</div>'
+          : poor ? '<div class="act-why">钱不够</div>'
+          : noAp ? '<div class="act-why">行动点不够</div>' : '');
+      if (noAp || poor || left <= 0) el.setAttribute('disabled', 'disabled');
       else el.onclick = () => onAction(a.id);
       wrap.appendChild(el);
     });
@@ -12680,6 +12757,8 @@ window.GAME_DATA = (function () {
     /* 以前点完行动什么都不显示，只有角落里的数字悄悄变了一下 ——
        玩家看不懂那些行动在干什么，一半原因在这里。 */
     if (r.lines && r.lines.length) showResult('办完了', r.lines, true);
+    /* 花掉第一笔行动点之后，把「这些东西能拿来干什么」补上 */
+    maybeIntro('firstAction');
     afterAction();
     if (drawerOpen === 'district' && lastDistrict) openDistrict(lastDistrict);
   }
@@ -12845,6 +12924,9 @@ window.GAME_DATA = (function () {
     'intro-8':  'firstFold',
     /* 第一次走进具体城区：工位与门禁的常识 */
     'intro-9':  'openDistrict',
+    /* 第一次真的花掉行动点：这时候他才想知道钱和那几样东西能干什么。
+       早讲没有用 —— 手上没资源的时候，讲用途等于讲空话。 */
+    'intro-13': 'firstAction',
   };
 
   function introScenes() {

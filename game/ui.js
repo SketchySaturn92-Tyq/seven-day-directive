@@ -481,6 +481,10 @@
      以前九条行动挤在一个全局面板里，站在哪儿都能干同一批事，
      地图和手牌就都失去了意义；玩家也看不懂那些行动跟折牌什么关系。
      现在「办哪件事」和「去哪儿」绑在一起，点开城区才看得到。 */
+  /* 城区行动面板。
+     以前每行只写「1 行动点」，玩家点完不知道刚才换来了什么；
+     做过一次之后按钮还是亮的，点下去才弹一句「只能做一次」。
+     现在把「会得到什么」和「今天还剩几次」都印在按钮上。 */
   function renderDistrictActions(distId) {
     const wrap = $('dt-actions');
     if (!wrap) return;
@@ -490,18 +494,28 @@
       wrap.innerHTML = '<p class="pane-hint">这个地方没有你能做的事。</p>';
       return;
     }
+    const used = S.dailyUsed || {};
     ids.forEach((id) => {
       const a = D.ACTIONS.find((x) => x.id === id);
       if (!a) return;
+      const cap = a.perDay || 1;
+      const done = used[id] || 0;
+      const left = Math.max(0, cap - done);
       const poor = !!a.price && S.money < a.price;
+      const noAp = S.ap < a.cost;
       const el = document.createElement('div');
-      el.className = 'act';
+      el.className = 'act' + (left <= 0 ? ' spent' : '');
       el.title = a.desc || '';
       el.innerHTML = '<span class="ic">' + a.icon + '</span>' +
-        '<div class="an">' + esc(a.name) + '</div>' +
+        '<div class="an">' + esc(a.name) +
+          (cap > 1 ? '<i class="act-left">今天还剩 ' + left + '/' + cap + '</i>' : '') + '</div>' +
         '<div class="ac">' + a.cost + ' 行动点' +
-        (a.price ? ' · ' + a.price + ' 信用点' : '') + '</div>';
-      if (S.ap < a.cost || poor) el.setAttribute('disabled', 'disabled');
+          (a.price ? ' · ' + a.price + ' 信用点' : '') + '</div>' +
+        '<div class="ag">' + esc(a.gain || '') + '</div>' +
+        (left <= 0 ? '<div class="act-why">今天做满了，明天再来</div>'
+          : poor ? '<div class="act-why">钱不够</div>'
+          : noAp ? '<div class="act-why">行动点不够</div>' : '');
+      if (noAp || poor || left <= 0) el.setAttribute('disabled', 'disabled');
       else el.onclick = () => onAction(a.id);
       wrap.appendChild(el);
     });
@@ -857,6 +871,8 @@
     /* 以前点完行动什么都不显示，只有角落里的数字悄悄变了一下 ——
        玩家看不懂那些行动在干什么，一半原因在这里。 */
     if (r.lines && r.lines.length) showResult('办完了', r.lines, true);
+    /* 花掉第一笔行动点之后，把「这些东西能拿来干什么」补上 */
+    maybeIntro('firstAction');
     afterAction();
     if (drawerOpen === 'district' && lastDistrict) openDistrict(lastDistrict);
   }
@@ -1022,6 +1038,9 @@
     'intro-8':  'firstFold',
     /* 第一次走进具体城区：工位与门禁的常识 */
     'intro-9':  'openDistrict',
+    /* 第一次真的花掉行动点：这时候他才想知道钱和那几样东西能干什么。
+       早讲没有用 —— 手上没资源的时候，讲用途等于讲空话。 */
+    'intro-13': 'firstAction',
   };
 
   function introScenes() {

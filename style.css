@@ -218,6 +218,11 @@ body{
 .act .ac{font-size:10.5px;color:var(--ink3)}
 .act .ic{float:right;color:var(--cyan);opacity:.75;font-style:normal}
 .act[disabled]{opacity:.32;cursor:not-allowed}
+/* 做完会得到什么。以前这行没有，玩家点完不知道换来了什么。 */
+.act .ag{font-size:10px;color:#9fd8b4;margin-top:2px;line-height:1.35}
+.act .act-left{font-style:normal;font-size:9.5px;color:var(--ink3);margin-left:6px;font-weight:400}
+.act .act-why{font-size:9.5px;color:#e0b44a;margin-top:3px}
+.act.spent{opacity:.45;border-style:dashed}
 
 /* ---------- 名望 / 属性 ---------- */
 .tracks{display:flex;flex-direction:column;gap:9px}

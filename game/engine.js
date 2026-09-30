@@ -617,10 +617,20 @@
       return { ok: false, why: a.name + '需要 ' + a.price + ' 信用点，你拿不出来。' };
     }
 
+    /* 每天能做几次。以前只有「善后」限了一次，别的行动都能连点，
+       玩家可以站在一个地方把 4 点行动全砸进同一件事 ——
+       看起来像在刷，其实是设计漏了上限。 */
+    s.dailyUsed = s.dailyUsed || {};
+    const cap = a.perDay || 1;
+    const used = s.dailyUsed[actionId] || 0;
+    if (used >= cap) {
+      return { ok: false, why: cap === 1
+        ? '今天这件事只能做一次。'
+        : '今天这件事最多做 ' + cap + ' 次，已经做满了。' };
+    }
+
     if (actionId === 'clean') {
       const c = 45;
-      s.dailyUsed = s.dailyUsed || {};
-      if (s.dailyUsed.clean) return { ok: false, why: '一天只能善后一次，监事会盯得紧。' };
       if (s.money < c) return { ok: false, why: '善后需要 ' + c + ' 信用点，你拿不出来。' };
     }
 
@@ -664,7 +674,6 @@
     }
     if (actionId === 'clean') {
       s.money -= 45;
-      s.dailyUsed.clean = true;
       s.tracks.sin = Math.max(0, s.tracks.sin - 1);
       lines.push('花掉 45 信用点买通关系，罪痕 -1。这一天不能再做第二次。');
     }
@@ -702,7 +711,14 @@
       lines.push('票押上了。它躺在你的档案里，像一行还没生效的注脚。');
     }
     if (r.patrol) {
+      /* 以前这条只往日志里塞一句话，没有任何数值效果 ——
+         花 1 点行动换一行字，玩家点完毫无感觉。巡检本来就是
+         「看哪些记录对不上」，所以给它情报收益，并且这个收益
+         随当天已折的牌数走：折得越多，能对上的东西越多。 */
+      const g = 2 + Math.min(2, Math.floor(s.folded / 4));
+      s.intel += g;
       lines.push('巡检本前三十格都是「合格」。第三十一格那道痕，是新的。');
+      lines.push('你记下了几处对不上的编号，情报 +' + g + '。');
     }
     if (r.seam) {
       s.intel += 3;
@@ -720,8 +736,10 @@
       addTracks(s, { loyalty: 1 });
       lines.push('合规部资历：忠诚额外 +1。');
     }
+    /* 计一次数。放在最后，前面任何一条 return 都不会白白吃掉今天的额度。 */
+    s.dailyUsed[actionId] = used + 1;
     pushLog(s, 'info', a.name + '：' + lines.join(' '));
-    return { ok: true, lines: lines, ap: s.ap };
+    return { ok: true, lines: lines, ap: s.ap, left: Math.max(0, cap - used - 1) };
   }
 
   function fieldOp(s) {
