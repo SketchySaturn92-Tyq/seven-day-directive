@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T08:31:15Z */
+/* 生成时间: 2026-09-30T08:36:21Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -12107,7 +12107,9 @@ window.GAME_DATA = (function () {
     const gained = MET.applyToRun(S, P);
     selectedUid = null;
     settled = null;
-    lastStage = null;          // 新的一局重新数段位
+    /* 基线要在开局就对齐到当前段位。设成 null 的话，第一次折牌那一下
+       只是把 null 填成 2 就返回了，跨段提示会被吞掉一次。 */
+    lastStage = E.stageOf ? E.stageOf(S) : null;
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
@@ -12138,7 +12140,7 @@ window.GAME_DATA = (function () {
     selectedUid = null;
     settled = null;
     lastHandCount = null;
-    lastStage = null;
+    lastStage = E.stageOf ? E.stageOf(S) : null;
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
@@ -12732,16 +12734,19 @@ window.GAME_DATA = (function () {
   /* 段位推进：地图和人物是分五段放开的。
      刚进新段时告诉玩家这一批多了什么，不然他不会注意到地图长大了。 */
   let lastStage = null;
+  let lastOpenCount = 0;
   function noticeStage() {
     if (!S || !E.stageOf) return;
     const now = E.stageOf(S);
-    if (lastStage === null) { lastStage = now; return; }
-    if (now <= lastStage) { lastStage = now; return; }
-    lastStage = now;
     const open = E.openDistricts ? E.openDistricts(S) : [];
-    const names = open.map((d) => d.name);
-    const fresh = names.slice(-4);
-    hint('第 ' + now + ' 段 · 地图又放开一块：' + fresh.join('、'), 6000);
+    if (lastStage === null) { lastStage = now; lastOpenCount = open.length; return; }
+    if (now <= lastStage) { lastStage = now; lastOpenCount = open.length; return; }
+    lastStage = now;
+    /* 只报这次多出来的那几个，别把开局就有的高塔商业区也念一遍 */
+    const fresh = open.slice(lastOpenCount).map((d) => d.name);
+    lastOpenCount = open.length;
+    if (!fresh.length) return;
+    hint('第 ' + now + ' 段 · 地图又放开一层：' + fresh.join('、'), 6000);
     sfx('draw');
     M.syncNodes(S);
   }
