@@ -1551,22 +1551,33 @@ body{
 }
 
 /* ==========================================================
-   地图指引引线
-   选一张手牌，就从牌画一条线到目标城区，端点带脉冲圈。
-   以前只在右上角弹一句话，眼睛得自己在地图上找。
+   地图指引
+   之前只有右上角一行提示文字，而「要往哪儿放」这件事本身
+   是空间问题，靠文字说不清。现在整条指引长在地图上：
+
+   1) 节点上方浮一个小三角 —— 只要手上有能折的牌就亮，
+      不用点任何东西，一眼扫过去就知道该往哪几个城区走
+   2) 选中（或拖动）一张牌时，从那张牌拉一条线到目标城区，
+      终点带箭头、脉冲圈和「放这里 · 城区名」的标注
+   3) 目标节点的外圈再放大一档，和引线对上
+
+   SVG 铺满整个游戏屏而不是放在地图层里：地图层是 overflow:hidden，
+   而这条线要从底部的牌一路连到地图上的节点，必须跨出地图边界。
+   z-index 取 28，在地图节点之上、HUD 与底栏之下，
+   于是线像是从牌的后面长出来的。
    ========================================================== */
 .map-guide{
   position:absolute;inset:0;width:100%;height:100%;
-  pointer-events:none;z-index:22;overflow:visible;
+  pointer-events:none;z-index:28;overflow:visible;
   opacity:0;transition:opacity .22s;
 }
 .map-guide.on{opacity:1}
 .guide-path{
-  fill:none;stroke:var(--cyan);stroke-width:2;stroke-linecap:round;
-  stroke-dasharray:7 6;filter:drop-shadow(0 0 6px rgba(74,208,200,.75));
+  fill:none;stroke:var(--cyan);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:8 7;filter:drop-shadow(0 0 7px rgba(74,208,200,.85));
   animation:guideFlow 1s linear infinite;
 }
-@keyframes guideFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-26}}
+@keyframes guideFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-30}}
 .guide-dot{
   fill:var(--cyan);stroke:rgba(255,255,255,.9);stroke-width:1.5;
   filter:drop-shadow(0 0 8px rgba(74,208,200,.9));
@@ -1577,9 +1588,45 @@ body{
   70%{r:17;opacity:.15}
   100%{r:5;opacity:1}
 }
+.guide-arrow{
+  fill:var(--cyan);filter:drop-shadow(0 0 8px rgba(74,208,200,.9));
+}
+
+/* 落点标注：贴在目标节点上方 */
+.node-callout{
+  position:absolute;z-index:29;pointer-events:none;
+  transform:translate(-50%,-100%);
+  padding:4px 11px;border-radius:999px;white-space:nowrap;
+  font-size:12px;font-weight:700;letter-spacing:.02em;
+  color:#04211f;background:var(--cyan);
+  box-shadow:0 6px 18px rgba(0,0,0,.55);
+  animation:calloutIn .22s ease-out;
+}
+@keyframes calloutIn{from{opacity:0;transform:translate(-50%,-70%)}to{opacity:1;transform:translate(-50%,-100%)}}
+.node-callout i{font-style:normal;opacity:.75;font-weight:600}
+
+/* 手上有能折的牌时，对应城区上方浮一个小三角 */
+.node.ready::before{
+  content:'';position:absolute;left:50%;top:-13px;
+  width:0;height:0;margin-left:-7px;
+  border-left:7px solid transparent;border-right:7px solid transparent;
+  border-top:9px solid var(--ok);
+  filter:drop-shadow(0 0 7px rgba(95,208,138,.95));
+  animation:nodeCue 1.5s ease-in-out infinite;
+}
+@keyframes nodeCue{
+  0%,100%{transform:translateY(0);opacity:1}
+  50%{transform:translateY(5px);opacity:.5}
+}
 /* 目标节点再亮一档，和引线对上 */
-.node.guide .node-ring{border-color:var(--cyan);border-width:2px;opacity:1;width:62px;height:62px}
-.node.guide .node-core{transform:scale(1.5);opacity:1}
+.node.guide .node-ring{border-color:var(--cyan);border-width:2px;opacity:1;width:66px;height:66px}
+.node.guide .node-core{transform:scale(1.6);opacity:1}
+.node.guide .node-name{background:rgba(74,208,200,.9);color:#04211f;font-weight:700}
+
+@media (orientation:landscape) and (max-height:520px){
+  .node-callout{font-size:10.5px;padding:3px 9px}
+  .node.ready::before{top:-11px;border-left-width:6px;border-right-width:6px;border-top-width:8px;margin-left:-6px}
+}
 
 /* 关闭状态：按钮变灰划掉，一眼看出 */
 #btn-bgm.off{opacity:.45;text-decoration:line-through}
@@ -1596,6 +1643,8 @@ body{
   .card.breaking::after{animation:none}
   .guide-path{animation:none}
   .guide-dot.pulse{animation:none}
+  .node.ready::before{animation:none}
+  .node-callout{animation:none}
   .node-ring,
   .node.eventing .node-ring{animation:none}
   .res-deck.low{animation:none}

@@ -131,51 +131,80 @@
   ------------------------------------------------ */
   let guideTimer = null;
 
-  function drawGuide(S) {
+  function drawGuide(S, origin) {
     const svg = document.getElementById('map-guide');
     const path = document.getElementById('guide-path');
     const dot = document.getElementById('guide-dot');
-    if (!svg || !path || !dot || !host) return;
+    const arrow = document.getElementById('guide-arrow');
+    const callout = document.getElementById('node-callout');
+    if (!svg || !path || !dot) return;
 
     const clear = () => {
       svg.classList.remove('on');
       dot.classList.remove('pulse');
       path.setAttribute('d', '');
+      if (arrow) arrow.setAttribute('points', '');
+      if (callout) { callout.hidden = true; callout.textContent = ''; }
       document.querySelectorAll('.node.guide').forEach((n) => n.classList.remove('guide'));
     };
 
-    if (!S || !currentUid) { clear(); return; }
-    const card = S.hand.find((c) => c.uid === currentUid);
+    /* 拖拽时用被拖的那张牌，普通选中时用 currentUid */
+    const uid = origin && origin.uid ? origin.uid : currentUid;
+    if (!S || !uid) { clear(); return; }
+    const card = S.hand.find((c) => c.uid === uid);
     if (!card) { clear(); return; }
     const distId = districtOfAsset(card.target);
     if (!distId) { clear(); return; }
 
-    /* 起点：手牌上这张牌的中心，换算到地图层的相对坐标 */
-    const cardEl = document.querySelector('#hand .card[data-uid="' + currentUid + '"]');
-    const layer = document.getElementById('map-layer');
-    if (!cardEl || !layer) { clear(); return; }
-    const lr = layer.getBoundingClientRect();
-    const cr = cardEl.getBoundingClientRect();
-    const sx = cr.left + cr.width / 2 - lr.left;
-    const sy = cr.top - lr.top;                 // 从牌的上沿出发，别从中心穿过底栏
-
-    /* 终点：目标城区节点 */
+    /* 终点：目标城区节点，nodeRect 给的就是视口坐标 */
     const nr = nodeRect(distId);
     if (!nr) { clear(); return; }
-    const ex = nr.cx - lr.left;
-    const ey = nr.cy - lr.top;
+    const ex = nr.cx;
+    const ey = nr.cy;
 
-    /* 三次贝塞尔：控制点往上抬，线从底栏拱上去正好落在节点上 */
-    const midY = Math.min(sy, ey) - Math.max(60, Math.abs(sy - ey) * 0.35);
-    const d = 'M ' + sx.toFixed(1) + ' ' + sy.toFixed(1) +
-              ' C ' + sx.toFixed(1) + ' ' + midY.toFixed(1) + ' ' +
+    /* 起点：拖动时跟手，否则取手牌上那张牌的上沿中点 */
+    let sx, sy;
+    if (origin && origin.x != null) {
+      sx = origin.x;
+      sy = origin.y;
+    } else {
+      const cardEl = document.querySelector('#hand .card[data-uid="' + uid + '"]');
+      if (!cardEl) { clear(); return; }
+      const cr = cardEl.getBoundingClientRect();
+      sx = cr.left + cr.width / 2;
+      sy = cr.top;
+    }
+
+    /* 控制点往上抬：线从底栏拱上去，正好落在节点上 */
+    const lift = Math.max(70, Math.abs(sy - ey) * 0.45);
+    const midY = Math.min(sy, ey) - lift;
+    path.setAttribute('d',
+      'M ' + sx.toFixed(1) + ' ' + sy.toFixed(1) +
+      ' C ' + sx.toFixed(1) + ' ' + midY.toFixed(1) + ' ' +
               ex.toFixed(1) + ' ' + midY.toFixed(1) + ' ' +
-              ex.toFixed(1) + ' ' + ey.toFixed(1);
-    path.setAttribute('d', d);
+              ex.toFixed(1) + ' ' + (ey - 46).toFixed(1));
+
+    /* 箭头压在节点上方，朝下指着落点 */
+    if (arrow) {
+      const tipY = ey - 30;
+      arrow.setAttribute('points',
+        ex.toFixed(1) + ',' + tipY.toFixed(1) + ' ' +
+        (ex - 11).toFixed(1) + ',' + (tipY - 18).toFixed(1) + ' ' +
+        (ex + 11).toFixed(1) + ',' + (tipY - 18).toFixed(1));
+    }
     dot.setAttribute('cx', ex.toFixed(1));
     dot.setAttribute('cy', ey.toFixed(1));
     dot.classList.add('pulse');
     svg.classList.add('on');
+
+    /* 落点标注：贴在节点上方，写清是哪个城区 */
+    if (callout) {
+      const d = districtById(distId);
+      callout.innerHTML = '放这里 <i>· ' + (d ? d.name : '') + '</i>';
+      callout.style.left = ex.toFixed(1) + 'px';
+      callout.style.top = (nr.top - 34).toFixed(1) + 'px';
+      callout.hidden = false;
+    }
 
     document.querySelectorAll('.node').forEach((n) => {
       n.classList.toggle('guide', n.dataset.district === distId);
@@ -231,6 +260,9 @@
         const st = getState();
         ghost.classList.toggle('over', nodeAccepts(node, st, activeUid));
       }
+      /* 拖的一部分人从来不「点选」牌，直接拖上去。
+         那就在拖动过程中也把线画出来，别让指引只在点击路径里才有。 */
+      drawGuide(getState(), { x: ev.clientX, y: ev.clientY, uid: activeUid });
     });
 
     document.addEventListener('pointerup', (ev) => {
@@ -238,6 +270,8 @@
       dragging = false;
       if (ghost) { ghost.remove(); ghost = null; }
       document.querySelectorAll('.node').forEach((n) => n.classList.remove('hover'));
+      /* 松手后回到「按选中状态画」——没选中就自己消失 */
+      drawGuide(getState());
       const node = nodeUnder(ev.clientX, ev.clientY);
       const uid = activeUid;
       activeUid = null;

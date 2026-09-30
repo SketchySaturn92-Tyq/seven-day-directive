@@ -665,7 +665,9 @@
     if (selectedUid) {
       const target = E.assetOf(card.target);
       const d = target ? M.districtById(target.district) : null;
-      if (d) { hint('目标在' + d.name + '，点亮的节点可以直接投放', 3000); openDistrict(d.id); }
+      /* 线已经指到目标城区了，这里不再重复报地名，
+         只说「怎么放」，省得两处信息互相打架。 */
+      if (d) hint('顺着线拖到「' + d.name + '」即可投放', 3000);
       else hint('这张牌暂时没有可投目标，换一张', 2600);
     }
   }
@@ -1330,19 +1332,26 @@
     if (e.key === 'Escape') {
       if (storyOn) { return; }             // 剧情层必须选完，不给 Esc 逃
       if (isDrawerOpen()) { closeDrawer(); return; }
-      if (selectedUid) { selectedUid = null; M.setSelected(null); renderHand(); }
+      if (selectedUid) {
+        selectedUid = null;
+        M.setSelected(null);
+        renderHand();
+        M.drawGuide(S);
+      }
       return;
     }
 
     if (!gameOn || storyOn || !S || S.phase === 'end') return;
 
-    /* 1-9 选牌 */
+    /* 1-9 选牌。注意这里不能只 renderHand：引线是在 syncNodes 里画的，
+       不走一遍地图层的刷新，线就不会出现。 */
     if (/^[1-9]$/.test(e.key)) {
       const i = parseInt(e.key, 10) - 1;
       if (S.hand[i]) {
         selectedUid = S.hand[i].uid;
         M.setSelected(selectedUid);
         renderHand();
+        M.drawGuide(S);
         sfx('hover');
       }
       return;

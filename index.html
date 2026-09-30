@@ -138,13 +138,18 @@
     <div id="map-layer">
       <img id="map-bg" class="map-bg" src="assets/map-city.webp" alt="穹顶城市">
       <div id="map-grid" class="map-grid"></div>
-      <!-- 选中手牌时，从牌指向目标城区的引线 -->
-      <svg id="map-guide" class="map-guide" aria-hidden="true">
-        <path id="guide-path" class="guide-path" d=""></path>
-        <circle id="guide-dot" class="guide-dot" r="5"></circle>
-      </svg>
       <div class="map-vignette"></div>
     </div>
+
+    <!-- 地图指引：从手牌拉一条线到目标城区，终点带箭头与落点标注。
+         放在 screen-game 这一层，而不是塞进地图层里 —— 地图层是
+         overflow:hidden，而这条线要跨出地图边界、一直连到底部那张牌。 -->
+    <svg id="map-guide" class="map-guide" aria-hidden="true">
+      <path id="guide-path" class="guide-path" d=""></path>
+      <polygon id="guide-arrow" class="guide-arrow" points=""></polygon>
+      <circle id="guide-dot" class="guide-dot" r="5"></circle>
+    </svg>
+    <div id="node-callout" class="node-callout" hidden></div>
 
     <header id="hud">
       <div class="hud-day">
