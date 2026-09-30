@@ -180,7 +180,6 @@
     </header>
 
     <nav id="rail">
-      <button class="rail-btn" data-panel="actions"><i>◆</i><span>行动</span></button>
       <button class="rail-btn" data-panel="tracks"><i>◈</i><span>名望</span></button>
       <button class="rail-btn" data-panel="people"><i>♡</i><span>认识</span></button>
       <button class="rail-btn" data-panel="log"><i>≡</i><span>记录</span></button>
@@ -192,11 +191,6 @@
         <button id="drawer-close" class="icon-btn">✕</button>
       </div>
       <div class="drawer-body">
-        <div id="pane-actions" class="pane">
-          <div class="ap-line">行动点 <b id="hud-ap">4</b> / <span id="hud-apmax">4</span></div>
-          <p class="pane-hint">牌是掷点，行动是不掷点的那一半：它们稳定产出资源与属性，用来把判定线压下去。</p>
-          <div id="actions" class="actions"></div>
-        </div>
         <div id="pane-tracks" class="pane">
           <div id="tracks" class="tracks"></div>
           <h4 class="sub-t">属性</h4>
@@ -213,6 +207,11 @@
           <div class="modal-tag" id="dt-tag">城区</div>
           <h4 id="dt-title" class="dt-title">——</h4>
           <p id="dt-desc" class="muted dt-desc">——</p>
+          <!-- 行动挂在地点上：站在哪儿，才能办哪儿的事。
+               行动点也挪到这里显示，因为只有在这里才会被花掉。 -->
+          <div class="ap-line">行动点 <b id="hud-ap">4</b> / <span id="hud-apmax">4</span></div>
+          <h4 class="sub-t">在这里能做的事</h4>
+          <div id="dt-actions" class="actions"></div>
           <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
           <div id="dt-briefs" class="dt-briefs"></div>
           <h4 class="sub-t">可投放的指令</h4>

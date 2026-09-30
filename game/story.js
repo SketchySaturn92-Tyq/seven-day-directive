@@ -55,6 +55,13 @@
 
   /* ---------------- 场景池 ---------------- */
   function mainScenes() { return Array.isArray(window.STORY_MAIN) ? window.STORY_MAIN : []; }
+  /* 认可桥段单独一组：它不是支线，不按 stage 排，
+     而是「这个人已经认识、条件也够了」时插进来的一段戏。
+     走完这一段，他才把牌交出来。 */
+  function approvalScenes() {
+    return Array.isArray(window.APPROVALS) ? window.APPROVALS : [];
+  }
+
   function npcScenes() {
     const out = [];
     if (Array.isArray(window.STORY_NPC_A)) out.push(...window.STORY_NPC_A);
@@ -235,6 +242,17 @@
       return decorate(S, meets[0], 'meet');
     }
 
+    /* 2.5) 认可桥段：他还没认可你，而你俩已经认识、条件也够了，就先演这一段。
+            排在支线前面 —— 拿不到牌这件事比看戏重要。 */
+    const unapproved = approvalScenes()
+      .filter((sc) => !fired(S, sc.id))
+      .filter((sc) => sc.npc && isMet(S, sc.npc))
+      .filter((sc) => !(S.approved && S.approved[sc.npc]))
+      .filter((sc) => condOk(S, Object.assign({ npc: sc.npc }, sc.when || {})));
+    if (unapproved.length) {
+      return decorate(S, unapproved[0], 'approval');
+    }
+
     // 3) NPC 支线：按 stage 从小到大，先出早的
     const npc = npcScenes()
       .filter((sc) => !fired(S, sc.id))
@@ -267,7 +285,8 @@
     const finalInfo = info || (finalNpc && E.npcOf ? E.npcOf(finalNpc) : null);
     return {
       story: true,
-      kind: kind,                       // main | line | meet
+      kind: kind,                       // main | line | meet | approval
+      approval: kind === 'approval',
       meet: !!sc.meet,
       eventId: sc.eventId || null,
       id: sc.id,
@@ -370,7 +389,7 @@
 
   window.GAME_STORY = {
     GUIDE, ACTS, actOf, rel, addRel, relTier, isMet, markMet,
-    nextScene, resolve, progress, ensureGuide, allScenes, mainScenes, npcScenes, condOk,
+    nextScene, resolve, progress, ensureGuide, allScenes, mainScenes, npcScenes, approvalScenes, condOk,
     describeWhen, flagName, inRange,
   };
 })();

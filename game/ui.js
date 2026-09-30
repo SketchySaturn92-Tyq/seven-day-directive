@@ -330,7 +330,6 @@
     if (!S) return;
     renderHud();
     renderHand();
-    renderActions();
     renderTracks();
     renderStats();
     renderPeople();
@@ -472,16 +471,31 @@
     lastHandCount = S.hand.length;
   }
 
-  function renderActions() {
-    const wrap = $('actions');
+  /* 每个城区有自己的行动表。
+     以前九条行动挤在一个全局面板里，站在哪儿都能干同一批事，
+     地图和手牌就都失去了意义；玩家也看不懂那些行动跟折牌什么关系。
+     现在「办哪件事」和「去哪儿」绑在一起，点开城区才看得到。 */
+  function renderDistrictActions(distId) {
+    const wrap = $('dt-actions');
+    if (!wrap) return;
     wrap.innerHTML = '';
-    D.ACTIONS.forEach((a) => {
+    const ids = (D.DISTRICT_ACTIONS && D.DISTRICT_ACTIONS[distId]) || [];
+    if (!ids.length) {
+      wrap.innerHTML = '<p class="pane-hint">这个地方没有你能做的事。</p>';
+      return;
+    }
+    ids.forEach((id) => {
+      const a = D.ACTIONS.find((x) => x.id === id);
+      if (!a) return;
+      const poor = !!a.price && S.money < a.price;
       const el = document.createElement('div');
       el.className = 'act';
-      el.innerHTML = '<span class="ic">' + a.icon + '</span><div class="an">' + esc(a.name) + '</div>' +
-        '<div class="ac">' + a.cost + ' 行动点</div>';
       el.title = a.desc || '';
-      if (S.ap < a.cost) el.setAttribute('disabled', 'disabled');
+      el.innerHTML = '<span class="ic">' + a.icon + '</span>' +
+        '<div class="an">' + esc(a.name) + '</div>' +
+        '<div class="ac">' + a.cost + ' 行动点' +
+        (a.price ? ' · ' + a.price + ' 信用点' : '') + '</div>';
+      if (S.ap < a.cost || poor) el.setAttribute('disabled', 'disabled');
       else el.onclick = () => onAction(a.id);
       wrap.appendChild(el);
     });
@@ -709,7 +723,10 @@
     onFold(uid);
   }
 
+  let lastDistrict = null;   // 动作结算后要原地刷新这一栏
+
   function openDistrict(distId) {
+    lastDistrict = distId;
     const info = M.districtDetail(S, distId);
     if (!info) return;
     $('dt-tag').textContent = info.district.en || '';
@@ -781,6 +798,7 @@
 
     /* 以前这里是 show('screen-district')，一整页模态框把地图盖死。
        现在改成抽屉里的一栏：地图、手牌、指引线全都还看得见。 */
+    renderDistrictActions(distId);
     setDrawer('district');
     $('drawer-title').textContent = info.district.name;
   }
@@ -828,7 +846,11 @@
   function onAction(id) {
     const r = E.doAction(S, id);
     if (!r.ok) { toast('做不了', r.why); return; }
+    /* 以前点完行动什么都不显示，只有角落里的数字悄悄变了一下 ——
+       玩家看不懂那些行动在干什么，一半原因在这里。 */
+    if (r.lines && r.lines.length) showResult('办完了', r.lines, true);
     afterAction();
+    if (drawerOpen === 'district' && lastDistrict) openDistrict(lastDistrict);
   }
 
   function onSolveBrief(uid) {
@@ -1031,6 +1053,7 @@
     if (scene.kind === 'intro') badge.textContent = scene.tag || '世界观';
     else if (scene.kind === 'main') badge.textContent = '主线';
     else if (scene.kind === 'meet') badge.textContent = '初见';
+    else if (scene.kind === 'approval') badge.textContent = '认可 · ' + (scene.npcName || '');
     else badge.textContent = scene.npcName ? scene.npcName + ' 的故事' : '故事';
 
     $('story-progress').innerHTML =
@@ -1153,6 +1176,8 @@
     const tag = $('ev-dist');
     if (isStory && ev.kind === 'main') {
       tag.innerHTML = '<span class="tag-main">主线 · 第 ' + ev.act + ' 幕 ' + esc(ev.actName || '') + '</span>';
+    } else if (isStory && ev.kind === 'approval') {
+      tag.innerHTML = '<span class="tag-approve">认可 · ' + esc(ev.npcName || '') + '</span>';
     } else if (isStory && ev.kind === 'meet') {
       tag.innerHTML = '<span class="tag-meet">初见 · ' + esc(ev.npcName || '') +
         (ev.npcRole ? ' · ' + esc(ev.npcRole) : '') + '</span>';
@@ -1395,7 +1420,8 @@
     }
 
     /* 面板快捷键 */
-    const map = { a: 'actions', t: 'tracks', p: 'people', l: 'log' };
+    /* 行动已经挂到地点上，不再有全局的 a 键；其余三个保留 */
+    const map = { t: 'tracks', p: 'people', l: 'log' };
     const k = String(e.key).toLowerCase();
     if (map[k]) {
       if (isDrawerOpen() && drawerOpen === map[k]) closeDrawer();

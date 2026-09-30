@@ -189,11 +189,15 @@
       const rel = ST.rel(S, id);
       const el = document.createElement('div');
       el.className = 'person' + (id === ST.GUIDE ? ' is-guide' : '');
+      const ok = !!(S.approved && S.approved[id]);
       el.innerHTML =
         faceTag('person-face', info.portrait) +
         '<div class="person-info">' +
           '<div class="person-name">' + esc(info.name) +
-            (id === ST.GUIDE ? '<span class="guide-tag">引导者</span>' : '') + '</div>' +
+            (id === ST.GUIDE ? '<span class="guide-tag">引导者</span>' : '') +
+            '<span class="appr ' + (ok ? 'yes' : 'no') + '" title="' +
+              (ok ? '他已经认可你，牌在你手上' : '还没有认可你，再往后走走') + '">' +
+              (ok ? '已认可' : '未认可') + '</span>' + '</div>' +
           '<div class="person-role">' + esc(info.role) + (d ? ' · ' + esc(d.name) : '') + '</div>' +
           '<div class="rel-row">' +
             '<span class="rel-bar"><span style="width:' + (rel * 10) + '%"></span></span>' +

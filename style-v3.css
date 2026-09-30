@@ -1065,3 +1065,16 @@
 #pane-district .chips{gap:4px}
 #pane-district .chips > *{font-size:10.5px}
 #pane-district .row{margin-top:12px}
+
+/* 认可桥段：标签用金色，和主线、初见区分开 */
+.tag-approve{
+  display:inline-block;padding:1px 9px;border-radius:99px;font-size:10px;letter-spacing:.1em;
+  color:#241a02;background:var(--gold);font-weight:700;
+}
+/* 认识面板里标出「已认可 / 还没认可」 */
+.person .appr{
+  display:inline-block;margin-left:5px;padding:0 6px;border-radius:99px;
+  font-size:9.5px;letter-spacing:.06em;
+}
+.person .appr.yes{color:#04211f;background:var(--ok)}
+.person .appr.no{color:var(--ink3);border:1px solid var(--line2)}

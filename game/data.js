@@ -190,7 +190,73 @@ window.GAME_DATA = (function () {
       desc: '走一遍流程，从董事会那里再要一张指令卡。牌不够时的保底来源。',
       run: { draw: true },
     },
+
+    /* ---------- 以下这些是「有地点才有意义」的行动 ----------
+       以前九条行动全在一个全局面板里，站在哪儿都能干，
+       于是地图和手牌都不重要了。现在每条行动挂在具体城区上，
+       要办事就得点开那个地方。顺带把钱也变成能花出去的东西。 */
+    {
+      id: 'bribe', name: '买通窗口', cost: 1, price: 40, icon: '⇢',
+      desc: '花 40 信用点跳过一道手续。钱替掉的是人情。',
+      run: { bribe: true },
+    },
+    {
+      id: 'meds', name: '买伤药', cost: 1, price: 30, icon: '✚',
+      desc: '在无证诊所把伤处理掉。不留记录，也不用欠人情。',
+      run: { meds: true },
+    },
+    {
+      id: 'pass', name: '买通行条', cost: 1, price: 35, icon: '▥',
+      desc: '从港区弄一张本来不该有的进场条。',
+      run: { pass: true },
+    },
+    {
+      id: 'rumor', name: '买消息', cost: 1, price: 30, icon: '◉',
+      desc: '花 30 信用点，问一件别人不想让人知道的事。',
+      run: { rumor: true },
+    },
+    {
+      id: 'burn', name: '买纸', cost: 1, price: 80, icon: '⌫',
+      desc: '让记忆银行把一条记录处理掉。贵，但干净。',
+      run: { burn: true },
+    },
+    {
+      id: 'keep', name: '买命', cost: 1, price: 100, icon: '♡',
+      desc: '把已经被判回收的人多留三天。救不了，只是往后挪。',
+      run: { keep: true },
+    },
+    {
+      id: 'ticket', name: '押票', cost: 2, price: 120, icon: '➤',
+      desc: '押一张离城的票。它是后路，不是出路。',
+      run: { ticket: true },
+    },
+    {
+      id: 'patrol', name: '跟巡检', cost: 1, icon: '◎',
+      desc: '跟着巡检走一段，看哪些记录对不上。',
+      run: { patrol: true },
+    },
+    {
+      id: 'seam', name: '走到接缝', cost: 1, icon: '≋',
+      desc: '在接缝外侧站一会儿。体魄 -1，情报 +3，罪痕 +1。',
+      run: { seam: true },
+    },
   ];
+
+  /* ---------------- 每个城区能做什么 ----------------
+     「站在这条街才谈得上办这件事」。
+     玩家点开城区面板，看到的就是这里的行动。 */
+  const DISTRICT_ACTIONS = {
+    tower:    ['brief', 'social', 'draw'],
+    exchange: ['biz', 'clean', 'bribe'],
+    lab:      ['study'],
+    slum:     ['intel', 'deal', 'meds', 'rumor'],
+    docks:    ['field', 'pass'],
+    orbit:    ['ticket'],
+    ring:     ['patrol'],
+    memory:   ['burn'],
+    salvage:  ['keep'],
+    outside:  ['seam'],
+  };
 
   /* ---------------- 每日事件（每选项含结算脚本片段） ---------------- */
   const EVENTS = [
@@ -373,5 +439,5 @@ window.GAME_DATA = (function () {
     },
   ];
 
-  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, EVENTS, ENDINGS };
+  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, DISTRICT_ACTIONS, EVENTS, ENDINGS };
 })();

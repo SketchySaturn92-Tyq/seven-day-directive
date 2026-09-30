@@ -24,6 +24,8 @@ ORDER=(
   game/voice-b.js
   game/lore.js
   game/card-sources.js
+  game/approval.js
+  game/relation-events.js
   game/event-gates.js
   game/events-v6.js
   game/afterstory.js

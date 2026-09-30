@@ -202,6 +202,10 @@
       briefDistrictHits: {},
       /* --- 认识过的 NPC --- */
       metNpcs: {},
+      /* --- 认可过你的 NPC ---
+         认识不等于拿到卡。一个人要先在某件具体的事上看清你是什么样的人，
+         才肯把自己的牌交出来。十六个人条件各不相同。 */
+      approved: {},
       dayLog: [],
     };
 
@@ -255,11 +259,48 @@
   }
 
 
+  /* ---------------- 引导者退场 ----------------
+     苏纹把「执行人」那一栏改成自己的编号，替玩家走完最后一步。
+     她不在了，从她那条流程里发出来的牌也就不在结算表上：
+     牌堆清空、申领失效。玩家手里剩几张就是几张。
+     这是这一局最疼的一次损失，也是通往真正出路必须付的价。 */
+  function guideFalls(s) {
+    if (s.guideGone) return { ok: false, why: '这一步已经走过了。' };
+    s.guideGone = true;
+    const lost = (s.deck || []).length;
+    s.deck = [];
+    s.boardClosed = true;
+    pushLog(s, 'bad', '苏纹把「执行人」改成了自己的编号。牌堆清空。');
+    const got = grantCard(s, { reason: '她最后留下的那张', n: 1 });
+    return { ok: true, lost: lost, card: got.length ? got[0] : null };
+  }
+
+  /* ---------------- 认可 ----------------
+     他认可你之后，才把自己的牌交出来。
+     这件事只发生一次，之后再找他也不会多给。 */
+  function approve(s, npcId) {
+    if (!npcId) return null;
+    s.approved = s.approved || {};
+    if (s.approved[npcId]) return null;
+    s.approved[npcId] = 1;
+    const info = npcOf(npcId) || { name: npcId };
+    const got = grantCard(s, { reason: info.name + '认可了你', n: 1 });
+    pushLog(s, 'good', info.name + '认可了你' + (got.length ? '，并把他的牌交给你' : ''));
+    return got.length ? got[0] : null;
+  }
+
+  function isApproved(s, npcId) {
+    return !!(s && s.approved && s.approved[npcId]);
+  }
+
   /* ---------------- 申领：保底牌源 ----------------
      折不动牌的时候，还能走一趟流程再要一张。
      代价是 2 点行动，等于放弃当天的一半行动力。
   ------------------------------------------------------------ */
   function drawCard(s) {
+    if (s.guideGone) {
+      return { ok: false, why: '排期的人不在了，董事会那边没人替你走流程。' };
+    }
     if (!s.deck || !s.deck.length) return { ok: false, why: '董事会那边也没有余牌了。' };
     if (s.hand.length >= (C.handMax || 7)) return { ok: false, why: '手上拿不下了，先折掉几张。' };
     const cost = 2;
@@ -296,6 +337,10 @@
       if (kind === 'npc') {
         const who = cs.npc || t.npc;
         if (!who || !(s.metNpcs && s.metNpcs[who])) continue;
+        /* 认可制：以前只要关系值刷到线就自动给牌，人成了提款机。
+           现在必须先发生一次「认可」——他在具体的事上看清了你。
+           关系值仍然要够，但它只是门槛，不再是理由。 */
+        if (!(s.approved && s.approved[who])) continue;
         ok = ST_rel(s, who) >= (need != null ? need : (t.minRel != null ? t.minRel : 1));
       } else if (kind === 'district') {
         const hits = (s.briefDistrictHits && s.briefDistrictHits[cs.district]) || 0;
@@ -537,6 +582,11 @@
     if (s.origin.id === 'ghost' && actionId === 'intel') cost = 1;
     if (s.ap < cost) return { ok: false, why: '行动点不够。' };
 
+    /* 花钱的行动：先验钱，钱不够就别扣行动点 */
+    if (a.price && s.money < a.price) {
+      return { ok: false, why: a.name + '需要 ' + a.price + ' 信用点，你拿不出来。' };
+    }
+
     if (actionId === 'clean') {
       const c = 45;
       s.dailyUsed = s.dailyUsed || {};
@@ -566,11 +616,15 @@
     }
     if (r.field) lines.push(fieldOp(s));
     if (r.draw) {
-      const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
-      if (got.length) {
-        lines.push('窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。牌堆还剩 ' + s.deck.length + ' 张。');
+      if (s.guideGone) {
+        lines.push('排期的人不在了。窗口后面没有人，抽屉是空的。');
       } else {
-        lines.push('董事会那边也没有余牌了。');
+        const got = grantCard(s, { reason: '你走了一趟流程', n: 1 });
+        if (got.length) {
+          lines.push('窗口后面的人从抽屉里抽出一张：' + label(got[0]) + '。牌堆还剩 ' + s.deck.length + ' 张。');
+        } else {
+          lines.push('董事会那边也没有余牌了。');
+        }
       }
     }
     if (r.deal) {
@@ -584,6 +638,54 @@
       s.tracks.sin = Math.max(0, s.tracks.sin - 1);
       lines.push('花掉 45 信用点买通关系，罪痕 -1。这一天不能再做第二次。');
     }
+    /* ---------- 花钱办事 ---------- */
+    if (a.price) { s.money -= a.price; lines.push('花掉 ' + a.price + ' 信用点。'); }
+    if (r.bribe) {
+      s.intel += 2; addTracks(s, { loyalty: 1 });
+      lines.push('手续少了一道。窗口后面的人把钱压进抽屉，情报 +2，忠诚 +1。');
+    }
+    if (r.meds) {
+      s.stats.vitality = clamp(s.stats.vitality + 2, 0, C.statCap);
+      lines.push('伤处理好了，体魄 +2。陆晚没问伤是怎么来的，也没写进本子。');
+    }
+    if (r.pass) {
+      s.intel += 1;
+      s.storyFlags = s.storyFlags || {}; s.storyFlags.passToken = 1;
+      lines.push('拿到一张进场条，情报 +1。');
+    }
+    if (r.rumor) {
+      s.intel += 2;
+      s.storyFlags = s.storyFlags || {};
+      s.storyFlags.rumorBought = (s.storyFlags.rumorBought || 0) + 1;
+      lines.push('买到一件别人不想让人知道的事，情报 +2。');
+    }
+    if (r.burn) {
+      s.tracks.sin = Math.max(0, s.tracks.sin - 2);
+      lines.push('一段记录从系统里消失，罪痕 -2。');
+    }
+    if (r.keep) {
+      s.storyFlags = s.storyFlags || {}; s.storyFlags.graceKeep = 1;
+      lines.push('那个人多留三天。三天之后还是三天之后。');
+    }
+    if (r.ticket) {
+      s.storyFlags = s.storyFlags || {}; s.storyFlags.ticket = 1;
+      lines.push('票押上了。它躺在你的档案里，像一行还没生效的注脚。');
+    }
+    if (r.patrol) {
+      lines.push('巡检本前三十格都是「合格」。第三十一格那道痕，是新的。');
+    }
+    if (r.seam) {
+      s.intel += 3;
+      s.stats.vitality = clamp(s.stats.vitality - 1, 0, C.statCap);
+      addTracks(s, { sin: 1 });
+      lines.push('风里有酸味。情报 +3，体魄 -1，罪痕 +1。');
+    }
+    if (r.vitality) {
+      s.stats.vitality = clamp(s.stats.vitality + r.vitality, 0, C.statCap);
+      lines.push('体魄 ' + r.vitality + '。');
+    }
+    if (r.track) { addTracks(s, r.track); lines.push(trackLine(r.track) + '。'); }
+
     if (actionId === 'brief' && s.origin.id === 'clerk') {
       addTracks(s, { loyalty: 1 });
       lines.push('合规部资历：忠诚额外 +1。');
@@ -764,7 +866,39 @@
     return 1.25 - prog * 0.55;
   }
 
+  /* 跨圈层关系事件：两个不同圈层的人都认识之后才可能触发。
+     它是「人跟人有关系」这件事唯一的可见出口 ——
+     以前十六个人各在各的圈里，玩家看不到他们之间的牵扯。 */
+  function pickRelationEvent(s) {
+    const list = Array.isArray(window.RELATION_EVENTS) ? window.RELATION_EVENTS : [];
+    if (!list.length) return null;
+    s.relSeen = s.relSeen || {};
+    const hot = list.filter((e) => {
+      if (!e || !e.id || s.relSeen[e.id]) return false;
+      if (e.bothMet === false) return true;
+      return !!(s.metNpcs && s.metNpcs[e.a] && s.metNpcs[e.b]);
+    });
+    if (!hot.length) return null;
+    const e = hot[rngOf().range(0, hot.length - 1)];
+    s.relSeen[e.id] = 1;
+    return {
+      id: e.id,
+      title: e.title,
+      /* reveal 是内情，跟在正文后面，和正文之间空一行 */
+      text: (e.text || '') + (e.reveal ? '\n\n' + e.reveal : ''),
+      options: e.options || [],
+      portrait: null,
+      district: e.district || null,
+      npc: null,
+      isRelation: true,
+    };
+  }
+
   function pickEvent(s) {
+    /* 关系事件优先：它比随机事件更有信息量，而且见过就不再出现 */
+    const rel = pickRelationEvent(s);
+    if (rel) return rel;
+
     const all = D.EVENTS;
     if (!all.length) return null;
 
@@ -843,6 +977,15 @@
     if (eff.chips) { s.chips = Math.max(0, s.chips + eff.chips); lines.push('芯片 ' + (eff.chips > 0 ? '+' : '') + eff.chips + '。'); }
     if (eff.vitality) { s.stats.vitality = clamp(s.stats.vitality + eff.vitality, 0, C.statCap); lines.push('体魄 ' + eff.vitality + '。'); }
     if (eff.gear) { s.gear += eff.gear; lines.push('装备 +' + eff.gear + '。'); }
+    if (eff.guideFalls) {
+      const gf = guideFalls(s);
+      if (gf.ok) {
+        lines.push('她把自己填进了「执行人」那一栏。');
+        lines.push('牌堆里剩下 ' + gf.lost + ' 张指令卡当场作废——那些牌是从她的流程里发出来的。');
+        lines.push('从这一刻起，董事会不再发牌给这一局。');
+        if (gf.card) lines.push('桌上只留下一张：' + label(gf.card) + '。');
+      }
+    }
     if (eff.grantCard) {
       const g = eff.grantCard || {};
       const got = grantCard(s, { reason: '这趟没有白跑', n: g.n || 1, path: g.path || null, tier: g.tier || null });
@@ -877,6 +1020,34 @@
     const r = ST.resolve(S, scene, optIdx);
     S.pendingEvent = null;
     S.phase = 'play';
+
+    /* 认可桥段：他在这段戏里看清了你是什么样的人。
+       选到「演给他看」的那一条，他就不给 —— 这一点必须真的影响结果，
+       否则认可制又变回刷数值。 */
+    if (r && r.ok && scene && (scene.kind === 'approval' || scene.approval)) {
+      const opt = (scene.options || [])[optIdx] || {};
+      /* 数据里标了 pass: true 的选项才算「他认可你」。
+         只要有任意一条标了 pass，就按这个标记判；
+         一条都没标的老数据退回「没标 fail 就算过」。 */
+      const opts = scene.options || [];
+      const marked = opts.some((o) => o.pass === true);
+      const passes = marked ? opt.pass === true : (!opt.fail && !opt.noGrant);
+      if (passes) {
+        const got = approve(S, scene.npc);
+        if (got) {
+          r.lines = (r.lines || []).concat([
+            (scene.npcName || '他') + '把一张牌推过来：' + label(got) + '。',
+            '这张牌不是董事会发的，是他自己的。',
+          ]);
+          r.approved = true;
+        } else if (isApproved(S, scene.npc)) {
+          /* 之前就认可过了，这次不再重复给 */
+        }
+      } else {
+        r.lines = (r.lines || []).concat(['他看出来了。这件事他不会再提，牌也不会给你。']);
+      }
+    }
+
     checkEnd(S);
     return r;
   }
@@ -923,7 +1094,7 @@
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent,
-    resolveStory, pickStory, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
+    resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,
