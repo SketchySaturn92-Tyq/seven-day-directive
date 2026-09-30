@@ -286,7 +286,7 @@
     settled = null;
     /* 基线要在开局就对齐到当前段位。设成 null 的话，第一次折牌那一下
        只是把 null 填成 2 就返回了，跨段提示会被吞掉一次。 */
-    lastStage = E.stageOf ? E.stageOf(S) : null;
+    markStageBaseline();
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
@@ -317,7 +317,7 @@
     selectedUid = null;
     settled = null;
     lastHandCount = null;
-    lastStage = E.stageOf ? E.stageOf(S) : null;
+    markStageBaseline();
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
@@ -912,6 +912,14 @@
      刚进新段时告诉玩家这一批多了什么，不然他不会注意到地图长大了。 */
   let lastStage = null;
   let lastOpenCount = 0;
+  /* 开一局（或读档）时把基线一起对齐。
+     只对齐 lastStage 是不够的：lastOpenCount 还留在 0，
+     跨段时会算出「新放开」= 全部城区，把开局就有的高塔商业区也念一遍。 */
+  function markStageBaseline() {
+    if (!S || !E.stageOf) { lastStage = null; lastOpenCount = 0; return; }
+    lastStage = E.stageOf(S);
+    lastOpenCount = (E.openDistricts ? E.openDistricts(S).length : 0);
+  }
   function noticeStage() {
     if (!S || !E.stageOf) return;
     const now = E.stageOf(S);
