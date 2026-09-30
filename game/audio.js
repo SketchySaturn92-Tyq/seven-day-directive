@@ -347,112 +347,68 @@
   };
 
   /* ==========================================================
-     BGM —— 程序化环境音乐
-     同样不带任何素材：用振荡器铺一条缓慢的和声进行，
-     加极稀疏的点缀音。风格跟音效一致：冷、克制、不抢戏。
-     落点是「穹顶里的电梯广告」那种感觉 —— 有调性、循环，
-     但你不会想跟着哼，因为它是背景不是主角。
+     BGM —— 循环音轨
+     音轨来自 Meowa（assets/bgm-main.mp3，约 3 分钟，192kbps）。
 
-     实现要点：
-     - 一个前瞻调度器（lookahead），每 250ms 看一次未来 1.2 秒的排期，
-       这样即使主线程卡一下，音乐节拍也不会抖。
-     - 每次换和弦新建一组声部，到点自己 stop + disconnect，不留节点。
-     - 单独一条 bgmGain，音量压得很低，且与音效总闸联动。
-     - 标签页隐藏时停排期，回到前台补上，省电也避免后台响。
+     早先那版是现场合成的，有一个致命的时间量纲错误：把绝对时刻
+     减掉 currentTime 之后才交给 start()，振荡器全部被排到过去，
+     于是 bgmLive 为 true、上下文 running、分析器读出来却是全零。
+     换成真实音轨后不存在这个问题，听感也远好于几个正弦叠一起。
+
+     用 HTML5 Audio，不走 Web Audio 的 MediaElementSource：
+     少一层路由，出问题好查；音量直接改 element.volume。
      ========================================================== */
 
-  const BGM_STEP = 4.2;        // 一个和弦持续多少秒（慢，像长音铺底）
-  const BGM_LOOKAHEAD = 0.25;  // 调度器心跳（秒）
-  const BGM_AHEAD = 1.2;       // 每次往前排多少秒
-  const BGM_VOL = 0.16;        // BGM 单独音量，再经总闸 0.45，实际很轻
+  const BGM_SRC = 'assets/bgm-main.mp3';
+  const BGM_VOL = 0.42;         // 音轨本身混得很轻，这里不用再压太狠
+  const BGM_FADE_IN = 2600;     // 淡入毫秒
+  const BGM_FADE_OUT = 1200;    // 淡出毫秒
 
-  let bgmGain = null;          // BGM 专用总线，便于淡入淡出
-  let bgmTimer = null;         // 调度器句柄
-  let bgmNext = 0;             // 下一个和弦的绝对时间
-  let bgmStep = 0;             // 走到和声进行第几小节
-  let bgmLive = false;         // 是否正在播放
+  let bgmEl = null;             // 音轨元素，第一次要用才创建
+  let bgmFade = null;           // 淡入淡出的推进定时器
+  let bgmLive = false;          // 是否正在播放
 
-  /* D 小调上的四小节循环。用音名频率写死，避免引入音高换算。 */
-  const BGM_CHORDS = [
-    { root: 146.83, notes: [220.00, 261.63, 329.63] },   // Dm
-    { root: 116.54, notes: [233.08, 293.66, 349.23] },   // Bb
-    { root: 174.61, notes: [220.00, 261.63, 349.23] },   // F
-    { root: 130.81, notes: [196.00, 233.08, 293.66] },   // Cm/Gm 色彩
-  ];
-
-  /* 一个和声块：低频垫底 + 三个内声部，全部慢起慢落 */
-  function bgmVoicing(t0, chord, i) {
-    const dest = bgmGain;
-    if (!dest) return;
-
-    /* 低频：只放根音的低八度，极慢的起音，做“地底管线”的底噪感 */
-    tone({
-      t0: t0 - ctx.currentTime,
-      end: 0,
-      note: function () {},
-      add: function () {},
-      out: dest,
-      nodes: [],
-    }, {
-      type: 'sine', f0: chord.root / 2, dur: BGM_STEP + 2.2, gain: 0.1,
-      attack: 1.6, dest: dest, filter: { type: 'lowpass', f0: 320 },
-    });
-
-    /* 内声部：三层，逐层延迟进入，起音 1.2 秒，是“铺”不是“弹” */
-    chord.notes.forEach(function (f, k) {
-      tone({
-        t0: t0 - ctx.currentTime,
-        end: 0, note: function () {}, add: function () {},
-        out: dest, nodes: [],
-      }, {
-        type: k === 0 ? 'triangle' : 'sine',
-        f0: f, dur: BGM_STEP + 1.6, gain: 0.055 - k * 0.008,
-        attack: 1.2, at: k * 0.35, dest: dest,
-        filter: { type: 'lowpass', f0: 1700 },
-      });
-    });
-
-    /* 点缀：每两小节才落一颗，音高在和弦内挑一个高的，
-       像远处某个终端在报数。极轻，偶尔才注意到。 */
-    if (i % 2 === 0) {
-      const pick = chord.notes[chord.notes.length - 1] * 2;
-      tone({
-        t0: t0 - ctx.currentTime,
-        end: 0, note: function () {}, add: function () {},
-        out: dest, nodes: [],
-      }, {
-        type: 'sine', f0: pick, dur: 2.4, gain: 0.03, attack: 0.35,
-        at: 1.1, dest: dest, filter: { type: 'lowpass', f0: 2600 },
-      });
-    }
-
-    /* 空调声：一层极轻的滤波噪声，把安静处的空白填掉，不然停顿会很干 */
-    noise({
-      t0: t0 - ctx.currentTime,
-      end: 0, note: function () {}, add: function () {},
-      out: dest, nodes: [],
-    }, {
-      dur: BGM_STEP, filter: 'bandpass', f0: 620, q: 0.5,
-      gain: 0.012, attack: 1.0, dest: dest,
-    });
+  function bgmCreate() {
+    if (bgmEl) return bgmEl;
+    try {
+      const el = new Audio();
+      el.src = BGM_SRC;
+      el.loop = true;
+      el.preload = 'auto';
+      el.volume = 0;
+      /* 音轨拿不到就彻底放弃 BGM，绝不牵连游戏本体 */
+      el.addEventListener('error', function () { bgmEl = null; bgmLive = false; });
+      bgmEl = el;
+      return el;
+    } catch (e) { bgmEl = null; return null; }
   }
 
-  /* 调度器：往前看 BGM_AHEAD 秒，把还没排的和弦补上 */
-  function bgmTick() {
-    if (!bgmLive || !ctx || !bgmGain) return;
-    const now = ctx.currentTime;
-    while (bgmNext < now + BGM_AHEAD) {
-      const chord = BGM_CHORDS[bgmStep % BGM_CHORDS.length];
-      bgmVoicing(bgmNext, chord, bgmStep);
-      bgmNext += BGM_STEP;
-      bgmStep++;
-    }
+  /* element.volume 没有内建过渡，自己按 50ms 一步推上去。
+     比 setInterval 直接跳到目标值稳，也免得出现“啪”的爆音。 */
+  function bgmFadeTo(to, ms, done) {
+    if (bgmFade) { window.clearInterval(bgmFade); bgmFade = null; }
+    const el = bgmEl;
+    if (!el) { if (done) done(); return; }
+    const from = Number(el.volume) || 0;
+    const steps = Math.max(1, Math.round(ms / 50));
+    let i = 0;
+    bgmFade = window.setInterval(function () {
+      i++;
+      const k = Math.min(1, i / steps);
+      try { el.volume = Math.max(0, Math.min(1, from + (to - from) * k)); } catch (e) {}
+      if (k >= 1) {
+        window.clearInterval(bgmFade);
+        bgmFade = null;
+        if (done) done();
+      }
+    }, 50);
   }
 
-  /* 开关或上下文的实际状态变了，就调这里对齐 */
+  /* 开关或上下文的实际状态变了，就调这里对齐。
+     总闸（音效开关）关掉时，BGM 也要停 —— 它不受 play() 那个
+     「不发新声音」的限制，是一段一直在跑的媒体。 */
   function bgmSync() {
     try {
-      if (!ctx || !master) return;
       if (on && bgmOn) bgmStart();
       else bgmStop();
     } catch (e) {}
@@ -460,16 +416,15 @@
 
   function bgmStart() {
     try {
-      if (bgmLive || !ctx || !master) return;
-      bgmGain = ctx.createGain();
-      bgmGain.gain.setValueAtTime(0.0001, ctx.currentTime);
-      bgmGain.gain.exponentialRampToValueAtTime(BGM_VOL, ctx.currentTime + 3.5); // 慢慢淡入
-      bgmGain.connect(master);
-      bgmStep = 0;
-      bgmNext = ctx.currentTime + 0.4;
+      if (bgmLive) return;
+      const el = bgmCreate();
+      if (!el) return;
       bgmLive = true;
-      bgmTick();
-      bgmTimer = window.setInterval(bgmTick, BGM_LOOKAHEAD * 1000);
+      /* play() 返回 Promise，被浏览器策略拦下会 reject。
+         拦下就当这局没音乐，等下一次用户手势再试。 */
+      const pr = el.play();
+      if (pr && pr.catch) pr.catch(function () { bgmLive = false; });
+      bgmFadeTo(BGM_VOL, BGM_FADE_IN);
       document.addEventListener('visibilitychange', bgmVisibility);
     } catch (e) { bgmLive = false; }
   }
@@ -478,32 +433,23 @@
     try {
       if (!bgmLive) return;
       bgmLive = false;
-      if (bgmTimer) { window.clearInterval(bgmTimer); bgmTimer = null; }
       document.removeEventListener('visibilitychange', bgmVisibility);
-      if (bgmGain) {
-        const g = bgmGain, t = ctx ? ctx.currentTime : 0;
-        try {
-          g.gain.cancelScheduledValues(t);
-          g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
-          g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);   // 淡出再断
-        } catch (e) {}
-        window.setTimeout(function () {
-          try { g.disconnect(); } catch (e) {}
-        }, 1500);
-        bgmGain = null;
-      }
+      bgmFadeTo(0, BGM_FADE_OUT, function () {
+        try { if (bgmEl) bgmEl.pause(); } catch (e) {}
+      });
     } catch (e) {}
   }
 
-  /* 切到后台就别排新音了，回前台接着排 */
+  /* 切后台就停，省电也避免后台响；回前台接着放 */
   function bgmVisibility() {
     try {
+      if (!bgmEl) return;
       if (document.hidden) {
-        if (bgmTimer) { window.clearInterval(bgmTimer); bgmTimer = null; }
-      } else if (bgmLive && !bgmTimer) {
-        if (ctx) bgmNext = Math.max(bgmNext, ctx.currentTime + 0.3);
-        bgmTick();
-        bgmTimer = window.setInterval(bgmTick, BGM_LOOKAHEAD * 1000);
+        if (!bgmEl.paused) bgmEl.pause();
+      } else if (bgmLive && bgmEl.paused) {
+        const pr = bgmEl.play();
+        if (pr && pr.catch) pr.catch(function () {});
+        bgmEl.volume = BGM_VOL;
       }
     } catch (e) {}
   }
