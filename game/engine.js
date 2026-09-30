@@ -887,10 +887,16 @@
   /* ==========================================================
      十一、终局
      ========================================================== */
+  /* 一局怎么结束。
+     顺序很重要：原来先查忠诚与罪痕、最后才查有没有折完，于是
+     折满十二张的同时撞上罪痕满值，就会被判「被回收」—— 和游戏
+     开头写给玩家的「折完全部十二张，你活下来」直接矛盾。
+     现在通关优先：折完就是活下来，四轨只决定你活成哪一种。
+     没折完的，才轮到忠诚清零与罪痕满值把人带走。 */
   function checkEnd(s) {
+    if (s.folded >= C.deckGoal) { s.ending = pickEnding(s); s.phase = 'end'; return; }
     if (s.tracks.loyalty <= 0) { s.ending = endingById('broken'); s.phase = 'end'; return; }
     if (s.tracks.sin >= C.trackCap) { s.ending = endingById('purged'); s.phase = 'end'; return; }
-    if (s.folded >= C.deckGoal) { s.ending = pickEnding(s); s.phase = 'end'; }
   }
 
   /* 结局判定：按显式 priority 从高到低挑第一个命中的。

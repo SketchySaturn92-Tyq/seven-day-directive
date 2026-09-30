@@ -62,7 +62,7 @@
         <span class="pf"><i>✦</i>命运点 <b id="pf-fortune">0</b></span>
         <span class="pf">已进行 <b id="pf-runs">0</b> 局</span>
         <span class="pf">通关 <b id="pf-wins">0</b> 次</span>
-        <span class="pf">结局收集 <b id="pf-endings">0</b>/17</span>
+        <span class="pf">结局收集 <b id="pf-endings">0</b>/<span id="pf-endings-total">18</span></span>
         <span class="pf">已认识 <b id="pf-met">0</b> 人</span>
       </div>
       <p id="pf-last" class="pf-last"></p>
@@ -108,7 +108,7 @@
           <p class="muted">你在这座穹顶里落到过的每一种下场。没见过的只留编号。</p>
         </div>
         <div class="nexus-fortune">
-          <i>✦</i><b id="cp-count">0</b><span>/ 17 已见</span>
+          <i>✦</i><b id="cp-count">0</b><span>/ <span id="cp-total">18</span> 已见</span>
         </div>
       </header>
       <div id="cp-list" class="cp-list"></div>
@@ -363,7 +363,7 @@
         <li><b>七天之内至少折一张。</b>折掉一张，期限重置为七天。倒计时归零就出局。</li>
         <li><b>掷点判定成败。</b>能力值、装备、权柄都会压低判定线。加注与芯片可以再拉一把。</li>
         <li><b>行动是不掷点的那一半。</b>进修涨属性、家业赚钱、情报网显形、善后降罪痕——它们的作用就是让下一次掷点更容易。折一张牌吃掉 2 点行动，所以「今天折牌」和「今天攒资源」是互斥的。</li>
-        <li><b>盯住名望四轨。</b>忠诚归零＝被清算，罪痕满值＝被回收，声望与权柄决定你最后是哪种赢法。</li>
+        <li><b>盯住名望四轨。</b>忠诚归零＝被清算，罪痕满值＝被回收 —— 但只在你没折完十二张的时候。折完全部十二张，谁也回收不了你，四轨只决定你是哪一种赢法。</li>
         <li><b>应付派来的委托。</b>每天可能有人给你派活：传唤、事务、人情，甚至要你处理掉一个人。委托有硬期限，最多同时三条，超期要付代价。</li>
         <li><b>每天结束会出事件。</b>选项会写进名望。行动点花完就可以结束这一天。</li>
         <li><b>遇见人。</b>开局你会陆续遇到十二个名字，每次初见都交代他是谁、你们怎么认识的。他们在「认识」抽屉里。</li>

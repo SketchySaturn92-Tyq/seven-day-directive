@@ -174,6 +174,7 @@
     w4: '罪痕很高，忠诚很低，但牌折完了',
     w5: '通关时身上没剩几个钱，声望却不低',
     w6: '四轨全落在中段，哪一边都不站',
+    w7: '十二张全折完，但罪痕已经压不下来',
     survivor: '十二张折完，仅此而已',
   };
   const ENDING_KIND = {
@@ -186,6 +187,8 @@
     const seen = P2.endings || {};
     const got = Object.keys(seen).length;
     $('cp-count').textContent = got;
+    const tot = $('cp-total');
+    if (tot) tot.textContent = D.ENDINGS.length;
 
     const wrap = $('cp-list');
     wrap.innerHTML = '';

@@ -349,12 +349,16 @@ window.GAME_DATA = (function () {
     },
     {
       id: 'purged', name: '被回收',
-      priority: 84, cond: (s) => s.tracks.sin >= 10,
+      /* 折满十二张就算通关，游戏承诺过「折完全部十二张，你活下来」，
+         通关的人不该再被判回收 —— 所以通关时这条让位给 w7
+         「穹顶不需要干净的人」。罪痕满值只对没折完的人致命。 */
+      priority: 84, cond: (s) => s.folded < CONFIG.deckGoal && s.tracks.sin >= 10,
       text: '你以为罪痕是勋章，其实那是编号。某一个清晨，你的门禁失效、账户清零、名字从系统里消失，连葬礼都省了。归档结论只有一行：「已回收」。',
     },
     {
       id: 'broken', name: '三十六层高的自由落体',
-      priority: 80, cond: (s) => s.tracks.loyalty <= 0,
+      /* 同上：折满十二张之后不再按忠诚判死。 */
+      priority: 80, cond: (s) => s.folded < CONFIG.deckGoal && s.tracks.loyalty <= 0,
       text: '董事会不再需要你了。你被请进一间没有窗的会客室，对面的人一直在笑，笑到你不想再问下去。关于你的最后一条公开记录，是一次「自愿退出」。',
     },
     {
