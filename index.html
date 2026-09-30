@@ -206,6 +206,23 @@
           <p class="pane-hint">遇见过的名字。你在穹顶里的全部社会关系。</p>
           <div id="people" class="people"></div>
         </div>
+        <div id="pane-district" class="pane">
+          <!-- 城区详情。以前点地图会弹一整页模态框，把地图整个盖住；
+               现在改成抽屉里的一栏，地图和手牌都还看得见。 -->
+          <div id="dt-scene" class="dt-scene" hidden></div>
+          <div class="modal-tag" id="dt-tag">城区</div>
+          <h4 id="dt-title" class="dt-title">——</h4>
+          <p id="dt-desc" class="muted dt-desc">——</p>
+          <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
+          <div id="dt-briefs" class="dt-briefs"></div>
+          <h4 class="sub-t">可投放的指令</h4>
+          <div id="dt-cards" class="dt-list"></div>
+          <h4 class="sub-t">目标</h4>
+          <div id="dt-assets" class="chips"></div>
+          <h4 class="sub-t">此地会发生</h4>
+          <div id="dt-events" class="chips"></div>
+          <div class="row"><button id="dt-close" class="btn btn-ghost btn-sm">收起</button></div>
+        </div>
         <div id="pane-log" class="pane">
           <div id="log" class="log"></div>
         </div>
@@ -229,31 +246,6 @@
     </button>
 
     <div id="map-hint" class="map-hint"></div>
-  </section>
-
-  <!-- ============ 城区详情 ============ -->
-  <section id="screen-district" class="screen overlay">
-    <div class="modal">
-      <div id="dt-scene" class="dt-scene" hidden></div>
-      <div class="modal-tag" id="dt-tag">城区</div>
-      <h2 id="dt-title">——</h2>
-      <p id="dt-desc" class="muted">——</p>
-      <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
-      <div id="dt-briefs" class="dt-briefs"></div>
-      <div class="dt-cols">
-        <div>
-          <h4 class="sub-t">可投放的指令</h4>
-          <div id="dt-cards" class="dt-list"></div>
-        </div>
-        <div>
-          <h4 class="sub-t">目标</h4>
-          <div id="dt-assets" class="chips"></div>
-          <h4 class="sub-t">此地会发生</h4>
-          <div id="dt-events" class="chips"></div>
-        </div>
-      </div>
-      <div class="row"><button id="dt-close" class="btn btn-ghost">关闭</button></div>
-    </div>
   </section>
 
   <!-- ============ 委托面板 ============ -->

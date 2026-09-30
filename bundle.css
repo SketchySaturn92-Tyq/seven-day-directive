@@ -1651,3 +1651,33 @@ body{
   .hud-goal.urgent{animation:none}
   .bg-ev{animation:none}
 }
+
+/* ==========================================================
+   城区详情进了抽屉
+   以前点地图会弹一整页模态框，把地图和手牌全盖住 —— 而「看这个地方
+   有什么」本来就是为了决定往哪放牌，盖住信息源就说不通了。
+   现在它是抽屉里的一栏，地图与手牌都还看得见。
+
+   抽屉只有 318px 宽，原来的两列布局（指令 / 目标）挤不下，
+   这里压成单列，图片与间距也各收一档。
+   ========================================================== */
+#pane-district .dt-title{
+  margin:2px 0 4px;font-size:15px;font-weight:800;color:#eaf2f8;letter-spacing:.02em;
+}
+#pane-district .dt-desc{font-size:11.5px;line-height:1.7;margin:0 0 10px}
+#pane-district .dt-scene{height:86px;margin:2px 0 8px}
+#pane-district .modal-tag{
+  display:inline-block;margin-bottom:6px;font-size:9.5px;letter-spacing:.16em;
+  color:var(--cyan);border:1px solid rgba(74,208,200,.4);
+  border-radius:99px;padding:1px 8px;
+}
+#pane-district .sub-t{margin:12px 0 5px;font-size:11px}
+/* 原来的两列在这里压成单列 */
+#pane-district .dt-cols{display:block}
+#pane-district .dt-briefs{grid-template-columns:1fr;gap:7px}
+#pane-district .dt-brief{padding:8px 10px}
+#pane-district .dt-list{gap:6px}
+#pane-district .dt-card{padding:7px 9px}
+#pane-district .chips{gap:4px}
+#pane-district .chips > *{font-size:10.5px}
+#pane-district .row{margin-top:12px}

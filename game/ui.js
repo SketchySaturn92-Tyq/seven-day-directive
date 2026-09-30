@@ -636,15 +636,22 @@
     return !!(d && d.classList.contains('open'));
   }
 
-  function openDrawer(name) {
-    const titles = { actions: '行动', tracks: '名望与属性', people: '认识的人', log: '记录' };
-    if (drawerOpen === name) return closeDrawer();
+  /* 直接把抽屉切到某一栏，不带「再点一次就收起」的开关语义。
+     城区详情要能在原地刷新（折完牌列表就变了），
+     如果用 openDrawer 刷新，会因为它已经是当前栏而被关掉。 */
+  function setDrawer(name) {
     drawerOpen = name;
-    $('drawer-title').textContent = titles[name] || name;
     $('drawer').classList.add('open');
     document.querySelectorAll('.pane').forEach((p) => p.classList.remove('on'));
     $('pane-' + name).classList.add('on');
     document.querySelectorAll('.rail-btn').forEach((b) => b.classList.toggle('on', b.dataset.panel === name));
+  }
+
+  function openDrawer(name) {
+    const titles = { actions: '行动', tracks: '名望与属性', people: '认识的人', log: '记录', district: '城区' };
+    if (drawerOpen === name) return closeDrawer();
+    $('drawer-title').textContent = titles[name] || name;
+    setDrawer(name);
   }
   function closeDrawer() {
     drawerOpen = null;
@@ -733,7 +740,11 @@
           '<span class="dt-brief-days' + (r.days <= 1 ? ' hot' : '') + '">' + r.days + ' 天</span></div>' +
           '<span class="note">' + esc(r.text) + '</span>' +
           (r.ok ? '<button class="btn btn-primary btn-sm go">交差</button>' : '<span class="note">还差：' + esc(r.why) + '</span>');
-        if (r.ok) el.querySelector('.go').onclick = () => { show('screen-game'); onSolveBrief(r.uid); };
+        if (r.ok) el.querySelector('.go').onclick = () => {
+          const at = distId;
+          onSolveBrief(r.uid);
+          setTimeout(() => openDistrict(at), 40);   // 交完差这一栏要重画
+        };
         bw.appendChild(el);
       });
     } else { bh.hidden = true; bw.innerHTML = ''; }
@@ -750,7 +761,11 @@
         '<span class="note">' + esc(r.note) + '</span>' +
         (r.ok ? '<button class="btn btn-primary btn-sm go">' + esc(r.verb) + '</button>'
               : '<span class="note">' + esc(r.why) + '</span>');
-      if (r.ok) el.querySelector('.go').onclick = () => { show('screen-game'); onFold(r.uid); };
+      if (r.ok) el.querySelector('.go').onclick = () => {
+          const at = distId;
+          onFold(r.uid);
+          setTimeout(() => openDistrict(at), 620);   // 折牌有裂开动画，等它播完再刷新
+        };
       cw.appendChild(el);
     });
 
@@ -761,7 +776,10 @@
       ? info.events.map((x) => '<span>' + esc(x) + '</span>').join('')
       : '<span style="opacity:.6">暂无</span>';
 
-    show('screen-district');
+    /* 以前这里是 show('screen-district')，一整页模态框把地图盖死。
+       现在改成抽屉里的一栏：地图、手牌、指引线全都还看得见。 */
+    setDrawer('district');
+    $('drawer-title').textContent = info.district.name;
   }
 
   /* ==========================================================
@@ -1407,7 +1425,7 @@
     show('screen-game');
     if (pendingEvent) { const ev = pendingEvent; pendingEvent = null; setTimeout(() => showEvent(ev), 60); }
   };
-  $('dt-close').onclick = () => show('screen-game');
+  $('dt-close').onclick = () => closeDrawer();
   $('drawer-close').onclick = closeDrawer;
   $('btn-endday').onclick = onEndDay;
   document.querySelectorAll('.rail-btn').forEach((b) => { b.onclick = () => openDrawer(b.dataset.panel); });
