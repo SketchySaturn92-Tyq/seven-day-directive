@@ -1,0 +1,505 @@
+{
+ "npc": [
+  {
+   "id": "wen-duo",
+   "name": "闻铎",
+   "faction": "董事会",
+   "district": "tower",
+   "role": "董事会监事",
+   "weight": 27,
+   "degree": 2,
+   "note": "与 2 人有可查的交集",
+   "bloc": "公司内圈"
+  },
+  {
+   "id": "su-wen",
+   "name": "苏纹",
+   "faction": "董事会",
+   "district": "tower",
+   "role": "董事会日程官",
+   "weight": 32,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "公司内圈"
+  },
+  {
+   "id": "yu-nanzhi",
+   "name": "郁南枝",
+   "faction": "清算行",
+   "district": "exchange",
+   "role": "清算行首席",
+   "weight": 26,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "公司内圈"
+  },
+  {
+   "id": "dai-siyuan",
+   "name": "戴思远",
+   "faction": "合规伦理委员会",
+   "district": "exchange",
+   "role": "合规伦理审查官",
+   "weight": 25,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "公司内圈"
+  },
+  {
+   "id": "cheng-yan",
+   "name": "程砚",
+   "faction": "研究所",
+   "district": "lab",
+   "role": "首席科学家",
+   "weight": 27,
+   "degree": 5,
+   "note": "与 5 人有可查的交集",
+   "bloc": "技术圈"
+  },
+  {
+   "id": "peng-jian",
+   "name": "彭戬",
+   "faction": "研究所",
+   "district": "lab",
+   "role": "研究所安保总管",
+   "weight": 25,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "技术圈"
+  },
+  {
+   "id": "lao-ya",
+   "name": "老鸦",
+   "faction": "灰市",
+   "district": "slum",
+   "role": "灰市掮客",
+   "weight": 28,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "底层"
+  },
+  {
+   "id": "lu-wan",
+   "name": "陆晚",
+   "faction": "诊所／灰市",
+   "district": "slum",
+   "role": "无证诊所医生",
+   "weight": 26,
+   "degree": 2,
+   "note": "与 2 人有可查的交集",
+   "bloc": "底层"
+  },
+  {
+   "id": "tie-gui",
+   "name": "铁贵",
+   "faction": "装卸工会",
+   "district": "docks",
+   "role": "装卸工会头目",
+   "weight": 27,
+   "degree": 2,
+   "note": "与 2 人有可查的交集",
+   "bloc": "港区"
+  },
+  {
+   "id": "yin-mian",
+   "name": "银面",
+   "faction": "术士一方",
+   "district": "docks",
+   "role": "女术士的代理人",
+   "weight": 28,
+   "degree": 2,
+   "note": "与 2 人有可查的交集",
+   "bloc": "港区"
+  },
+  {
+   "id": "wen-shicheng",
+   "name": "温仕成",
+   "faction": "引航票务",
+   "district": "orbit",
+   "role": "引航票务掮客",
+   "weight": 25,
+   "degree": 1,
+   "note": "与 1 人有可查的交集",
+   "bloc": "离城通道"
+  },
+  {
+   "id": "yu-ke",
+   "name": "雨客",
+   "faction": "潮",
+   "district": "orbit",
+   "role": "穹顶外「潮」的接触人",
+   "weight": 25,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "离城通道"
+  },
+  {
+   "id": "xun-jie",
+   "name": "荀戒",
+   "faction": "环带巡检",
+   "district": "ring",
+   "role": "环带巡检员",
+   "weight": 20,
+   "degree": 3,
+   "note": "与 3 人有可查的交集",
+   "bloc": "边缘地带"
+  },
+  {
+   "id": "sa-er",
+   "name": "萨尔",
+   "faction": "潮",
+   "district": "outside",
+   "role": "潮的拾荒者",
+   "weight": 20,
+   "degree": 2,
+   "note": "与 2 人有可查的交集",
+   "bloc": "离城通道"
+  },
+  {
+   "id": "ban-tou",
+   "name": "班头",
+   "faction": "回收场",
+   "district": "salvage",
+   "role": "回收场领班",
+   "weight": 19,
+   "degree": 1,
+   "note": "与 1 人有可查的交集",
+   "bloc": "边缘地带"
+  },
+  {
+   "id": "wu-mian",
+   "name": "无面",
+   "faction": "记忆银行",
+   "district": "memory",
+   "role": "记忆银行柜员",
+   "weight": 21,
+   "degree": 0,
+   "note": "文本中与其他人无直接互动",
+   "bloc": "边缘地带"
+  }
+ ],
+ "faction": [
+  {
+   "id": "董事会",
+   "name": "董事会",
+   "members": [
+    "wen-duo",
+    "su-wen"
+   ],
+   "note": "同一势力，共 2 人"
+  },
+  {
+   "id": "清算行",
+   "name": "清算行",
+   "members": [
+    "yu-nanzhi"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "合规伦理委员会",
+   "name": "合规伦理委员会",
+   "members": [
+    "dai-siyuan"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "研究所",
+   "name": "研究所",
+   "members": [
+    "cheng-yan",
+    "peng-jian"
+   ],
+   "note": "同一势力，共 2 人"
+  },
+  {
+   "id": "灰市",
+   "name": "灰市",
+   "members": [
+    "lao-ya"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "诊所／灰市",
+   "name": "诊所／灰市",
+   "members": [
+    "lu-wan"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "装卸工会",
+   "name": "装卸工会",
+   "members": [
+    "tie-gui"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "术士一方",
+   "name": "术士一方",
+   "members": [
+    "yin-mian"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "引航票务",
+   "name": "引航票务",
+   "members": [
+    "wen-shicheng"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "潮",
+   "name": "潮",
+   "members": [
+    "yu-ke",
+    "sa-er"
+   ],
+   "note": "同一势力，共 2 人"
+  },
+  {
+   "id": "环带巡检",
+   "name": "环带巡检",
+   "members": [
+    "xun-jie"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "回收场",
+   "name": "回收场",
+   "members": [
+    "ban-tou"
+   ],
+   "note": "单人势力"
+  },
+  {
+   "id": "记忆银行",
+   "name": "记忆银行",
+   "members": [
+    "wu-mian"
+   ],
+   "note": "单人势力"
+  }
+ ],
+ "edge": [
+  {
+   "a": "wen-duo",
+   "b": "su-wen",
+   "kind": "单向提及",
+   "strength": 2,
+   "count": 2,
+   "note": "「闻铎」与「苏纹」在同一段文本里出现 2 次，且有一方在自己的内容里点名提到对方",
+   "evidence": [
+    "story-npc-a2.js:wd-5",
+    "card-sources.js:v15"
+   ]
+  },
+  {
+   "a": "lao-ya",
+   "b": "yin-mian",
+   "kind": "单向提及",
+   "strength": 2,
+   "count": 1,
+   "note": "「老鸦」与「银面」在同一段文本里出现 1 次，且有一方在自己的内容里点名提到对方",
+   "evidence": [
+    "lore.js:ly-l4"
+   ]
+  },
+  {
+   "a": "sa-er",
+   "b": "ban-tou",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 3,
+   "note": "「萨尔」与「班头」在同一段文本里出现 3 次",
+   "evidence": [
+    "card-sources.js:v49",
+    "card-sources.js:v52",
+    "events-v6.js:y70"
+   ]
+  },
+  {
+   "a": "cheng-yan",
+   "b": "peng-jian",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 2,
+   "note": "「程砚」与「彭戬」在同一段文本里出现 2 次",
+   "evidence": [
+    "card-sources.js:v13",
+    "card-sources.js:v16"
+   ]
+  },
+  {
+   "a": "dai-siyuan",
+   "b": "cheng-yan",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 2,
+   "note": "「戴思远」与「程砚」在同一段文本里出现 2 次",
+   "evidence": [
+    "events-v6.js:y18",
+    "events-v6.js:y24"
+   ]
+  },
+  {
+   "a": "su-wen",
+   "b": "yu-nanzhi",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「苏纹」与「郁南枝」在同一段文本里出现 1 次",
+   "evidence": [
+    "card-sources.js:v2"
+   ]
+  },
+  {
+   "a": "yu-nanzhi",
+   "b": "cheng-yan",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「郁南枝」与「程砚」在同一段文本里出现 1 次",
+   "evidence": [
+    "card-sources.js:v8"
+   ]
+  },
+  {
+   "a": "dai-siyuan",
+   "b": "peng-jian",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「戴思远」与「彭戬」在同一段文本里出现 1 次",
+   "evidence": [
+    "card-sources.js:v14"
+   ]
+  },
+  {
+   "a": "wen-duo",
+   "b": "cheng-yan",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「闻铎」与「程砚」在同一段文本里出现 1 次",
+   "evidence": [
+    "card-sources.js:v15"
+   ]
+  },
+  {
+   "a": "su-wen",
+   "b": "cheng-yan",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「苏纹」与「程砚」在同一段文本里出现 1 次",
+   "evidence": [
+    "card-sources.js:v15"
+   ]
+  },
+  {
+   "a": "lao-ya",
+   "b": "tie-gui",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「老鸦」与「铁贵」在同一段文本里出现 1 次",
+   "evidence": [
+    "events-v6.js:y35"
+   ]
+  },
+  {
+   "a": "lu-wan",
+   "b": "xun-jie",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「陆晚」与「荀戒」在同一段文本里出现 1 次",
+   "evidence": [
+    "events-v6.js:y49"
+   ]
+  },
+  {
+   "a": "peng-jian",
+   "b": "xun-jie",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「彭戬」与「荀戒」在同一段文本里出现 1 次",
+   "evidence": [
+    "events-v6.js:y51"
+   ]
+  },
+  {
+   "a": "yu-ke",
+   "b": "xun-jie",
+   "kind": "同场出现",
+   "strength": 1,
+   "count": 1,
+   "note": "「雨客」与「荀戒」在同一段文本里出现 1 次",
+   "evidence": [
+    "events-v6.js:y79"
+   ]
+  },
+  {
+   "a": "yu-nanzhi",
+   "b": "dai-siyuan",
+   "kind": "同城区",
+   "strength": 1,
+   "count": 0,
+   "note": "都在交易所广场活动，跑动时必然打照面",
+   "evidence": [
+    "game/engine.js:NPCS"
+   ]
+  },
+  {
+   "a": "lao-ya",
+   "b": "lu-wan",
+   "kind": "同城区",
+   "strength": 1,
+   "count": 0,
+   "note": "都在下层居住区活动，跑动时必然打照面",
+   "evidence": [
+    "game/engine.js:NPCS"
+   ]
+  },
+  {
+   "a": "tie-gui",
+   "b": "yin-mian",
+   "kind": "同城区",
+   "strength": 1,
+   "count": 0,
+   "note": "都在工业港区活动，跑动时必然打照面",
+   "evidence": [
+    "game/engine.js:NPCS"
+   ]
+  },
+  {
+   "a": "wen-shicheng",
+   "b": "yu-ke",
+   "kind": "同城区",
+   "strength": 1,
+   "count": 0,
+   "note": "都在轨道港活动，跑动时必然打照面",
+   "evidence": [
+    "game/engine.js:NPCS"
+   ]
+  },
+  {
+   "a": "yu-ke",
+   "b": "sa-er",
+   "kind": "同僚",
+   "strength": 1,
+   "count": 0,
+   "note": "同属「潮」，在设定表里就是一个势力的人",
+   "evidence": [
+    "game/engine.js:NPCS"
+   ]
+  }
+ ]
+}

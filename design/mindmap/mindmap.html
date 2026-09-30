@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>《七日指令》故事线与人际关系脑图</title>
+<style>
+  @page { size: A4; margin: 13mm 11mm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Noto Sans CJK SC","Source Han Sans SC","WenQuanYi Micro Hei",sans-serif;
+         color:#16202b; font-size:10pt; line-height:1.7; margin:0; }
+  h1 { font-size:19pt; margin:0 0 3mm; letter-spacing:.02em; }
+  h2 { font-size:13pt; margin:9mm 0 3mm; padding-bottom:1.6mm;
+        border-bottom:1.2pt solid #16202b; letter-spacing:.05em; }
+  h3 { font-size:11pt; margin:5mm 0 2mm; }
+  .sub { color:#5b6672; font-size:9pt; margin:0 0 6mm; }
+  .lead { background:#f2f5f8; border-left:3pt solid #2b6ea8; padding:3mm 4mm; margin:0 0 6mm; }
+  table { width:100%; border-collapse:collapse; margin:3mm 0 4mm; }
+  th,td { border:.6pt solid #c3ccd6; padding:1.7mm 2.2mm; text-align:left;
+           vertical-align:top; font-size:9pt; }
+  th { background:#e8eef4; font-weight:700; }
+  td.num { text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .p1 { font-weight:700; color:#1f4f7a; }
+  .p2 { font-weight:700; }
+  .p3 { color:#55606c; }
+  .p4 { color:#8b95a1; }
+  .up { color:#1f7a45; } .down { color:#b0342b; }
+  .ph { color:#9aa5b1; font-style:italic; }
+
+  .graphwrap { border:.6pt solid #c3ccd6; border-radius:3mm; padding:2mm; background:#fbfcfd; }
+  svg.graph { width:100%; height:auto; display:block; }
+  .band { fill:#eef3f8; stroke:#c9d6e2; stroke-width:.8; }
+  .bandl { font-size:8.5pt; fill:#5b6672; }
+  .edge { stroke-linecap:round; }
+  .edge.e1 { stroke:#c3ccd6; stroke-width:1; stroke-dasharray:2 3; }
+  .edge.e2 { stroke:#6f9dc4; stroke-width:1.6; }
+  .edge.e3 { stroke:#b0342b; stroke-width:2.2; }
+  .nbox { fill:#fff; stroke:#8fa6ba; stroke-width:1; }
+  .nname { font-size:10.5pt; font-weight:700; fill:#16202b; }
+  .nrole { font-size:7.5pt; fill:#5b6672; }
+  .nfac { font-size:7pt; fill:#9aa5b1; }
+  .legend { margin:2mm 0 0; font-size:8.5pt; color:#5b6672; }
+  .legend span { margin-right:6mm; }
+  .legend i { display:inline-block; width:9mm; height:0; vertical-align:middle;
+               margin-right:1.5mm; border-top-width:2px; border-top-style:solid; }
+  .legend i.l1 { border-color:#c3ccd6; border-top-style:dashed; }
+  .legend i.l2 { border-color:#6f9dc4; }
+  .legend i.l3 { border-color:#b0342b; }
+
+  svg.slotsvg { width:100%; height:auto; display:block; margin:2mm 0 3mm; }
+  .pan { fill:#f4f7fa; stroke:#b9c7d4; stroke-width:1; }
+  .ptit { font-size:10pt; font-weight:700; fill:#16202b; }
+  .psub { font-size:8pt; fill:#5b6672; }
+  .slot { fill:#fff; stroke:#b9c7d4; stroke-width:1; stroke-dasharray:4 3; }
+  .slot.on { stroke:#2b6ea8; stroke-width:1.8; stroke-dasharray:none; fill:#eaf2fa; }
+  .mini { fill:#cfe3dd; stroke:#74a99f; stroke-width:.8; }
+  .minit { font-size:9pt; font-weight:700; fill:#20423c; }
+  .slab { font-size:9pt; font-weight:700; fill:#2b6ea8; }
+  .sreq { font-size:7.5pt; fill:#8b95a1; }
+  .pc { opacity:.9; }
+  .pct { font-size:9pt; font-weight:700; fill:#10202c; }
+  .handlab { font-size:9.5pt; font-weight:700; fill:#16202b; }
+  .arrow { fill:none; stroke:#2b6ea8; stroke-width:1.6; stroke-dasharray:6 5; }
+  .arrowlab { font-size:8.5pt; fill:#2b6ea8; }
+  .btn2 { fill:#dfe8f1; stroke:#b9c7d4; }
+  .btnt { font-size:8.5pt; fill:#2b4a6b; }
+
+  .chain { margin:2mm 0 4mm; }
+  .actrow { display:flex; gap:4mm; margin-bottom:3mm; }
+  .acttag { flex:0 0 22mm; background:#16202b; color:#fff; border-radius:2mm;
+             padding:2mm; text-align:center; font-size:8.5pt; line-height:1.5; }
+  .actbody { flex:1; }
+  .mnode { border-left:2.5pt solid #2b6ea8; background:#f7f9fb;
+            padding:2mm 3mm; margin-bottom:2mm; border-radius:0 2mm 2mm 0; }
+  .mtitle { font-weight:700; font-size:10pt; }
+  .mmeta { font-size:8pt; color:#5b6672; margin-bottom:1.2mm; }
+  .mline { font-size:8.5pt; }
+  .mline span { display:inline-block; min-width:9mm; color:#2b6ea8; font-weight:700; }
+  .foot { margin-top:8mm; padding-top:3mm; border-top:.6pt solid #c3ccd6;
+           color:#5b6672; font-size:8pt; }
+</style></head><body>
+
+<h1>《七日指令》故事线与人际关系脑图</h1>
+<p class="sub">梳理时间 2026-09-30 ｜ 依据：现有 9 场主线、96 场支线、16 名 NPC 的实际文本</p>
+
+<div class="lead">
+毛病不在内容不够，在<b>一次给太多、而且给错了用法</b>。<br>
+一局开场同时亮出 10 个城区、26 个可折目标、200 条事件、9 种行动、18 个结局，
+还要先读完 <b>12 段共 2304 字</b>才谈得上开始。<br>
+更要紧的是：现在手牌只有一种牌（指令卡），唯一的用法是<b>撕掉</b>；
+十六个人只会说话，玩家没有办法用他们。<br>
+改造四件事：<b>点开地点出卡槽、把牌放进去</b>；<b>牌分成五类</b>；
+<b>地图和人物分五段放出</b>；<b>开场砍到三段</b>。
+</div>
+
+<h2>一、核心交互：从「撕牌」改成「配牌」</h2>
+<p>现在的循环是：拖一张指令卡到地图节点上 → 掷点 → 牌折断。整个过程玩家只做了一个动作，
+而且做的是「把资源毁掉」。<br>
+改成：<b>点开一个地点 → 面板出现三个槽 → 把牌放进槽里 → 执行</b>。
+牌不再因为被使用而消失（指令卡办成后才归档），于是同一副手牌可以反复配置出不同打法。</p>
+<svg class="slotsvg" viewBox="0 0 1140 340" xmlns="http://www.w3.org/2000/svg"><rect class="pan" x="40" y="18" width="546" height="196" rx="12"/><text class="ptit" x="62" y="46">地点面板 · 三号泊位</text><text class="psub" x="62" y="64">宵禁后无人值守。叉车停在通道口，货单缺一页。</text><rect class="slot on" x="62" y="80" width="140" height="104" rx="10"/><rect class="mini" x="74" y="92" width="116" height="60" rx="7"/><text class="minit" x="132" y="128" text-anchor="middle">铁贵</text><text class="sreq" x="132" y="158" text-anchor="middle">必填</text><text class="slab" x="132" y="174" text-anchor="middle">人 槽</text><rect class="slot" x="230" y="80" width="140" height="104" rx="10"/><text class="sreq" x="300" y="158" text-anchor="middle">可选</text><text class="slab" x="300" y="174" text-anchor="middle">物 槽</text><rect class="slot" x="398" y="80" width="140" height="104" rx="10"/><text class="sreq" x="468" y="158" text-anchor="middle">必填</text><text class="slab" x="468" y="174" text-anchor="middle">令 槽</text><rect class="btn2" x="286" y="228" width="90" height="26" rx="13"/><text class="btnt" x="331" y="245" text-anchor="middle">执行</text><rect class="btn2" x="388" y="228" width="90" height="26" rx="13"/><text class="btnt" x="433" y="245" text-anchor="middle">取消</text><text class="handlab" x="640" y="46">手牌 · 五类</text><rect class="pc" x="640" y="62" width="80" height="120" rx="9" fill="#c9a85a"/><text class="pct" x="680" y="132" text-anchor="middle">指令</text><rect class="pc" x="736" y="62" width="80" height="120" rx="9" fill="#74d0c8"/><text class="pct" x="776" y="132" text-anchor="middle">人物</text><rect class="pc" x="832" y="62" width="80" height="120" rx="9" fill="#8fa6ba"/><text class="pct" x="872" y="132" text-anchor="middle">物品</text><rect class="pc" x="928" y="62" width="80" height="120" rx="9" fill="#e0554a"/><text class="pct" x="968" y="132" text-anchor="middle">证据</text><rect class="pc" x="1024" y="62" width="80" height="120" rx="9" fill="#7a9ad4"/><text class="pct" x="1064" y="132" text-anchor="middle">地点</text><path class="arrow" d="M 690 192 C 620 316 300 320 180 190"/><text class="arrowlab" x="440" y="312" text-anchor="middle">把牌拖进槽里，才谈得上执行</text></svg>
+<table>
+  <tr><th>槽位</th><th>是否必填</th><th>放什么、为什么</th></tr>
+  <tr><td class="p2">人</td><td class="p1">必填</td><td>一张人物卡。默认是你自己；派人去就是把这趟交给别人。</td></tr><tr><td class="p2">物</td><td class="p1">可选</td><td>一张物品卡。没有也能办，带上成功率高一截。</td></tr><tr><td class="p2">令</td><td class="p1">必填</td><td>一张指令卡。写明这一趟要办成什么，办成了这张卡归档。</td></tr>
+</table>
+<p><b>为什么这一个改动能救玩法：</b>「撕牌」是一次性决策，玩家没有回旋；
+「配牌」是组合题 —— 同一个地点，派闻铎去和派铁贵去，带不带证件，
+成功率、后来的关系变化、会不会留下案底，全都不一样。
+人物从背景变成了手里真正能用出去的东西。</p>
+
+<h2>二、牌分成五类</h2>
+<p>现在整个游戏只有一类牌，而且它唯一的用法是毁掉。改后五类并行，
+手牌变成一叠「可以放上去的东西」。</p>
+<table>
+  <tr><th>类型</th><th>从哪来</th><th>会不会消耗</th><th>放哪儿</th><th>作用</th></tr>
+  <tr><td class="p2">指令卡</td><td>董事会发下来</td><td>办成后归档折断</td><td class="p3">放进地点的「令」槽</td><td class="p4">声明这一趟要办成什么。它决定你去哪儿，不决定你怎么去。</td></tr><tr><td class="p2">人物卡</td><td>认识一个人就得一张</td><td>不消耗</td><td class="p3">放进「人」槽</td><td class="p4">派谁去办。人的能力决定判定线，人的状态决定他还能被派几次。</td></tr><tr><td class="p2">物品卡</td><td>灰市买、事件里捡</td><td>部分一次性</td><td class="p3">放进「物」槽</td><td class="p4">给这一趟加成：证件、工具、药、封条。用完可能就没了。</td></tr><tr><td class="p2">证据卡</td><td>罪痕高了会自己冒出来</td><td>要主动消掉</td><td class="p3">占着手牌</td><td class="p4">负面牌。它不占槽位但占手牌，攒多了会招来清算行。</td></tr><tr><td class="p2">地点卡</td><td>剧情推进时解锁</td><td>不消耗</td><td class="p3">挂到地图上</td><td class="p4">临时开一个新场所。有些地方不是一开始就该存在。</td></tr>
+</table>
+
+<h2>三、五段式主线：每一段只解决一个问题</h2>
+<table>
+  <tr><th>段落</th><th>折牌</th><th>放开什么</th><th>这一段在讲什么</th><th>怎么算过</th></tr>
+  <tr><td class="p1">第一段<br><b>上桌</b></td><td class="p2">0 — 1 张</td><td class="p3">1 个地点 · 2 个人 · 2 个行动</td><td>你被点名叫上桌。只学会一件事：点开一个地点，把牌放进槽里。</td><td class="p4">折掉第一张牌</td></tr><tr><td class="p1">第二段<br><b>跑腿</b></td><td class="p2">2 — 3 张</td><td class="p3">＋2 城区 · ＋3 人 · ＋2 行动</td><td>一层楼的事办不动了。你第一次往楼下走，第一次欠人情。</td><td class="p4">还清第一笔人情</td></tr><tr><td class="p1">第三段<br><b>站队</b></td><td class="p2">4 — 6 张</td><td class="p3">＋3 城区 · ＋4 人</td><td>董事会裂成两半，两边的日程官都开始找你。选边，或者假装没看见。</td><td class="p4">被某一方明确收编</td></tr><tr><td class="p1">第四段<br><b>沾手</b></td><td class="p2">7 — 9 张</td><td class="p3">＋2 城区 · ＋4 人</td><td>罪痕开始收利息。你第一次需要有人替你顶一件事。</td><td class="p4">第一次派人顶罪</td></tr><tr><td class="p1">第五段<br><b>摊牌</b></td><td class="p2">10 — 12 张</td><td class="p3">全部放开</td><td>牌快折完了。这时你手里攒下的人，决定你最后是哪种赢法。</td><td class="p4">折完第十二张</td></tr>
+</table>
+
+<h2>四、解锁阶梯：地图和人物是长出来的</h2>
+<p>下面四栏是<b>累计值</b>。第二段结束时，玩家应该刚好认识五个人、走过三个城区，
+而不是一上来面对十城十六人。</p>
+<table>
+  <tr><th>段落</th><th>累计开放的城区</th><th>累计城区数</th>
+      <th>累计认识人数</th><th>累计可折牌种</th><th>累计事件池</th></tr>
+  <tr><td class="p1">第一段</td><td>高塔商业区</td><td class="num">1</td><td class="num">2</td><td class="num">2</td><td class="num">0</td></tr><tr><td class="p1">第二段</td><td>＋交易所广场、下层居住区</td><td class="num">3</td><td class="num">5</td><td class="num">4</td><td class="num">1</td></tr><tr><td class="p1">第三段</td><td>＋研究所园区、工业港区</td><td class="num">5</td><td class="num">9</td><td class="num">6</td><td class="num">3</td></tr><tr><td class="p1">第四段</td><td>＋轨道港、环带维修层、回收场</td><td class="num">7</td><td class="num">13</td><td class="num">8</td><td class="num">6</td></tr><tr><td class="p1">第五段</td><td>＋记忆银行、穹顶之外</td><td class="num">10</td><td class="num">16</td><td class="num">9</td><td class="num">12</td></tr>
+</table>
+
+<h2>五、人物关系连线图</h2>
+<p>线只画文本里真实出现过的关系，强度按依据分级。同势力的用底色带圈在一起。
+这张图同时是「谁能被派去做什么」的地图：同势力的人互相牵制，跨势力的连线就是风险来源。</p>
+<div class="graphwrap"><svg class="graph" viewBox="0 0 1240 470" xmlns="http://www.w3.org/2000/svg"><g><rect class="band" x="64" y="162" width="588" height="94" rx="12"/><text class="bandl" x="358" y="175" text-anchor="middle">公司内圈</text><rect class="band" x="656" y="162" width="292" height="94" rx="12"/><text class="bandl" x="802" y="175" text-anchor="middle">技术圈</text><rect class="band" x="952" y="162" width="292" height="94" rx="12"/><text class="bandl" x="1098" y="175" text-anchor="middle">底层</text><rect class="band" x="64" y="306" width="292" height="94" rx="12"/><text class="bandl" x="210" y="319" text-anchor="middle">港区</text><rect class="band" x="360" y="306" width="440" height="94" rx="12"/><text class="bandl" x="580" y="319" text-anchor="middle">离城通道</text><rect class="band" x="804" y="306" width="440" height="94" rx="12"/><text class="bandl" x="1024" y="319" text-anchor="middle">边缘地带</text></g><g><line class="edge e2" x1="136.0" y1="209.0" x2="284.0" y2="209.0"><title>闻铎 ／ 苏纹（单向提及，强度 2）</title></line><line class="edge e2" x1="1024.0" y1="209.0" x2="284.0" y2="353.0"><title>老鸦 ／ 银面（单向提及，强度 2）</title></line><line class="edge e1" x1="728.0" y1="353.0" x2="1024.0" y2="353.0"><title>萨尔 ／ 班头（同场出现，强度 1）</title></line><line class="edge e1" x1="728.0" y1="209.0" x2="876.0" y2="209.0"><title>程砚 ／ 彭戬（同场出现，强度 1）</title></line><line class="edge e1" x1="580.0" y1="209.0" x2="728.0" y2="209.0"><title>戴思远 ／ 程砚（同场出现，强度 1）</title></line><line class="edge e1" x1="284.0" y1="209.0" x2="432.0" y2="209.0"><title>苏纹 ／ 郁南枝（同场出现，强度 1）</title></line><line class="edge e1" x1="432.0" y1="209.0" x2="728.0" y2="209.0"><title>郁南枝 ／ 程砚（同场出现，强度 1）</title></line><line class="edge e1" x1="580.0" y1="209.0" x2="876.0" y2="209.0"><title>戴思远 ／ 彭戬（同场出现，强度 1）</title></line><line class="edge e1" x1="136.0" y1="209.0" x2="728.0" y2="209.0"><title>闻铎 ／ 程砚（同场出现，强度 1）</title></line><line class="edge e1" x1="284.0" y1="209.0" x2="728.0" y2="209.0"><title>苏纹 ／ 程砚（同场出现，强度 1）</title></line><line class="edge e1" x1="1024.0" y1="209.0" x2="136.0" y2="353.0"><title>老鸦 ／ 铁贵（同场出现，强度 1）</title></line><line class="edge e1" x1="1172.0" y1="209.0" x2="876.0" y2="353.0"><title>陆晚 ／ 荀戒（同场出现，强度 1）</title></line><line class="edge e1" x1="876.0" y1="209.0" x2="876.0" y2="353.0"><title>彭戬 ／ 荀戒（同场出现，强度 1）</title></line><line class="edge e1" x1="580.0" y1="353.0" x2="876.0" y2="353.0"><title>雨客 ／ 荀戒（同场出现，强度 1）</title></line><line class="edge e1" x1="432.0" y1="209.0" x2="580.0" y2="209.0"><title>郁南枝 ／ 戴思远（同城区，强度 1）</title></line><line class="edge e1" x1="1024.0" y1="209.0" x2="1172.0" y2="209.0"><title>老鸦 ／ 陆晚（同城区，强度 1）</title></line><line class="edge e1" x1="136.0" y1="353.0" x2="284.0" y2="353.0"><title>铁贵 ／ 银面（同城区，强度 1）</title></line><line class="edge e1" x1="432.0" y1="353.0" x2="580.0" y2="353.0"><title>温仕成 ／ 雨客（同城区，强度 1）</title></line><line class="edge e1" x1="580.0" y1="353.0" x2="728.0" y2="353.0"><title>雨客 ／ 萨尔（同僚，强度 1）</title></line></g><g><g transform="translate(70,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">闻铎</text><text class="nrole" x="66" y="41" text-anchor="middle">董事会监事</text><text class="nfac" x="66" y="55" text-anchor="middle">董事会</text></g><g transform="translate(218,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">苏纹</text><text class="nrole" x="66" y="41" text-anchor="middle">董事会日程官</text><text class="nfac" x="66" y="55" text-anchor="middle">董事会</text></g><g transform="translate(366,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">郁南枝</text><text class="nrole" x="66" y="41" text-anchor="middle">清算行首席</text><text class="nfac" x="66" y="55" text-anchor="middle">清算行</text></g><g transform="translate(514,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">戴思远</text><text class="nrole" x="66" y="41" text-anchor="middle">合规伦理审查官</text><text class="nfac" x="66" y="55" text-anchor="middle">合规伦理委员会</text></g><g transform="translate(662,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">程砚</text><text class="nrole" x="66" y="41" text-anchor="middle">首席科学家</text><text class="nfac" x="66" y="55" text-anchor="middle">研究所</text></g><g transform="translate(810,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">彭戬</text><text class="nrole" x="66" y="41" text-anchor="middle">研究所安保总管</text><text class="nfac" x="66" y="55" text-anchor="middle">研究所</text></g><g transform="translate(958,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">老鸦</text><text class="nrole" x="66" y="41" text-anchor="middle">灰市掮客</text><text class="nfac" x="66" y="55" text-anchor="middle">灰市</text></g><g transform="translate(1106,178)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">陆晚</text><text class="nrole" x="66" y="41" text-anchor="middle">无证诊所医生</text><text class="nfac" x="66" y="55" text-anchor="middle">诊所／灰市</text></g><g transform="translate(70,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">铁贵</text><text class="nrole" x="66" y="41" text-anchor="middle">装卸工会头目</text><text class="nfac" x="66" y="55" text-anchor="middle">装卸工会</text></g><g transform="translate(218,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">银面</text><text class="nrole" x="66" y="41" text-anchor="middle">女术士的代理人</text><text class="nfac" x="66" y="55" text-anchor="middle">术士一方</text></g><g transform="translate(366,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">温仕成</text><text class="nrole" x="66" y="41" text-anchor="middle">引航票务掮客</text><text class="nfac" x="66" y="55" text-anchor="middle">引航票务</text></g><g transform="translate(514,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">雨客</text><text class="nrole" x="66" y="41" text-anchor="middle">穹顶外「潮」的接触人</text><text class="nfac" x="66" y="55" text-anchor="middle">潮</text></g><g transform="translate(662,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">萨尔</text><text class="nrole" x="66" y="41" text-anchor="middle">潮的拾荒者</text><text class="nfac" x="66" y="55" text-anchor="middle">潮</text></g><g transform="translate(810,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">荀戒</text><text class="nrole" x="66" y="41" text-anchor="middle">环带巡检员</text><text class="nfac" x="66" y="55" text-anchor="middle">环带巡检</text></g><g transform="translate(958,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">班头</text><text class="nrole" x="66" y="41" text-anchor="middle">回收场领班</text><text class="nfac" x="66" y="55" text-anchor="middle">回收场</text></g><g transform="translate(1106,322)"><rect class="nbox" width="132" height="62" rx="10"/><text class="nname" x="66" y="24" text-anchor="middle">无面</text><text class="nrole" x="66" y="41" text-anchor="middle">记忆银行柜员</text><text class="nfac" x="66" y="55" text-anchor="middle">记忆银行</text></g></g></svg></div>
+
+<div class="legend">
+  <span><i class="l1"></i>同场出现 · 同城区 · 同僚</span>
+  <span><i class="l2"></i>一方在自己的内容里点名提到对方</span>
+  <span><i class="l3"></i>双方互相提及</span>
+</div>
+<p><b>这张图本身就是一条诊断。</b>十六个人在现有文本里只有 19 条可查的连线，
+其中真正算得上「互动」的只有 2 条，其余都只是同场出现、同城区或同势力。
+把十六个人分到六圈之后你会发现：<b>圈子之间几乎没有横线</b> ——
+研究所的人不认识港区的人，灰市的人够不到轨道港。这也是「牵扯不到很多人」的原因：
+不是人不够，是他们之间没有关系可牵。</p>
+<p>按圈层补齐之后，每个圈层内部先连起来，再让主线（苏纹）与两个人（银面、闻铎）
+从不同圈层穿过去，人物网才立得起来。下图里强度 2 与 3 的线就是现成可用的穿线点。</p>
+
+<h2>六、故事线主干</h2>
+<p>每一场都写出「因为什么、要做什么决定、决定之后通向哪里」。支线全部挂在某一幕上。</p>
+<div class="chain"><div class="actrow"><div class="acttag">第 1 幕<br><b>发牌</b></div><div class="actbody"><div class="mnode"><div class="mtitle">苏纹：这副牌本来不是给你的</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>开局：玩家被点名接手这一局牌（见 intro-4）。苏纹在三十七层拐角等玩家，把日程表上原本的收件人抽掉、换上玩家那张，据她说上一副牌发出去时她也是这么交代的。</div><div class="mline"><span>决定</span>要不要追问上一副牌是谁在用（问 / 什么也不问跟上电梯 / 把日程表退回说这不归我管）</div><div class="mline"><span>去向</span>m-act1-2</div></div><div class="mnode"><div class="mtitle">苏纹：一个已经清空的名录</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>三天前玩家折掉第二张卡（折牌连条通知都没留，只剩卡片折口那道白印），苏纹因此在夜里十一点把一份带复印机余温的名录放到玩家桌上——十七个名字全部划横线，最后一栏统一写『已回收』。</div><div class="mline"><span>决定</span>记住那个墨还没干的名字 / 问她这十七个人是谁签的 / 把名录推回去</div><div class="mline"><span>去向</span>m-act2-1</div></div></div></div><div class="actrow"><div class="acttag">第 2 幕<br><b>上桌</b></div><div class="actbody"><div class="mnode"><div class="mtitle">苏纹：你活过了第一个七天</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>玩家折满三张、活过第一个七天，按流程要更新一次档案；苏纹在茶水间堵住玩家，终端上『续任建议』那一栏已经填好两个字：可以。</div><div class="mline"><span>决定</span>续任建议改不改，以及要不要自己动手改那份档案</div><div class="mline"><span>去向</span>m-act2-2</div></div><div class="mnode"><div class="mtitle">闻铎：一次没有预告的例行访问</div><div class="mmeta">高塔商业区　wen-duo</div><div class="mline"><span>起因</span>折第四张之后，闻铎拿着系统每天四点导出的一份门禁记录复印件上门——上周四凌晨两点十一分、三十三层那条读卡记录，他说是『例行核对』。</div><div class="mline"><span>决定</span>如实说明那晚的去向 / 反问他那份记录从哪来的 / 说记不清了</div><div class="mline"><span>去向</span>m-act3-1</div></div></div></div><div class="actrow"><div class="acttag">第 3 幕<br><b>洗牌</b></div><div class="actbody"><div class="mnode"><div class="mtitle">苏纹：有人在查我的排期表</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>折第六张卡这一周，苏纹的排期表三天前被人调走过、回来多了三处红笔标注（全是她替玩家改过时间的记录），闸机旁新装了红灯常亮的读卡器、楼下保安换了两拨，她站在门框外把一份『空得不像她会排』的新排期表交给玩家。</div><div class="mline"><span>决定</span>按她给的排期走 / 把排期表退回去让她别管 / 留下表但记住哪几处是她改的</div><div class="mline"><span>去向</span>m-act3-2</div></div><div class="mnode"><div class="mtitle">苏纹：她第一次把私人的东西拿出来</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>折第七张卡那晚、且与苏纹关系≥3，她第一次把私人笔记本拿出来：前十几页是会议记录，后面几十页是手写名字、每个名字后跟一个空着的日期；她说上个月才想明白，自己排的是顺序。</div><div class="mline"><span>决定</span>接过本子 / 让她自己留着 / 问她愿不愿意把本子交出去</div><div class="mline"><span>去向</span>m-act4-1</div></div></div></div><div class="actrow"><div class="acttag">第 4 幕<br><b>底牌</b></div><div class="actbody"><div class="mnode"><div class="mtitle">银面：一张不该存在的牌</div><div class="mmeta">工业港区　yin-mian</div><div class="mline"><span>起因</span>折第九张卡那天，银面在码头必经通道口等了很久，递来一张正面空白、反面编号比指令卡多两位的厚卡——『这张不在你的牌堆里，但它在结算表上』，并说发牌时忘了一件事：牌也会数人。</div><div class="mline"><span>决定</span>收下这张牌 / 当场把它撕掉 / 问她是谁派她来的</div><div class="mline"><span>去向</span>m-act4-2</div></div><div class="mnode"><div class="mtitle">苏纹：把你的名字从流程里拿掉</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>折第十张卡后的凌晨三点，苏纹把三份排期表摊在屏幕上（一份标红、一份标黄、一份全空），把权限申请里『执行人』后面的名字清成空白；起因是第三幕起她意识到自己排的只是顺序，而玩家已经走到流程之外。</div><div class="mline"><span>决定</span>让她存 / 让她删掉这份申请 / 问她自己想不想存</div><div class="mline"><span>去向</span>m-act5-1</div></div></div></div><div class="actrow"><div class="acttag">第 5 幕<br><b>摊牌</b></div><div class="actbody"><div class="mnode"><div class="mtitle">苏纹：最后一张牌发完了</div><div class="mmeta">高塔商业区　su-wen</div><div class="mline"><span>起因</span>十二张牌全部折下、用了不到两个月，按流程苏纹要去系统里关掉这一局；她把终端转过来，『结案』按钮亮着，问玩家想怎么结束。</div><div class="mline"><span>决定</span>让她按下结案回到原来的位置 / 自己接过终端把整份流程删掉 / 请她一起离开这栋楼</div><div class="mline"><span>去向</span>—</div></div></div></div></div>
+
+<h2>七、把人用出去：三格派遣</h2>
+<p>每认识一个人就得到一张人物卡，除了放进地点的「人」槽，还可以放进三格派遣槽：</p>
+<table>
+  <tr><th>槽位</th><th>产出</th><th>机制</th><th>角色这边</th><th>反噬</th><th>失败风险</th></tr>
+  <tr><td class="p2">打工</td><td>信用点</td><td>按角色能力折算，稳定产出</td><td class="up">+1 忠诚</td><td class="down">体魄 −1</td><td>低</td></tr><tr><td class="p2">打探</td><td>情报 · 揭示资产</td><td>有失败概率，失败会打草惊蛇</td><td class="up">+1 情报底子</td><td class="down">关系 −1</td><td>中</td></tr><tr><td class="p2">顶罪</td><td>罪痕 −2</td><td>把身上的一件事算到他头上</td><td class="up">案底 +1</td><td class="down">案底满了他被回收</td><td>高</td></tr>
+</table>
+<h3>顶罪这一个槽为什么是关键的</h3>
+<p>罪痕是玩家最常死的那个原因，现有版本没有任何办法把它转移出去，只能花钱善后。
+顶罪给了唯一的转移路径，代价是<b>消耗一个人</b>：他替你背一件，案底加一；
+案底满了，他被回收，那条六幕支线就此断在这里。<br>
+于是「养人」和「用人」变成一对真矛盾 —— 这比单纯给个数值加成有意思得多，
+也让十六条支线终于有了玩法上的分量。</p>
+
+<h2>八、开场改造：12 段变成 3 段加九个补讲</h2>
+<table>
+  <tr><th>原本</th><th>现在</th><th>理由</th></tr>
+  <tr><td>开局播完 12 段，2304 字</td>
+      <td>只播前 3 段（约 400 字），只讲三件必须当场知道的事：
+          牌是什么、七天折一张、折不出来换人</td>
+      <td>其余九段讲名望四轨、委托、穹顶接缝这些东西，玩家此刻没有对应界面可看，讲了也留不住</td></tr>
+  <tr><td>十城区一次全开</td>
+      <td>第一段只开高塔商业区，其余按段放开</td>
+      <td>地图是空间信息，一次给十个等于没给</td></tr>
+  <tr><td>十六人按天数陆续出现，没有节制</td>
+      <td>每段限定新增人数，第五段才凑齐十六人</td>
+      <td>认识一个人要记住名字、身份、立场、能用他做什么，一次来三个已是上限</td></tr>
+  <tr><td>其余九段入门</td>
+      <td>改成「补讲」，挂在第一次遇到对应概念时触发：<br>
+          第一次名望变动 → 讲四轨；第一条委托 → 讲委托；第一次接触穹顶外 → 讲接缝</td>
+      <td>在玩家正好要用到的时候讲，才记得住</td></tr>
+</table>
+
+<h2>九、落地顺序</h2>
+<table>
+  <tr><th>顺序</th><th>做什么</th><th>为什么排这里</th></tr>
+  <tr><td class="p1">1</td><td>开局砍到 3 段，其余九段改成按需触发</td>
+      <td>改动最小、体感最强，玩家第一分钟就能感觉出来</td></tr>
+  <tr><td class="p1">2</td><td>地点面板加三个槽，把手牌投放改成「放进槽里再执行」</td>
+      <td>这是玩法的正解，越早越好；判定公式可以沿用现有的</td></tr>
+  <tr><td class="p1">3</td><td>人物卡与三格派遣槽（打工 / 打探 / 顶罪）</td>
+      <td>让人从背景变成资源，十六条支线才有玩法意义</td></tr>
+  <tr><td class="p2">4</td><td>城区与人物按折牌数分五段解锁</td>
+      <td>解锁表已在这份文档里，改成数据即可</td></tr>
+  <tr><td class="p2">5</td><td>物品卡与证据卡</td>
+      <td>有了槽位之后才谈得上配牌，排在槽位之后</td></tr>
+  <tr><td class="p2">6</td><td>支线按解锁节奏重排触发点</td>
+      <td>十六条支线要在玩家认识该人之后才有意义</td></tr>
+</table>
+
+<div class="foot">
+数据来源：关系连线与剧情因果由脚本从 <code>game/story-*.js</code>、<code>game/voice-*.js</code>、
+<code>game/lore.js</code> 中抽取，每条连线都带可回查的出处；文本里查不到依据的没有画上去。<br>
+本图只取结构手法，不含任何参考作品的原文与美术。
+</div>
+
+</body></html>
