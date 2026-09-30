@@ -797,3 +797,77 @@
   animation:flashLine .5s ease-out forwards;
 }
 @keyframes flashLine{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+
+/* 终局结算明细：每项表现各换了多少命运点 */
+.end-breakdown{margin:12px 0 0;padding:10px 12px;border:1px solid var(--line2);border-radius:10px;
+  background:rgba(255,255,255,.02);max-height:210px;overflow-y:auto}
+.eb-row{display:flex;align-items:baseline;gap:8px;font-size:12px;padding:3px 0;color:var(--ink2)}
+.eb-row + .eb-row{border-top:1px solid rgba(255,255,255,.05)}
+.eb-l{flex:0 0 auto;min-width:78px;color:var(--ink2)}
+.eb-n{flex:1;color:var(--ink3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eb-v{flex:0 0 auto;color:var(--ok);font-size:13px;font-variant-numeric:tabular-nums}
+.eb-row.neg .eb-v{color:var(--red)}
+.eb-row.eb-sum{margin-top:4px;padding-top:6px;border-top:1px solid var(--line2);font-weight:700}
+.eb-row.eb-sum .eb-l{color:var(--gold)}
+.eb-row.eb-sum .eb-v{color:var(--gold);font-size:15px}
+
+/* 继续上一局：按钮上带一行小字说明存到哪了 */
+.resume-sub{display:block;margin-top:3px;font-size:11px;font-weight:400;opacity:.8;letter-spacing:0}
+#btn-resume{flex-direction:column;line-height:1.3}
+
+/* ==========================================================
+   结局图鉴
+   见过的摊开写全，没见过的只留一个锁形，让玩家看得见还差几个。
+   按 priority 从难到易排，越靠上的越难拿到。
+   ========================================================== */
+.cp-list{
+  display:grid;gap:12px;margin-top:4px;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+}
+.cp-card{
+  padding:12px 14px;border:1px solid var(--line2);border-radius:11px;
+  background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.01));
+}
+.cp-card.locked{opacity:.5;border-style:dashed}
+.cp-card.k-真好{border-color:rgba(74,208,200,.45)}
+.cp-card.k-假好{border-color:rgba(201,168,90,.45)}
+.cp-card.k-坏,.cp-card.k-失败{border-color:rgba(224,85,74,.4)}
+
+.cp-top{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.cp-kind{
+  flex:0 0 auto;padding:1px 7px;border-radius:99px;font-size:10px;letter-spacing:.1em;
+  border:1px solid currentColor;
+}
+.cp-kind.t-真好{color:var(--cyan)}
+.cp-kind.t-假好{color:var(--gold)}
+.cp-kind.t-坏,.cp-kind.t-失败{color:var(--red)}
+.cp-name{flex:1;font-size:14.5px;font-weight:800;color:#eaf2f8}
+.cp-times{flex:0 0 auto;font-size:10.5px;color:var(--ink3)}
+.cp-times.new{color:var(--gold);font-weight:700}
+.cp-text{margin:0 0 8px;font-size:12.5px;line-height:1.75;color:var(--ink2)}
+.cp-after{
+  margin:0 0 8px;padding:8px 10px;border-left:2px solid var(--cyan);
+  background:rgba(74,208,200,.05);font-size:12px;line-height:1.7;color:var(--ink2);
+}
+.cp-after span{
+  display:block;margin-bottom:3px;font-size:10px;letter-spacing:.14em;color:var(--cyan);
+}
+.cp-hint{font-size:11px;color:var(--ink3);line-height:1.6}
+.cp-lock{text-align:center;font-size:22px;color:var(--ink3);opacity:.5;margin:8px 0}
+
+@media (max-width:900px){ .cp-list{grid-template-columns:1fr} }
+
+/* 音效关闭时按钮变灰，一眼看出状态 */
+#btn-audio.off{opacity:.45;text-decoration:line-through}
+
+/* 城区面板顶部的场景图：每个城区一张，进来先看见地方长什么样 */
+.dt-scene{
+  height:118px;margin:-4px 0 10px;border-radius:10px;overflow:hidden;position:relative;
+  background:#0b1016;border:1px solid var(--line2);
+}
+.dt-scene img{width:100%;height:100%;object-fit:cover;display:block;opacity:.9}
+.dt-scene::after{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 42%,rgba(9,13,18,.9));
+}
+@media (orientation:landscape) and (max-height:560px){ .dt-scene{height:78px} }

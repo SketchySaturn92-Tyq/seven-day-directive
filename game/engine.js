@@ -680,18 +680,115 @@
     }
 
     const ev = pickEvent(s);
+    if (!ev) {
+      /* 事件池被条件筛空了（正常不该发生，gate 表留了兜底档）。
+         宁可给玩家一个安静的白天，也不要抛异常卡死。 */
+      pushLog(s, 'day', '第 ' + s.day + ' 天。今天没有别的事。');
+      s.phase = 'play';
+      return { ok: true, expired: expired, incoming: incoming };
+    }
     s.pendingEvent = ev;
     s.phase = 'event';
     pushLog(s, 'day', '第 ' + s.day + ' 天。剩余期限 ' + s.deadline + ' 天。');
     return { ok: true, event: ev, expired: expired, incoming: incoming };
   }
 
+  /* ==========================================================
+     事件抽取
+     以前就是把全部事件洗一遍按顺序发，200 条事件一条条件都没有，
+     第 1 天就可能抽到本该后期才发生的事。
+     现在分三层门控：
+     1) 硬条件：事件自带 when（复用剧情层那一套条件族）
+     2) 进度带：minDay / maxDay / minFolded / maxFolded / act
+     3) 配重：tier 越高越往后出，未标注的按轻事件处理
+     没通过条件的事件不消耗，留在池里等以后满足。
+     ========================================================== */
   let eventBag = [];
+  const evSeen = {};
+
+  /* 取这条事件的门控：优先用集中表 game/event-gates.js，没有就退回事件自带字段 */
+  function gateOf(e) {
+    if (!e) return null;
+    const T = window.EVENT_GATES;
+    if (T && T[e.id]) return T[e.id];
+    return null;
+  }
+
+  function evPass(s, e) {
+    if (!e) return false;
+    if (evSeen[e.id]) return false;
+    const g = gateOf(e) || {};
+    const ST = window.GAME_STORY;
+
+    /* 1) 硬条件：集中表的 w，或事件自带的 when。四族写法都支持 */
+    const when = g.w || e.when;
+    if (when && ST && typeof ST.condOk === 'function') {
+      if (!ST.condOk(s, when)) return false;
+    }
+
+    /* 2) 进度带：集中表优先，事件自带字段兜底 */
+    const day = s.day || 0;
+    const folded = s.folded || 0;
+    const minDay = g.d != null ? g.d : e.minDay;
+    const maxDay = g.D != null ? g.D : e.maxDay;
+    const minF = g.f != null ? g.f : e.minFolded;
+    const maxF = g.F != null ? g.F : e.maxFolded;
+    if (minDay != null && day < minDay) return false;
+    if (maxDay != null && day > maxDay) return false;
+    if (minF != null && folded < minF) return false;
+    if (maxF != null && folded > maxF) return false;
+
+    /* 3) 幕：集中表优先 */
+    const act = g.a != null ? g.a : e.act;
+    if (act != null) {
+      const a = ST && ST.actOf ? ST.actOf(folded) : null;
+      if (a && a.n !== act) return false;
+    }
+
+    /* 4) 初见：同一个人只初识一次 */
+    const who = npcIdOf(e);
+    if (who && String(e.title || '').indexOf('初见') >= 0) {
+      if (s.metNpcs && s.metNpcs[who]) return false;
+    }
+    return true;
+  }
+
+  /* 配重：早局偏爱轻事件，越往后重事件权重越高。
+     档位优先取集中表的 t，没有就用事件自带的 tier。 */
+  function evWeight(s, e) {
+    const g = gateOf(e) || {};
+    const tier = g.t != null ? g.t : (e.tier || 1);
+    const prog = Math.min(1, (s.folded || 0) / Math.max(1, C.deckGoal));
+    if (tier >= 3) return 0.12 + prog * 1.6;
+    if (tier === 2) return 0.45 + prog * 0.9;
+    return 1.25 - prog * 0.55;
+  }
+
   function pickEvent(s) {
     const all = D.EVENTS;
     if (!all.length) return null;
-    if (eventBag.length === 0) eventBag = shuffle(all.map((e, i) => i));
-    const e = all[eventBag.pop()];
+
+    /* 先找满足条件的候选 */
+    let pool = [];
+    for (let i = 0; i < all.length; i++) {
+      if (evPass(s, all[i])) pool.push(all[i]);
+    }
+    /* 全部用完（或条件太苛刻）就把已出清空，允许重开一轮 */
+    if (!pool.length) {
+      Object.keys(evSeen).forEach((k) => { delete evSeen[k]; });
+      for (let i = 0; i < all.length; i++) if (evPass(s, all[i])) pool.push(all[i]);
+    }
+    if (!pool.length) return null;
+
+    /* 按配重抽 */
+    let total = 0;
+    const w = pool.map((e) => { const x = Math.max(0.01, evWeight(s, e)); total += x; return x; });
+    let r = rngOf().next() * total;
+    let pickIdx = 0;
+    for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r <= 0) { pickIdx = i; break; } }
+    const e = pool[pickIdx];
+    evSeen[e.id] = 1;
+
     const npcId = npcIdOf(e);
     const out = {
       id: e.id, title: e.title, text: e.text, options: e.options,
@@ -810,20 +907,6 @@
     return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1];
   }
 
-  /* ==========================================================
-     十二、命运商店（局内直接购买，主页另有一套永久升级）
-     ========================================================== */
-  function buyShop(s, id) {
-    const it = D.SHOP.find((x) => x.id === id);
-    if (!it) return { ok: false, why: '没有这件东西。' };
-    if (s.fortune < it.cost) return { ok: false, why: '命运点数不够。' };
-    s.fortune -= it.cost;
-    const lines = [];
-    applyEffect(s, it.run, lines);
-    pushLog(s, 'info', '命运商店：' + it.name);
-    return { ok: true, lines: lines };
-  }
-
   function pushLog(s, kind, text) {
     s.log.unshift({ kind: kind, text: text, day: s.day });
     if (s.log.length > 80) s.log.pop();
@@ -833,8 +916,8 @@
      十三、导出
      ========================================================== */
   window.GAME_ENGINE = {
-    newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    resolveStory, pickStory, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
+    newGame, fold, doAction, swapCard, endDay, resolveEvent,
+    resolveStory, pickStory, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,

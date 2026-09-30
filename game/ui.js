@@ -10,6 +10,8 @@
   const MET = window.GAME_META;
   const B = window.GAME_BRIEFS;
   const RNG = window.GAME_RNG;
+  const AU = window.GAME_AUDIO;   // 音效层，全部合成，无素材
+  const SV = window.GAME_SAVE;    // 局内存档：关掉页面还能接着玩
   const $ = (id) => document.getElementById(id);
 
   let S = null;
@@ -26,6 +28,21 @@
     purge: ART + 'card-purge.webp',
   };
   const PORTRAIT = (id) => (id ? ART + id + '.webp' : '');
+
+  /* 城区场景图：目前只有环带维修层与后来补的几张，
+     表里没有的城区就不显示这一块。 */
+  const DISTRICT_ART = {
+    tower:    ART + 'district-tower.webp',
+    exchange: ART + 'district-exchange.webp',
+    lab:      ART + 'district-lab.webp',
+    slum:     ART + 'district-slum.webp',
+    docks:    ART + 'district-docks.webp',
+    orbit:    ART + 'district-orbit.webp',
+    ring:     ART + 'district-ring.webp',
+    memory:   ART + 'district-memory.webp',
+    salvage:  ART + 'district-salvage.webp',
+    outside:  ART + 'district-outside.webp',
+  };
 
   /* 立绘兜底：新城区角色图未生成时退回同区已有肖像，避免出现碎图 */
   const FALLBACK = {
@@ -74,6 +91,21 @@
      主页
      ========================================================== */
   function renderHome() {
+    /* 有存档就把「继续上一局」亮出来，并写清存到哪了 */
+    const rb = $('btn-resume');
+    if (rb) {
+      let m = null;
+      try { m = SV ? SV.meta() : null; } catch (e) { m = null; }
+      if (m) {
+        const when = String(m.savedAt || '').replace('T', ' ').slice(5, 16);
+        $('resume-sub').textContent = '第 ' + m.day + ' 天 · 已折 ' + m.folded + '/12 · ' +
+          (m.origin || '') + ' · ' + when;
+        rb.hidden = false;
+      } else {
+        rb.hidden = true;
+      }
+    }
+
     $('pf-fortune').textContent = P.fortune;
     $('pf-runs').textContent = P.runs;
     $('pf-wins').textContent = P.wins;
@@ -118,6 +150,74 @@
       else b.onclick = () => onBuy(it.id);
       wrap.appendChild(el);
     });
+  }
+
+  /* ==========================================================
+     结局图鉴
+     档案里早就统计了每个结局见过几次，只是从来没展示过。
+     见过的摊开来，没见过的只留一行编号 —— 让玩家知道还差几个。
+     ========================================================== */
+  const ENDING_HINT = {
+    v2_true: '把规则本身改掉',
+    v2_fake: '看起来赢了，其实被留下当下一副牌',
+    v2_bad: '活着出来了，但不太认得自己',
+    sultan: '权柄够高、罪痕够深、忠诚够低',
+    emperor: '权柄封顶，而手上还不算太脏',
+    hero: '声望够高，罪痕压得很低',
+    ghost_out: '罪痕几乎没有，声望也不高',
+    dog: '忠诚极高，但权柄一直上不去',
+    purged: '罪痕满值',
+    broken: '忠诚归零，或期限归零',
+    w1: '权柄与声望双高，罪痕极低',
+    w2: '权柄中上、罪痕不浅、声望平平',
+    w3: '忠诚跌破底线，罪痕已经攒起来了',
+    w4: '罪痕很高，忠诚很低，但牌折完了',
+    w5: '通关时身上没剩几个钱，声望却不低',
+    w6: '四轨全落在中段，哪一边都不站',
+    survivor: '十二张折完，仅此而已',
+  };
+  const ENDING_KIND = {
+    v2_true: '真好', v2_fake: '假好', v2_bad: '坏',
+    purged: '失败', broken: '失败',
+  };
+
+  function renderCompendium() {
+    const P2 = P || {};
+    const seen = P2.endings || {};
+    const got = Object.keys(seen).length;
+    $('cp-count').textContent = got;
+
+    const wrap = $('cp-list');
+    wrap.innerHTML = '';
+    D.ENDINGS.slice().sort((a, b) => (b.priority || 0) - (a.priority || 0)).forEach((e) => {
+      const n = seen[e.id] || 0;
+      const kind = ENDING_KIND[e.id] || '';
+      const el = document.createElement('div');
+      el.className = 'cp-card' + (n ? '' : ' locked') + (kind ? ' k-' + kind : '');
+      if (n) {
+        el.innerHTML =
+          '<div class="cp-top">' +
+            (kind ? '<span class="cp-kind t-' + kind + '">' + kind + '</span>' : '') +
+            '<b class="cp-name">' + esc(e.name) + '</b>' +
+            (n > 1 ? '<span class="cp-times">×' + n + '</span>' : '<span class="cp-times new">首次</span>') +
+          '</div>' +
+          '<p class="cp-text">' + esc(e.text) + '</p>' +
+          ((window.AFTERSTORY || {})[e.id]
+            ? '<div class="cp-after"><span>后来</span>' + esc(window.AFTERSTORY[e.id]) + '</div>' : '') +
+          '<div class="cp-hint">' + esc(ENDING_HINT[e.id] || '') + '</div>';
+      } else {
+        el.innerHTML =
+          '<div class="cp-top"><b class="cp-name">未知结局</b></div>' +
+          '<div class="cp-lock">◆</div>' +
+          '<div class="cp-hint">' + esc(ENDING_HINT[e.id] || '还没见过这一种') + '</div>';
+      }
+      wrap.appendChild(el);
+    });
+  }
+
+  function openCompendium() {
+    renderCompendium();
+    show('screen-compendium');
   }
 
   function onBuy(id) {
@@ -186,6 +286,7 @@
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
     if (gained.length) hint('本局已生效：' + gained.join('、'), 4200);
+    autosave();
     // 开局先来一条委托，让新系统立刻可见
     if (B && !S.briefs.length) { B.spawn(S); renderAll(); }
     setTimeout(() => hint('种子 ' + S.seedLabel + ' · 遇到新的委托点顶部 ◈', 4200), 1400);
@@ -194,10 +295,29 @@
   }
 
   function quitToHome() {
-    if (S && !S.ending && !confirm('回到主页？这一局尚未结束，进度会丢失（已获得的命运点不会）。')) return;
+    if (S && !S.ending && !confirm('回到主页？进度已自动保存，下次可以接着玩。')) return;
     S = null;
     show('screen-home');
     renderHome();
+  }
+
+  /* 接着上一局：把状态原样读回来，重建本该由 start() 做的那些接线 */
+  function resumeRun() {
+    let back = null;
+    try { back = SV ? SV.load() : null; } catch (e) { back = null; }
+    if (!back) { toast('没有可继续的牌局', '存档读不出来，可能已过期或损坏。开一局新的吧。'); return; }
+    S = back;
+    selectedUid = null;
+    settled = null;
+    lastHandCount = null;
+    show('screen-game');
+    M.buildNodes($('map-grid'), onNodeClick);
+    M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
+    renderAll();
+    /* 存下来的时候可能正停在一个待处理的事件或剧情上 */
+    if (S.pendingStory) { setTimeout(() => queueStory(S.pendingStory), 260); }
+    else if (S.pendingEvent) { setTimeout(() => showEvent(S.pendingEvent), 260); }
+    else { setTimeout(() => hint('接着第 ' + S.day + ' 天 · 已折 ' + S.folded + '/12', 4200), 500); }
   }
 
   /* ==========================================================
@@ -340,6 +460,13 @@
     wrap.querySelectorAll('[data-swap]').forEach((b) => {
       b.onclick = (e) => { e.stopPropagation(); onSwap(b.getAttribute('data-swap')); };
     });
+    /* 发牌音：手牌张数变了才响，不然每次刷新都在响 */
+    if (lastHandCount !== null && S.hand.length > lastHandCount) {
+      for (let i = 0; i < Math.min(3, S.hand.length - lastHandCount); i++) {
+        setTimeout(() => sfx('deal'), i * 90);
+      }
+    }
+    lastHandCount = S.hand.length;
   }
 
   function renderActions() {
@@ -409,6 +536,7 @@
 
   /* ---------- 对话屏 ---------- */
   let talkNpc = null;
+  let lastHandCount = null;   // 用来判断手牌是不是刚变多
 
   function openTalk(npcId) {
     talkNpc = npcId;
@@ -569,6 +697,20 @@
     $('dt-title').textContent = info.district.name;
     $('dt-desc').textContent = info.district.desc || '';
 
+    /* 城区场景图：有的城区才有，没有就整块不显示，不留空框 */
+    const sc = $('dt-scene');
+    if (sc) {
+      const art = DISTRICT_ART[distId];
+      if (art) {
+        sc.innerHTML = '<img src="' + art + '" alt="" loading="lazy" ' +
+          'onerror="this.parentNode.hidden=true;">';
+        sc.hidden = false;
+      } else {
+        sc.hidden = true;
+        sc.innerHTML = '';
+      }
+    }
+
     // 委托
     const bh = $('dt-brief-head'), bw = $('dt-briefs');
     if (info.briefs.length) {
@@ -637,6 +779,8 @@
     M.setSelected(null);
     $('chk-boost').checked = false;
     $('chip-range').value = '0';
+    if (r.pass) sfx(r.crit ? 'crit' : 'foldOk');
+    else sfx(r.fumble ? 'fumble' : 'foldFail');
     const title = r.pass ? (r.crit ? '暴击 · 指令达成' : '指令达成') : (r.fumble ? '崩盘 · 指令失败' : '指令失败');
     const delay = node ? 420 : 0;
     if (delay) setTimeout(() => { showResult(title, r.lines, r.pass); afterAction(); }, delay);
@@ -699,7 +843,19 @@
 
   function afterAction() {
     renderAll();
-    if (S.phase === 'end' && S.ending) showEnd();
+    if (S.phase === 'end' && S.ending) {
+      /* 收场了就清掉存档，免得下次进来「继续」到一个已结束的局 */
+      try { if (SV) SV.clear(); } catch (e) {}
+      showEnd();
+      return;
+    }
+    autosave();
+  }
+
+  /* 自动存档：每一次会改变状态的动作之后都写一遍。
+     失败不提示 —— 玩家不需要知道隐私模式下的存储限制。 */
+  function autosave() {
+    try { if (SV && S) SV.save(S); } catch (e) { /* 静默 */ }
   }
 
   /* ==========================================================
@@ -1047,6 +1203,25 @@
 
     $('end-points').textContent = '+' + settled.earned;
     $('end-total').textContent = settled.total;
+
+    /* 结算明细：这一局每项表现各换了多少命运点，逐条摊开。
+       以前只有一个总数，玩家不知道钱是怎么来的。 */
+    const rows = settled.rows || (settled.run && settled.run.rows) || [];
+    const rb = $('end-breakdown');
+    if (rb) {
+      if (rows.length) {
+        rb.innerHTML = rows.map((r) => {
+          const cls = r.value < 0 ? 'neg' : '';
+          return '<div class="eb-row ' + cls + '">' +
+            '<span class="eb-l">' + esc(r.label) + '</span>' +
+            '<span class="eb-n">' + esc(r.note || '') + '</span>' +
+            '<b class="eb-v">' + (r.value > 0 ? '+' : '') + r.value + '</b>' +
+          '</div>';
+        }).join('') + '<div class="eb-row eb-sum"><span class="eb-l">合计</span>' +
+          '<span class="eb-n"></span><b class="eb-v">+' + settled.earned + '</b></div>';
+        rb.hidden = false;
+      } else { rb.hidden = true; rb.innerHTML = ''; }
+    }
     show('screen-end');
   }
 
@@ -1070,11 +1245,107 @@
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  /* 音效：浏览器要求 AudioContext 在用户手势之后才能启动，
+     所以第一次点任意按钮时顺手 init 一次，之后一路可用。
+     拿不到就静默 —— 音效永远不该影响能不能玩。 */
+  function sfx(name) {
+    try { if (AU) AU.play(name); } catch (e) { /* 静默 */ }
+  }
+  function armAudio() {
+    try { if (AU && !AU.ready()) AU.init(); } catch (e) { /* 静默 */ }
+  }
+  document.addEventListener('pointerdown', armAudio, { once: true });
+  document.addEventListener('keydown', armAudio, { once: true });
+
   /* ==========================================================
      绑定
      ========================================================== */
   $('btn-play').onclick = gotoOrigin;
+  $('btn-resume').onclick = resumeRun;
   $('btn-howto').onclick = () => show('screen-howto');
+  $('btn-compendium').onclick = openCompendium;
+
+  /* 音效开关：状态写进 localStorage，刷新后保持 */
+  function renderAudioBtn() {
+    const b = $('btn-audio');
+    if (!b) return;
+    const on = AU ? AU.enabled() : false;
+    b.classList.toggle('off', !on);
+    b.textContent = on ? '♪ 音效' : '♪ 已关';
+  }
+  $('btn-audio').onclick = () => {
+    armAudio();
+    if (AU) AU.toggle();
+    renderAudioBtn();
+    if (AU && AU.enabled()) sfx('gain');
+  };
+  renderAudioBtn();
+
+  /* ==========================================================
+     键盘
+     桌面端全靠鼠标太慢。只绑最常用的几个，不抢输入框的键。
+     ========================================================== */
+  function typing(e) {
+    const t = e.target;
+    if (!t) return false;
+    const tag = (t.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || t.isContentEditable;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (typing(e)) return;
+    const gameOn = document.getElementById('screen-game').classList.contains('active');
+    const storyOn = !document.getElementById('story-layer').hidden;
+
+    /* Esc：先关剧情层，再关抽屉，最后取消选中 */
+    if (e.key === 'Escape') {
+      if (storyOn) { return; }             // 剧情层必须选完，不给 Esc 逃
+      if ($('drawer').classList.contains('on')) { openDrawer(null); return; }
+      if (selectedUid) { selectedUid = null; M.setSelected(null); renderHand(); }
+      return;
+    }
+
+    if (!gameOn || storyOn || !S || S.phase === 'end') return;
+
+    /* 1-9 选牌 */
+    if (/^[1-9]$/.test(e.key)) {
+      const i = parseInt(e.key, 10) - 1;
+      if (S.hand[i]) {
+        selectedUid = S.hand[i].uid;
+        M.setSelected(selectedUid);
+        renderHand();
+        sfx('hover');
+      }
+      return;
+    }
+
+    /* Enter：把选中的牌投出去 */
+    if (e.key === 'Enter' && selectedUid) {
+      const c = S.hand.find((x) => x.uid === selectedUid);
+      const t = c ? E.assetOf(c.target) : null;
+      if (t && t.district) onDrop(selectedUid, t.district, false);
+      else toast('牌上没有目标', '这张牌暂时没有可投放的地点。');
+      return;
+    }
+
+    /* 空格：结束这一天 */
+    if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault();
+      onEndDay();
+      return;
+    }
+
+    /* 面板快捷键 */
+    const map = { a: 'actions', t: 'tracks', p: 'people', l: 'log' };
+    const k = String(e.key).toLowerCase();
+    if (map[k]) {
+      const cur = $('drawer').classList.contains('on') ? document.querySelector('.rail-btn.on') : null;
+      const want = document.querySelector('.rail-btn[data-panel="' + map[k] + '"]');
+      if (cur && cur === want) openDrawer(null);
+      else if (want) openDrawer(map[k]);
+    }
+  });
+  $('cp-back').onclick = () => { show('screen-home'); renderHome(); };
   $('howto-close').onclick = () => show('screen-home');
   $('btn-nexus').onclick = () => { renderNexus(); show('screen-nexus'); };
   $('nx-back').onclick = () => { show('screen-home'); renderHome(); };

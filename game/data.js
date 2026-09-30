@@ -323,16 +323,7 @@ window.GAME_DATA = (function () {
   ];
 
   /* ---------------- 命运商店 ---------------- */
-  const SHOP = [
-    { id: 's_stat', name: '强化疗程', cost: 6, desc: '永久 +1 随机属性', run: { statRandom: 1 } },
-    { id: 's_money', name: '洗白一批资金', cost: 4, desc: '+60 信用点', run: { money: 60 } },
-    { id: 's_intel', name: '买断一份档案', cost: 4, desc: '+5 情报，并揭示全部资产', run: { intel: 5, reveal: true } },
-    { id: 's_gear', name: '定制义体', cost: 8, desc: '+2 装备战力', run: { gear: 2 } },
-    { id: 's_loyal', name: '替董事会擦一次手', cost: 7, desc: '忠诚 +3，罪痕 -2', run: { track: { loyalty: 3, sin: -2 } } },
-    { id: 's_renown', name: '买一次头版', cost: 7, desc: '声望 +3，忠诚 -1', run: { track: { renown: 3, loyalty: -1 } } },
-    { id: 's_power', name: '收编一支安保队', cost: 9, desc: '权柄 +3，罪痕 +1', run: { track: { power: 3, sin: 1 } } },
-    { id: 's_days', name: '延期一次（重置期限）', cost: 10, desc: '倒计时重置为 7 天', run: { resetDeadline: true } },
-  ];
+  /* 局内商店已废弃：命运点只在局外结算，用于永久升级（game/meta.js NEXUS）。 */
 
   /* ---------------- 终局判定 ---------------- */
   const ENDINGS = [
@@ -378,5 +369,5 @@ window.GAME_DATA = (function () {
     },
   ];
 
-  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, EVENTS, SHOP, ENDINGS };
+  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, EVENTS, ENDINGS };
 })();

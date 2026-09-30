@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T02:22:56Z */
+/* 生成时间: 2026-09-30T02:59:05Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -327,16 +327,7 @@ window.GAME_DATA = (function () {
   ];
 
   /* ---------------- 命运商店 ---------------- */
-  const SHOP = [
-    { id: 's_stat', name: '强化疗程', cost: 6, desc: '永久 +1 随机属性', run: { statRandom: 1 } },
-    { id: 's_money', name: '洗白一批资金', cost: 4, desc: '+60 信用点', run: { money: 60 } },
-    { id: 's_intel', name: '买断一份档案', cost: 4, desc: '+5 情报，并揭示全部资产', run: { intel: 5, reveal: true } },
-    { id: 's_gear', name: '定制义体', cost: 8, desc: '+2 装备战力', run: { gear: 2 } },
-    { id: 's_loyal', name: '替董事会擦一次手', cost: 7, desc: '忠诚 +3，罪痕 -2', run: { track: { loyalty: 3, sin: -2 } } },
-    { id: 's_renown', name: '买一次头版', cost: 7, desc: '声望 +3，忠诚 -1', run: { track: { renown: 3, loyalty: -1 } } },
-    { id: 's_power', name: '收编一支安保队', cost: 9, desc: '权柄 +3，罪痕 +1', run: { track: { power: 3, sin: 1 } } },
-    { id: 's_days', name: '延期一次（重置期限）', cost: 10, desc: '倒计时重置为 7 天', run: { resetDeadline: true } },
-  ];
+  /* 局内商店已废弃：命运点只在局外结算，用于永久升级（game/meta.js NEXUS）。 */
 
   /* ---------------- 终局判定 ---------------- */
   const ENDINGS = [
@@ -382,7 +373,7 @@ window.GAME_DATA = (function () {
     },
   ];
 
-  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, EVENTS, SHOP, ENDINGS };
+  return { CONFIG, DISTRICTS, PATHS, TIERS, STATS, TRACKS, ORIGINS, ASSETS, ACTIONS, EVENTS, ENDINGS };
 })();
 
 /* ===== game/content-extra.js ===== */
@@ -2261,9 +2252,12 @@ window.GAME_DATA = (function () {
       text: '高塔四十九层的茶室只开到下午四点，窗外是永远不散的雾。闻铎把杯子推到你面前，茶早就凉了，他自己一口没喝。他问你上个月在三十三层走廊站了多久，语气像在核对一张表格。他说没有别的意思，只想确认你还记不记得那天闻到的味道。走廊尽头的电梯停了一下层，响了三声，门没开。',
       when: { minFolded: 1 },
       options: [
-        { label: '把那天的时间报给他', relation: 2, run: { intel: 2, track: { loyalty: 1 } }, flag: 'wd_told_time' },
-        { label: '反问他为什么查三十三层', relation: 1, run: { intel: 3, track: { loyalty: -1 } } },
-        { label: '说那晚我没去过那里', relation: -2, run: { track: { sin: 1, loyalty: 1 } } },
+        { label: '把那天的时间报给他', relation: 2, run: { intel: 2, track: { loyalty: 1 } }, flag: 'wd_told_time',
+           after: '他把你报的时间记在纸角上，跟表格里那一栏对了一遍，两个数只差两分钟。他把纸折好收进内袋，说这一格总算有人替他填上了。服务生过来撤杯子，只端走了他那杯空的，你那杯凉茶还摆在桌上。' },
+        { label: '反问他为什么查三十三层', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+           after: '他没有答，反问你那晚在三十三层站了多久。你也没有答，两个人对着那杯凉茶坐了一会儿。走廊那部电梯又停了一次，门还是没开。他走的时候把排期表留在桌上，纸角压着一张没写字的便签。' },
+        { label: '说那晚我没去过那里', relation: -2, run: { track: { sin: 1, loyalty: 1 } },
+           after: '他听懂了，也没有拆穿，只把凉茶杯往你这边推了半寸，说好，那就当没去过。出茶室时他先按了电梯，电梯停了很久才到，两个人一路没有说话。第二天你部门的门禁记录里多了一条三十三层的通行，时间在凌晨。' },
       ],
     },
     {
@@ -2276,9 +2270,12 @@ window.GAME_DATA = (function () {
       text: '他把一只旧档案袋推过来，袋角磨得发白，封口只写了一行编号 J-1147。里面是三年前那场事故的原始签名页，收件人一栏被人涂掉了。他说这份东西在监事会走过七道流程，每一道都想让它消失。他要你确认那行被涂掉的名字，说完又补一句：你可以说没见过，也可以现在就走。',
       when: { minFolded: 5 },
       options: [
-        { label: '帮他把涂掉的名字补上', relation: 3, run: { intel: 3, track: { loyalty: -1, power: 1 } }, flag: 'wd_helped' },
-        { label: '问他拿什么换这份确认', relation: 0, run: { money: 50, track: { sin: 1, loyalty: -1 } } },
-        { label: '把档案袋原样推回去', relation: -2, run: { track: { loyalty: 2, power: -1 } } },
+        { label: '帮他把涂掉的名字补上', relation: 3, run: { intel: 3, track: { loyalty: -1, power: 1 } }, flag: 'wd_helped',
+           after: '你把名字念出来，他在复印件背面一笔一笔写下来，写完把档案袋重新封好，封口换了新胶带。他说这份东西以后再进监事会，经手人栏里就是你了。档案袋他收进包里，没有让你带走。' },
+        { label: '问他拿什么换这份确认', relation: 0, run: { money: 50, track: { sin: 1, loyalty: -1 } },
+           after: '他沉默了几秒，从内袋数出一沓现钞推过来，连信封都没有。他说价格他自己定，账上不会留痕。你把钱收了，档案袋他带了回去。第二天那行被涂掉的名字还是没有补上，流程照旧停在第七道。' },
+        { label: '把档案袋原样推回去', relation: -2, run: { track: { loyalty: 2, power: -1 } },
+           after: '你把袋子推回去，他没有伸手接，让它停在桌子中间，说行，那这份东西就还在他手里。他先起身走的，门在他身后合上。过了两周，监事会公开目录里 J-1147 那一栏的经手人还是空的，状态改成了待核。' },
       ],
     },
     {
@@ -2291,9 +2288,12 @@ window.GAME_DATA = (function () {
       text: '茶室已经关了。他带你走进四十九层尽头的档案间，制冷机的低鸣一直没停。J-1147 的最后一份文件摊在桌上，证人栏空着，笔已经旋开。他说：「签下去，我就是你的把柄；不签，你就成了我的。」说这句话时他手里还握着下午那只凉茶杯，杯壁的水痕干了一半。',
       when: { minFolded: 9 },
       options: [
-        { label: '签字，站在他这一边', relation: 3, run: { intel: 4, track: { power: 2, sin: 1 } }, flag: 'wd_witness' },
-        { label: '不签，把文件交回监事会', relation: -2, run: { track: { loyalty: 3, power: 1 } }, flag: 'wd_reported' },
-        { label: '签，把复印件留给灰市', relation: 0, run: { money: 60, track: { sin: 2, renown: -1 } }, flag: 'wd_leak' },
+        { label: '签字，站在他这一边', relation: 3, run: { intel: 4, track: { power: 2, sin: 1 } }, flag: 'wd_witness',
+           after: '你在证人栏签了名，他把笔旋上，说这份文件从今往后两个人共有。制冷机还在响，他先走出去，在门口把灯关了。第二天你部门的材料里多了一份 J-1147 的抄件，抄件上没有落款。' },
+        { label: '不签，把文件交回监事会', relation: -2, run: { track: { loyalty: 3, power: 1 } }, flag: 'wd_reported',
+           after: '你把文件交回监事会，签收单上写的是你的编号。他第二天被叫去谈话，出来时在走廊上只点了一下头。那份文件的证人栏一直空着。他手上那只凉茶杯，你此后再没有见过。' },
+        { label: '签，把复印件留给灰市', relation: 0, run: { money: 60, track: { sin: 2, renown: -1 } }, flag: 'wd_leak',
+           after: '你签了字，趁他转身把复印件塞进外套。三天后灰市上有人在问 J-1147 的价格，问的人没有留名字。他来找过你一次，只问是不是你，你没有答。档案间的制冷机照旧响着。' },
       ],
     },
 
@@ -2308,9 +2308,12 @@ window.GAME_DATA = (function () {
       text: '周三下午三点，苏纹把周会往后挪了二十分钟，空出一格给你。她说这个时间不是她挑的，是有人替你留的。她低头在排期表上划了一道，用的是铅笔，划得很轻，像随时准备擦掉。走廊尽头的电梯停了一下层，她立刻把表合上，问你今天来高塔到底是为了什么。',
       when: { minFolded: 1 },
       options: [
-        { label: '问她是谁替我留的时间', relation: 2, run: { intel: 3 }, flag: 'sw_asked' },
-        { label: '道谢，什么都不多问', relation: 1, run: { track: { loyalty: 1 } } },
-        { label: '说这个时间我不会来', relation: -1, run: { track: { power: 1 } } },
+        { label: '问她是谁替我留的时间', relation: 2, run: { intel: 3 }, flag: 'sw_asked',
+           after: '她没有直接答，只在排期表空白处写了一个部门编号，写完立刻用橡皮擦掉，纸上还留着灰。她说这个名字你不要往外讲。三点那一格照旧空着，周会往后挪了二十分钟，没有人来过问。' },
+        { label: '道谢，什么都不多问', relation: 1, run: { track: { loyalty: 1 } },
+           after: '她点点头，说你懂规矩。三点那一格她替你留到散会，有人问起，她说是你自己调的时间。你没有多问，出门时她把铅笔收进袖子。排期表上那道铅笔印一直很浅。' },
+        { label: '说这个时间我不会来', relation: -1, run: { track: { power: 1 } },
+           after: '她把那一格划掉，用的还是铅笔，划得很轻，说好，就当没排过。周会照原时间开，你到的时候门已经关了。走廊尽头的电梯上上下下，她没有再抬头。那格空白后来填了别人的名字。' },
       ],
     },
     {
@@ -2323,9 +2326,12 @@ window.GAME_DATA = (function () {
       text: '她把你的面谈挪到今晚十一点，理由写得规整：对方时间调整。排期表推到你面前，那一格里原本排着另一个人，名字被她用橡皮擦得很干净，只剩一点灰。她说这是她第一次替别人改表，现在退回去还来得及，只是退回去以后，那一格里填的就不会是你了。',
       when: { minFolded: 5 },
       options: [
-        { label: '去，并让她留一份记录', relation: 3, run: { intel: 2, track: { loyalty: 1, power: 1 } }, flag: 'sw_kept_slot' },
-        { label: '让她把表改回原样', relation: -1, run: { track: { loyalty: 1, power: -1 } } },
-        { label: '问那个被擦掉的人是谁', relation: 2, run: { intel: 4, track: { sin: 1 } } },
+        { label: '去，并让她留一份记录', relation: 3, run: { intel: 2, track: { loyalty: 1, power: 1 } }, flag: 'sw_kept_slot',
+           after: '她把那一格的调整记录另存了一份，文件名只有日期。十一点的面谈照常开，对方来了，谈完在走廊上多站了两分钟。她第二天把记录给你看，说这是她第一次替人留底。' },
+        { label: '让她把表改回原样', relation: -1, run: { track: { loyalty: 1, power: -1 } },
+           after: '她照做，把那一格改了回去，橡皮擦过的灰用袖口抹了。她说那一格往后填的就不会是你。十一点那场面谈换了别人去，你第二天在公开目录里看到排期，那一格写的是另一个名字。' },
+        { label: '问那个被擦掉的人是谁', relation: 2, run: { intel: 4, track: { sin: 1 } },
+           after: '她说了名字，说完就后悔，让你当没听过。那人上个月调离高塔，调令的落款栏空着。她把排期表收进抽屉，抽屉钥匙挂在自己工牌后面。第二天她没有再提这件事，那一格的灰也擦干净了。' },
       ],
     },
     {
@@ -2338,9 +2344,12 @@ window.GAME_DATA = (function () {
       text: '她约你在四十七层的空会议室见面，没有开灯，只有屏幕的光。桌上摊着这半个月的排期表，三个时段是空的，空得不像她排出来的。她说这三个空档是她给自己留的，也是给你留的。她把铅笔折成两截放在桌上，说这一次她不动笔，你想填什么就填什么。',
       when: { minFolded: 9 },
       options: [
-        { label: '把空档填上她的名字', relation: 3, run: { intel: 3, track: { loyalty: 1, power: 2 } }, flag: 'sw_saved_her' },
-        { label: '交回董事会，写明三个空档', relation: -2, run: { track: { loyalty: 3, renown: -1 } }, flag: 'sw_handed' },
-        { label: '什么都不填，把表撕了', relation: 1, run: { track: { sin: 1, renown: 1 } } },
+        { label: '把空档填上她的名字', relation: 3, run: { intel: 3, track: { loyalty: 1, power: 2 } }, flag: 'sw_saved_her',
+           after: '你把她的名字填进第一格，她看了一眼就把铅笔收起来，说这三格从今天起算她的。会议室没有开灯，屏幕的光照在她袖口上。第二天排期系统里那三格全满了，没有人来问过。' },
+        { label: '交回董事会，写明三个空档', relation: -2, run: { track: { loyalty: 3, renown: -1 } }, flag: 'sw_handed',
+           after: '表交上去当天下午，复核科来了两个人，把三个空档逐格抄走，又把她叫去问了一刻钟。她第二天照常上班，把桌上那两截断铅笔收进了笔筒，此后没有再替你留过时间。' },
+        { label: '什么都不填，把表撕了', relation: 1, run: { track: { sin: 1, renown: 1 } },
+           after: '你把表撕成两半，她没有拦，把两半收进抽屉，说这算是她第一次没有交表。第二天系统里那三格照旧空着，没有人补。她照常上班，只是把桌上那两截铅笔收进了笔筒。' },
       ],
     },
 
@@ -2355,9 +2364,12 @@ window.GAME_DATA = (function () {
       text: '交易所广场的清算行到晚上八点还亮着灯，屏幕上的数字一列列往下滚。郁南枝把昨天的清算单推过来，尾差三十七万，来源栏填的是你的部门编号。她递给你一支铅笔，让你自己圈出那一行。她说她只问数字不问人，今天这行数字上偏偏写着你的名字，你要她怎么抬头。',
       when: { minFolded: 1 },
       options: [
-        { label: '圈出来，照着实话说明', relation: 2, run: { track: { loyalty: 2 } }, flag: 'yn_honest' },
-        { label: '问她这行到底是谁填的', relation: 1, run: { intel: 3, track: { loyalty: -1 } } },
-        { label: '说这不是我的部门编号', relation: -2, run: { track: { sin: 1 } } },
+        { label: '圈出来，照着实话说明', relation: 2, run: { track: { loyalty: 2 } }, flag: 'yn_honest',
+           after: '你把那一行圈了，照着实话讲了来龙去脉，她听完在本子上记了两条，说这行数字往后就挂在你的编号底下。清算单当天归档，尾差那一栏最后写的是部门追查未果，没有人再来问你。' },
+        { label: '问她这行到底是谁填的', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+           after: '她翻出提交记录，署名栏被人改过一次，改动的工号和你的差两位。她抄下来递给你，说这条线她自己不能往上报。当天夜里清算行那排灯比平时多亮了一个小时。' },
+        { label: '说这不是我的部门编号', relation: -2, run: { track: { sin: 1 } },
+           after: '她没有争，把清算单翻回来源栏，那串编号确实是你的部门。她说好，那就当我记错了。清算单第二天下班前归档，尾差挂在部门名下。她之后再没有让你单独进过清算室。' },
       ],
     },
     {
@@ -2370,9 +2382,12 @@ window.GAME_DATA = (function () {
       text: '她调出一笔挂了三年多的坏账，打印机一张一张往外吐纸。账上的人早就不在了，只剩一个还在世的联系人每年寄一次函。她要你把这笔账连同那个联系人的追索权一起终结。她的手指按在纸面那行姓氏上停了很久，那正是她自己的姓，她没说，你也没有问。',
       when: { minFolded: 5 },
       options: [
-        { label: '帮她核销，先问清缘由', relation: 2, run: { money: 55, intel: 2, track: { sin: 1 } } },
-        { label: '按流程把坏账上报', relation: -2, run: { track: { loyalty: 2, renown: 1 } } },
-        { label: '要她先说清和这人的关系', relation: 1, run: { intel: 4, track: { sin: 1 } } },
+        { label: '帮她核销，先问清缘由', relation: 2, run: { money: 55, intel: 2, track: { sin: 1 } },
+           after: '你把核销单填了，她只说了半句缘由就停住，说剩下半句等这笔账消掉再说。打印机吐完最后一张纸，她伸手把纸掀过来盖住那行姓氏。联系人当年的追索函从此不再寄出。' },
+        { label: '按流程把坏账上报', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+           after: '你按流程报了，复核科第二周来调卷，把联系人那栏也一并调走。她照常在清算行上班，只是不再让你碰挂账的卷宗。那笔坏账在账上又多活了三个月，最后按呆账核销。' },
+        { label: '要她先说清和这人的关系', relation: 1, run: { intel: 4, track: { sin: 1 } },
+           after: '她说那是她父亲的姓，说完就把账页合上，没有再解释。她给你一份追索函的抄件，说这份你留着，往后有人问就说不知道。那笔账最后是她自己报的核销，签名栏上只有她一个。' },
       ],
     },
     {
@@ -2385,9 +2400,12 @@ window.GAME_DATA = (function () {
       text: '凌晨的清算室里只剩一台终端在响。她把一份调整单放在你面前，金额栏写着一个刚好能把整条线抹平的数字，签收人栏留了两个空位。她说第一个她签，第二个留给你。铅笔递过来时笔尖已经削好，纸边压着一枚回形针，回形针上还夹着白天那张清算单的一角。',
       when: { minFolded: 9 },
       options: [
-        { label: '签第二个名字，替她平账', relation: 3, run: { money: 70, track: { sin: 2, power: 1 } }, flag: 'yn_covered' },
-        { label: '不签，把调整单交给监事会', relation: -2, run: { track: { loyalty: 3, power: -1 } }, flag: 'yn_reported' },
-        { label: '签，但把原件复印一份', relation: 1, run: { intel: 4, track: { sin: 1, renown: -1 } }, flag: 'yn_copy' },
+        { label: '签第二个名字，替她平账', relation: 3, run: { money: 70, track: { sin: 2, power: 1 } }, flag: 'yn_covered',
+           after: '你在第二个空位签了名，她把两页对齐，用回形针别住，说这笔账从此挂在两个名字底下。终端响了一夜，天亮时那整条线的数字刚好平了。清算单原件她收进了自己的抽屉。' },
+        { label: '不签，把调整单交给监事会', relation: -2, run: { track: { loyalty: 3, power: -1 } }, flag: 'yn_reported',
+           after: '你把调整单交了上去，监事会第二天调走整卷。她照常来上班，进门先看一眼那台终端。调整单最后归档，签收人栏上只有一个名字，她的。你没有再进过那间清算室。' },
+        { label: '签，但把原件复印一份', relation: 1, run: { intel: 4, track: { sin: 1, renown: -1 } }, flag: 'yn_copy',
+           after: '你签了字，趁她去倒水把调整单复印了一份。她回来时看了你一眼，什么也没说，把回形针别回原件。那条线第二天平了账，你的抽屉里多了一张没有落款的抄件，纸边压得很直。' },
       ],
     },
 
@@ -2402,9 +2420,12 @@ window.GAME_DATA = (function () {
       text: '合规处的会议室没有窗，只有一盏顶灯，灯管偶尔响一声。戴思远把审计底稿推给你，第三页用红笔圈住了差旅与耗材两项，旁边写着三成。他说这一刀必须你签，留下来的那部分算你替他们争的。他把笔递过来，手腕上那圈旧表带磨得快断，露出的压痕很深。',
       when: { minFolded: 1 },
       options: [
-        { label: '签，并问这一刀砍到谁', relation: 2, run: { money: 25, intel: 2, track: { loyalty: 1 } } },
-        { label: '要求先看完整本底稿', relation: 1, run: { intel: 3, track: { loyalty: -1 } } },
-        { label: '直接拒签，退回底稿', relation: -2, run: { track: { renown: 2, loyalty: -1 } } },
+        { label: '签，并问这一刀砍到谁', relation: 2, run: { money: 25, intel: 2, track: { loyalty: 1 } },
+           after: '你签了，他报了两个部门的名字，说完把笔收回去，笔帽拧得很紧。那三成额度当天核掉，底稿第三页的红圈旁边多出一行小字。被砍的两个部门月底来问过一回，没有人承认是谁点的圈。' },
+        { label: '要求先看完整本底稿', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+           after: '他把整本底稿推过来，缺了三页。你看完没有签，他说那就按原数往上报。第二天审计结论里那三成砍在了另一个部门头上，红笔圈的位置也换了，圈得比原来重。' },
+        { label: '直接拒签，退回底稿', relation: -2, run: { track: { renown: 2, loyalty: -1 } },
+           after: '你把底稿推回去，他收下了，说这一刀他会另找人签。合规处三天后换了签批人，那三成还是砍了。他碰见你时照例点头，只是不再把底稿往你面前推。' },
       ],
     },
     {
@@ -2417,9 +2438,12 @@ window.GAME_DATA = (function () {
       text: '他把你叫进问询室，桌上摊着他三年前签过的一份合规例外，编号是红笔写的，纸角已经卷起。他说这份例外如今成了事故链条上的一环，签字的人只有他一个。他问你那份授权书副本还在不在你手里，问得很慢，眼睛一直没抬，手指在编号上蹭了两下。',
       when: { minFolded: 5 },
       options: [
-        { label: '把副本给他，替他兜住', relation: 3, run: { intel: 2, track: { sin: 1 } } },
-        { label: '告诉他副本早就不在了', relation: -1, run: { track: { loyalty: 1 } } },
-        { label: '问他要拿什么换这份副本', relation: 0, run: { money: 50, track: { sin: 1, power: 1 } } },
+        { label: '把副本给他，替他兜住', relation: 3, run: { intel: 2, track: { sin: 1 } },
+           after: '你把副本交给他，他对着编号核了两遍，核完锁进抽屉，说这件事到此为止。第二天那份例外从事故链条里被抽了出来，抽件的记录栏空着，没有人补。他手腕上那圈表带换了新的。' },
+        { label: '告诉他副本早就不在了', relation: -1, run: { track: { loyalty: 1 } },
+           after: '他信了，没有追问，只把桌上那份例外翻到背面，用铅笔在编号上划了一道，说知道了。那次问询最后没有留下记录，例外照旧挂在链条上，签字的人还是他一个。' },
+        { label: '问他要拿什么换这份副本', relation: 0, run: { money: 50, track: { sin: 1, power: 1 } },
+           after: '他从内袋取出一只信封推过来，没有说话。你把副本给了他，他当场把编号对了一遍。这份例外后来还是从链条上抽掉了，抽出来那一页的边角留着回形针的印子。' },
       ],
     },
     {
@@ -2432,9 +2456,12 @@ window.GAME_DATA = (function () {
       text: '合规处的灯只开了一半，另一半坏了很久没人报修。他把一份新的例外申请推到桌子中间，申请人一栏写着另一个部门，签批人栏空着。他说这一份理由不成立，他不能签，也不想让你签。他把笔帽慢慢拧上，说这是他第一次不合规，剩下的事他一个人扛。',
       when: { minFolded: 9 },
       options: [
-        { label: '把申请撤掉，替他担半份', relation: 3, run: { track: { renown: 2, loyalty: -1, power: 1 } }, flag: 'ds_covered' },
-        { label: '照流程签掉，这才合规', relation: -2, run: { track: { loyalty: 3, sin: 1 } }, flag: 'ds_signed' },
-        { label: '把申请和例外清单寄出去', relation: 0, run: { track: { renown: -2, sin: 1, power: 1 } }, flag: 'ds_leak' },
+        { label: '把申请撤掉，替他担半份', relation: 3, run: { track: { renown: 2, loyalty: -1, power: 1 } }, flag: 'ds_covered',
+           after: '你把申请抽回来，在撤件说明上写了自己的编号。复核科来问过一次，他把两页材料并排摆好，说责任两个人分。合规处那半排坏灯第二天被报修了，换灯的人没有进门。' },
+        { label: '照流程签掉，这才合规', relation: -2, run: { track: { loyalty: 3, sin: 1 } }, flag: 'ds_signed',
+           after: '你签了，理由栏照抄了申请人那一行。他看完把笔帽拧上，说他明白了。申请批下去两周后出了事，追责函上的签名位排到第四个。他留的那张签批联压在底稿最上层，一直没还。' },
+        { label: '把申请和例外清单寄出去', relation: 0, run: { track: { renown: -2, sin: 1, power: 1 } }, flag: 'ds_leak',
+           after: '你把两份材料一起寄了出去，收件人写的是外部追责组。第三天复核组进驻合规处，他签过的那些例外被逐条核对。他照常来上班，只是把红笔收进抽屉，此后不再往外拿。' },
       ],
     },
 
@@ -2449,9 +2476,12 @@ window.GAME_DATA = (function () {
       text: '研究所园区的走廊很干净，冷得像医院。程砚带你走到三号柜前，样本登记表停在上周三，中间少了十一支。她不要你解释去向，只要求本周内把表补齐，扫码栏空着，签字栏也空着。说完她就去看培养箱，背对着你站了很久，玻璃里映出的数字一直在往上跳。',
       when: { minFolded: 1 },
       options: [
-        { label: '补齐表格，扫码栏留空', relation: 2, run: { intel: 2, gear: 1 } },
-        { label: '追问这十一支去了哪', relation: 1, run: { intel: 3, track: { sin: 1 } } },
-        { label: '不接这张表，让她找别人', relation: -2, run: { track: { loyalty: 1, power: -1 } } },
+        { label: '补齐表格，扫码栏留空', relation: 2, run: { intel: 2, gear: 1 },
+           after: '你把表补到本周，扫码栏空着交了回去。她只看签字栏，看完说这一栏空着就还有说法。第二天三号柜换了新锁，钥匙挂在她工牌后面，谁也没有再提那十一支。' },
+        { label: '追问这十一支去了哪', relation: 1, run: { intel: 3, track: { sin: 1 } },
+           after: '她说了去向的一半，另一半让你去问排风记录。你查了当天的值班表，那一段里没有人签名。她转身去擦培养箱的玻璃，说这件事先停在这儿，别再往下问。' },
+        { label: '不接这张表，让她找别人', relation: -2, run: { track: { loyalty: 1, power: -1 } },
+           after: '她把表收回实验台，说那就换人。第二天另一个部门来签的字，扫码栏照样空着。你此后每次进三号实验室，门禁记录里都会多挂一行，没人解释，也没人来清。' },
       ],
     },
     {
@@ -2464,9 +2494,12 @@ window.GAME_DATA = (function () {
       text: '她把一份志愿者名册摊在实验台上。三号志愿者昨天出所之后再没有回来，签名还留在名册上，体检数据也还挂在系统里。她说需要这个名字在今天之内从名册上消失，数据她自己处理。旁边那台培养箱一直在响，像有什么东西在敲玻璃，她说话时手一直按着台面。',
       when: { minFolded: 5 },
       options: [
-        { label: '替她把这一行抹掉', relation: 2, run: { gear: 1, track: { sin: 2, power: 1 } } },
-        { label: '不抹，先查这人去了哪', relation: 0, run: { intel: 4, track: { renown: 1, sin: -1 } } },
-        { label: '把名册原样交回伦理组', relation: -2, run: { track: { loyalty: 2, renown: 1 } } },
+        { label: '替她把这一行抹掉', relation: 2, run: { gear: 1, track: { sin: 2, power: 1 } },
+           after: '你把那一行从名册上抹掉，笔迹尽量压平。她当天就把体检数据从系统里撤了，撤得干干净净。名册那一栏空着，培养箱的响声一晚上没停。第二天她照常来上班，见面只谈样本编号。' },
+        { label: '不抹，先查这人去了哪', relation: 0, run: { intel: 4, track: { renown: 1, sin: -1 } },
+           after: '你调了那人的出所记录，最后一次刷卡在园区东门，时间比名册上晚四十分钟。她听完只看了一眼那张记录，把名册叠起来说这人回不来了。数据第二天还是从系统里撤了，她没有再提过这个名字。' },
+        { label: '把名册原样交回伦理组', relation: -2, run: { track: { loyalty: 2, renown: 1 } },
+           after: '你把名册交回伦理组，签收单上写的是你的编号。她当天被叫去谈话，出来时在走廊里站了一会儿。名册后来按流程归档，那一行还在，签名的位置被人用铅笔划了一道。' },
       ],
     },
     {
@@ -2479,9 +2512,12 @@ window.GAME_DATA = (function () {
       text: '三号实验室的灯全开着，一只没有标号的金属箱放在台面上，冷链记录停在前天凌晨。程砚把一份签收单推到你面前，签收人栏只留了一行空位。她说没人敢签，包括她自己。她站在箱子旁边，手从头到尾都搭在台面上，既没有碰过那只箱子，也没有看你。',
       when: { minFolded: 9 },
       options: [
-        { label: '签字接收，站到她这边', relation: 3, run: { gear: 1, intel: 3, track: { sin: 1, power: 2 } }, flag: 'cy_signed' },
-        { label: '不签，把签收单上报董事会', relation: -2, run: { track: { loyalty: 3, renown: 1 } }, flag: 'cy_reported' },
-        { label: '签，但先把数据拷一份', relation: 0, run: { intel: 4, track: { sin: 2 } }, flag: 'cy_backup' },
+        { label: '签字接收，站到她这边', relation: 3, run: { gear: 1, intel: 3, track: { sin: 1, power: 2 } }, flag: 'cy_signed',
+           after: '你在签收单上签了字。冷链记录第二格被她补上，补的时间比原来晚二十分钟。那只金属箱当晚运出园区，谁都没有开过。她把签收单的另一份给了你，说这一份不归档。' },
+        { label: '不签，把签收单上报董事会', relation: -2, run: { track: { loyalty: 3, renown: 1 } }, flag: 'cy_reported',
+           after: '你把单子交了上去，董事会第二天派人封了实验室。她照旧来上班，站在走廊上等封条贴完。那只金属箱被整只运走，冷链记录和签收单一起进了档案，编号后面没有写名字。' },
+        { label: '签，但先把数据拷一份', relation: 0, run: { intel: 4, track: { sin: 2 } }, flag: 'cy_backup',
+           after: '你签了字，转身把箱上的数据拷了一份带走。她看见了，没有拦，只把签收单翻过去扣在台面上。第二天箱子里那份原始记录在系统里消失了，只剩你手里这一份。' },
       ],
     },
 
@@ -2496,9 +2532,12 @@ window.GAME_DATA = (function () {
       text: '安保总控室里有四块屏，最左边那块一直闪着红点。彭戬把一叠巡检单拍在你桌上，说周二凌晨那趟无人值守缺了签名。他知道不是你值的班，可系统里挂的是你的编号。他把笔递过来，说补签只要两分钟，笔就在他手里，签完这叠单子当场就归档。',
       when: { minFolded: 1 },
       options: [
-        { label: '补签，先把事情压下去', relation: 2, run: { track: { power: 1, sin: 1 } } },
-        { label: '问他是谁动了系统', relation: 1, run: { intel: 3, track: { loyalty: -1 } } },
-        { label: '不在任何单子上签字', relation: -2, run: { track: { loyalty: 2, power: -1 } } },
+        { label: '补签，先把事情压下去', relation: 2, run: { track: { power: 1, sin: 1 } },
+           after: '你补了签，那叠单子当场归了档。他把笔插回胸前口袋，说这一趟就算过去了。半个月后那台无人值守的巡检仪报了一次故障，值班表上挂的还是你那一班。' },
+        { label: '问他是谁动了系统', relation: 1, run: { intel: 3, track: { loyalty: -1 } },
+           after: '他翻了系统日志，改动记录被清过一次，只剩一个临时账号。他把账号写在纸条上给你，说这行字他自己不能留。那份巡检单最后没有签名，挂在架子上等复核。' },
+        { label: '不在任何单子上签字', relation: -2, run: { track: { loyalty: 2, power: -1 } },
+           after: '你一张都没签，他把单子收回抽屉，说那就走正式流程。三天后上面派人来查，值班表被整本调走。他照常在总控室看屏，此后没有再问你一句话。' },
       ],
     },
     {
@@ -2511,9 +2550,12 @@ window.GAME_DATA = (function () {
       text: '他把安保台的钥匙盘转到你面前，第三格是空的。他说昨晚有一批设备从三号走廊运出去，报的是你的工号，记录会跟着设备一起出园区，出到哪一步都算不到你头上。他问你还要不要那份临时授权，问到一半停住了，因为走廊的灯恰好灭了一排，四块屏上有两块跟着暗下去。',
       when: { minFolded: 5 },
       options: [
-        { label: '给授权，帮他把记录抹掉', relation: 2, run: { gear: 1, track: { sin: 2 } } },
-        { label: '不授权，让他向上面解释', relation: -1, run: { track: { loyalty: 2, renown: 1 } } },
-        { label: '授权，要他记下谁下指令', relation: 1, run: { intel: 4, track: { sin: 1, power: 1 } } },
+        { label: '给授权，帮他把记录抹掉', relation: 2, run: { gear: 1, track: { sin: 2 } },
+           after: '你给了授权，他当场把那条出园记录改掉，改完把屏幕转过来只给你看一眼。那批设备从此没有在台账上出现过。钥匙盘第三格照旧空着，他没有补。' },
+        { label: '不授权，让他向上面解释', relation: -1, run: { track: { loyalty: 2, renown: 1 } },
+           after: '你拒绝了，他自己写了一份说明，交上去以后被问了三轮。设备记录最后按流程挂在你部门名下，出口那台读卡器换了一台新的。他没有再向你提过授权两个字。' },
+        { label: '授权，要他记下谁下指令', relation: 1, run: { intel: 4, track: { sin: 1, power: 1 } },
+           after: '你给了授权，让他把指令人的工号记下来。他抄了一份塞给你，自己那份没有留。那批设备出园区以后没有再回来，工号的主人在两个月后调了岗。' },
       ],
     },
     {
@@ -2526,9 +2568,12 @@ window.GAME_DATA = (function () {
       text: '凌晨三点，安保总控室只剩他一个人，四块屏有两块黑着。门禁读卡器一直在响，第七道上锁申请挂在屏上不动，卡号属于一个不该出现在园区里的人。他说他已经按过三次确认，这一次按了取消。他把钥匙盘推到桌子中间，说这道门他不开，明天写报告也好，撤职也好，他都认。读卡器又响了一声，屏幕上的时间跳到三点零七分。',
       when: { minFolded: 9 },
       options: [
-        { label: '站他这边，这道门不开', relation: 3, run: { track: { renown: 2, loyalty: -1, power: 1 } }, flag: 'pj_refused' },
-        { label: '替他开门，记录算我头上', relation: 1, run: { intel: 2, track: { sin: 2, loyalty: 1 } } },
-        { label: '按确认，上报他拒令', relation: -2, run: { track: { loyalty: 3, renown: -1 } }, flag: 'pj_reported' },
+        { label: '站他这边，这道门不开', relation: 3, run: { track: { renown: 2, loyalty: -1, power: 1 } }, flag: 'pj_refused',
+           after: '你没让他开门，只把拒令的经过记在自己的值班本上。第七道上锁申请第二天被撤销，撤销栏的理由空着。他把钥匙盘推回原位，第三格还是空的，从此把椅子搬回门里。' },
+        { label: '替他开门，记录算我头上', relation: 1, run: { intel: 2, track: { sin: 2, loyalty: 1 } },
+           after: '你去按了确认，读卡器响到第二声就断了电，门始终没有开。第七道上锁申请两分钟后自己撤销，撤销栏的理由空着。记录挂在你名下，他写了一份三页的说明，只在最后一行提到那天夜里还有一次确认。' },
+        { label: '按确认，上报他拒令', relation: -2, run: { track: { loyalty: 3, renown: -1 } }, flag: 'pj_reported',
+           after: '你按了确认，又把拒令的经过报了上去。读卡器响到最后一声断了电，门没有开。他把钥匙盘交回工具间，写了一份三页的说明，纸压在四块屏下面。' },
       ],
     },
 
@@ -2543,9 +2588,12 @@ window.GAME_DATA = (function () {
       text: '下层旧水泵房的水声一晚上没停，铁管上结着一层白霜。老鸦蹲在管道边上，手边摊着一本手写账本，字歪得能看出是用左手写的。他说上次那件事他记住了，记住的方式是在账本上给你留了一行。他把账本合上，说这一行你先别问价，位置留着就行。',
       when: { minFolded: 1 },
       options: [
-        { label: '认下这一行，问他图什么', relation: 2, run: { money: 20, intel: 2, track: { sin: 1 } } },
-        { label: '把账本还他，这行不认', relation: -1, run: { track: { loyalty: 1, renown: 1 } } },
-        { label: '问他这一行值多少', relation: 0, run: { money: 35, track: { sin: 1 } } },
+        { label: '认下这一行，问他图什么', relation: 2, run: { money: 20, intel: 2, track: { sin: 1 } },
+           after: '你说这一行算你的，他没有答图什么，只把账本翻到下一页，说位置留着。那页上写着一串编号，末尾两位被墨水洇开了。水泵房的水声响了一整夜。' },
+        { label: '把账本还他，这行不认', relation: -1, run: { track: { loyalty: 1, renown: 1 } },
+           after: '你把账本还回去，他合上塞进腰后，说行，那就当我没写过。水管上的白霜第二天化了一片，账本第一页那一行被他自己划掉，划得很轻。' },
+        { label: '问他这一行值多少', relation: 0, run: { money: 35, track: { sin: 1 } },
+           after: '他报了个数，报完补一句说这一行往后可能不止这个数。你把钱付了，他在账本上把那一行圈起来，旁边添了个日期，写的是下个月。水泵房的铁管又开始结霜。' },
       ],
     },
     {
@@ -2558,9 +2606,12 @@ window.GAME_DATA = (function () {
       text: '他把你约到水管边的铁梯上，说下层的清理名单里有个人不该在上面。这人和他有点旧交情，早年替他挡过一刀，刀口到现在还留着。他不要你做什么大事，只要名单走流程的时候你多按一次暂停。他从口袋掏出一包没拆的烟，看了看又塞了回去，说这包是他留到事情办成那天才拆的。铁梯下面的水声一阵一阵的，他问你上次那件事，是不是还记着。',
       when: { minFolded: 5 },
       options: [
-        { label: '按暂停，帮他把人留下', relation: 3, run: { track: { renown: 2, sin: 1, loyalty: -1 } }, flag: 'ly_saved' },
-        { label: '不管这事，名单照走', relation: -2, run: { track: { loyalty: 1, sin: 1 } }, flag: 'ly_dropped' },
-        { label: '按暂停，让他欠我一条', relation: 1, run: { intel: 3, track: { power: 1, sin: 1 } } },
+        { label: '按暂停，帮他把人留下', relation: 3, run: { track: { renown: 2, sin: 1, loyalty: -1 } }, flag: 'ly_saved',
+           after: '名单在你手上多停了一天，那个人当天夜里被挪出了清理序列。他把那包烟拆开，抽出一支点上，剩下的塞给你。名单第二次走到你手上时，那个位置已经空了。' },
+        { label: '不管这事，名单照走', relation: -2, run: { track: { loyalty: 1, sin: 1 } }, flag: 'ly_dropped',
+           after: '名单照走，那个人在第三天被清走。他此后没有再约你上铁梯，见面只在市场那头，说的也只剩货和价。那包没拆的烟后来一直揣在他口袋里。' },
+        { label: '按暂停，让他欠我一条', relation: 1, run: { intel: 3, track: { power: 1, sin: 1 } },
+           after: '你按了暂停，也把话挑明，他点头认下。那个人被挪出序列，名字暂时挂着。半年后他托人送上来一只信封，里面只有一张纸条，写着一个工号。' },
       ],
     },
     {
@@ -2573,9 +2624,12 @@ window.GAME_DATA = (function () {
       text: '水泵房今晚没开灯，只有铁桶上那本账本翻着。老鸦翻到第一页，那一页记着灰市三十年的规矩：谁的货、谁的名字、谁的价，一条不漏。他说规矩里有一条，掮客不能替客户顶罪。现在他要撕掉这一页，手指已经按在纸边上，只等你点一下头。他说撕了以后灰市再没有他的位置，也再没有他替你挡下的那条规矩。铁桶上那本账本翻着，一页都还没少。',
       when: { minFolded: 9 },
       options: [
-        { label: '让他撕，这份情我认下', relation: 3, run: { intel: 3, track: { renown: 1, sin: -1, power: 1 } }, flag: 'ly_tore' },
-        { label: '把账本夺回来，规矩不能破', relation: -2, run: { track: { loyalty: 2, power: 1 } }, flag: 'ly_kept' },
-        { label: '让他撕，但先抄一份页', relation: 1, run: { intel: 4, track: { sin: 1, renown: -1 } }, flag: 'ly_copied' },
+        { label: '让他撕，这份情我认下', relation: 3, run: { intel: 3, track: { renown: 1, sin: -1, power: 1 } }, flag: 'ly_tore',
+           after: '他把那一页撕下来，撕得很慢，撕完扔进铁桶。第二天灰市上就有人问他的位置，他没答，照旧蹲在管道边上。那本账本从此少了第一页，装订线空着一道。' },
+        { label: '把账本夺回来，规矩不能破', relation: -2, run: { track: { loyalty: 2, power: 1 } }, flag: 'ly_kept',
+           after: '你把账本夺回来按在膝盖上，他没有再伸手。规矩保住了，他的位置也保住了。那天之后他见你时先看你的手，看完才说话。水泵房的水声一直没有停。' },
+        { label: '让他撕，但先抄一份页', relation: 1, run: { intel: 4, track: { sin: 1, renown: -1 } }, flag: 'ly_copied',
+           after: '你抄下那一页的条目，抄完他才撕。他把纸灰扫进水沟，说这一页两条命，一条是他的，一条是你的。抄件你锁进柜子，纸角一直压得很平。' },
       ],
     },
 
@@ -2590,9 +2644,12 @@ window.GAME_DATA = (function () {
       text: '无证诊所开在半层地下，消毒水味盖不住铁锈味。陆晚一边给你手上的划口穿线，一边说下个月那批药到了就得换新的。她把一张手写单推给你，第七行写着你的名字，剂量和时间都标好了，字是她的，笔画很急。她没抬头，说这一行她记了三个月。',
       when: { minFolded: 1 },
       options: [
-        { label: '按单子来，把药钱付掉', relation: 2, run: { money: 45, track: { renown: 2, sin: -1 } } },
-        { label: '问她为什么单记我一行', relation: 1, run: { intel: 3, track: { renown: 1 } } },
-        { label: '拿走单子，药我自己弄', relation: -2, run: { track: { loyalty: 1, sin: 1 } } },
+        { label: '按单子来，把药钱付掉', relation: 2, run: { money: 45, track: { renown: 2, sin: -1 } },
+           after: '你把钱压在单子下面，她数都没数就收进抽屉。药是分三次给的，最后一次她多留了一针。诊所门口那只灯泡那天换了新的，玻璃罩上的灰也擦干净了。' },
+        { label: '问她为什么单记我一行', relation: 1, run: { intel: 3, track: { renown: 1 } },
+           after: '她说这一行最早是记给自己看的，写着写着就不止一行了。她把单子翻给你看，前面几行是同一天。那晚她给你穿的线比平时细，走得也比平时慢。' },
+        { label: '拿走单子，药我自己弄', relation: -2, run: { track: { loyalty: 1, sin: 1 } },
+           after: '你把单子拿走了，她没有拦，只说药别乱配。半个月后你手上的线口发了炎，还是自己找到诊所来的。她把那张单子重新抄了一份，放在抽屉里没给你看。' },
       ],
     },
     {
@@ -2605,9 +2662,12 @@ window.GAME_DATA = (function () {
       text: '她从柜子底层翻出一只旧义体，外壳磨得发白，接口处没有编号。她说这是给一个人留的，那人现在过不了闸机，也付不起钱。她要一份能过闸机的身份记录，只要一份，三天之内都算数。诊室外面有人一直在咳嗽，从头到尾没有停过，她说话时朝门口看了一眼。',
       when: { minFolded: 5 },
       options: [
-        { label: '帮她弄一份身份记录', relation: 3, run: { money: 35, track: { renown: 2, sin: 1, loyalty: -1 } }, flag: 'lw_made_id' },
-        { label: '帮不了，这事风险太大', relation: -2, run: { track: { loyalty: 1, sin: -1 } } },
-        { label: '先见这个人，再决定', relation: 1, run: { intel: 3, track: { renown: 1 } } },
+        { label: '帮她弄一份身份记录', relation: 3, run: { money: 35, track: { renown: 2, sin: 1, loyalty: -1 } }, flag: 'lw_made_id',
+           after: '你三天内把记录办了下来，那人当天就过了闸机。她把柜子底层那只旧义体取出来装了一次，装完那人能站起来了。这份记录后来在系统里被人注销过一回。' },
+        { label: '帮不了，这事风险太大', relation: -2, run: { track: { loyalty: 1, sin: -1 } },
+           after: '你说帮不了，她把义体推回柜子最底层，说那就再等等。一个月后那人没有再出现在诊所门口，柜子底层那格一直空着。她给你换药时不再多说一句话。' },
+        { label: '先见这个人，再决定', relation: 1, run: { intel: 3, track: { renown: 1 } },
+           after: '你见了那个人，他靠在诊室外面的墙上，一直咳嗽。你最后没有办记录，只留下自己的联系方式。她看在眼里，把手写单上的名字改成了一个代号，用铅笔写的。' },
       ],
     },
     {
@@ -2620,9 +2680,12 @@ window.GAME_DATA = (function () {
       text: '诊所里多了两张床，靠里那张躺着一个穿灰制服的人。陆晚把一瓶标着别人名字的血浆塞进柜子，说你身后那条巷子里还有四个在等，她只来得及救一个。她把那张手写单撕成两半，一半塞进你手里，问你愿不愿意替她决定这一次该救谁。她从来不选边，缝过所有阵营的人，这一次她说她选不出来，选得出来的只有你。',
       when: { minFolded: 9 },
       options: [
-        { label: '救制服那人，先问他是谁', relation: 0, run: { intel: 3, track: { loyalty: 2, renown: 1 } }, flag: 'lw_side_system' },
-        { label: '救巷子那边，听她的', relation: 3, run: { track: { renown: 2, loyalty: -1, sin: 1 } }, flag: 'lw_side_out' },
-        { label: '两边都不救，把人推走', relation: -2, run: { track: { renown: -1, sin: 1 } }, flag: 'lw_neutral' },
+        { label: '救制服那人，先问他是谁', relation: 0, run: { intel: 3, track: { loyalty: 2, renown: 1 } }, flag: 'lw_side_system',
+           after: '你把人抬上靠里那张床，他醒过来报了工号和部门，说完又睡过去。巷子那边四个人那天走了三个。她给你留了一份名单，名单上第一个名字被划掉了。' },
+        { label: '救巷子那边，听她的', relation: 3, run: { track: { renown: 2, loyalty: -1, sin: 1 } }, flag: 'lw_side_out',
+           after: '你跟她去了巷子，四个人抬进来两个。制服那人半夜被同事接走，走的时候没有留名字。第二天她把两张床都腾空了，手写单撕掉的那一半烧在铁盘里。' },
+        { label: '两边都不救，把人推走', relation: -2, run: { track: { renown: -1, sin: 1 } }, flag: 'lw_neutral',
+           after: '你把两边都推开，她站着看了你一会儿，什么也没说，转身把两张床的空位都擦了一遍。第二天她照常开诊，只把门口那盏灯的瓦数换低了一档。靠里那张床空了很久。' },
       ],
     },
 
@@ -2646,9 +2709,12 @@ window.GAME_DATA = (function () {
       text: '雨从穹顶接缝漏下来，在吊机底下积成一洼。铁贵站在那洼水里，雨衣湿透了也没脱，手里攥着一张装卸计件单。罢工第二天，三台吊机全停，警报灯从早亮到现在。他不是来找你讲道理，是把单子递过来：「上面这批货的报备号是你部门批的。你只要说一句，这是你自己签的。」',
       when: { minFolded: 1 },
       options: [
-        { label: '当着工人的面替他说', relation: 2, run: { intel: 2, track: { renown: 1 } }, flag: 'tg_stood_up' },
-        { label: '把单子收下，什么也不说', relation: 1, run: { intel: 2, track: { sin: 1 } } },
-        { label: '说这不是你签的，转身走', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '当着工人的面替他说', relation: 2, run: { intel: 2, track: { renown: 1 } }, flag: 'tg_stood_up',
+           after: '你当着人的面认了那句话，报备号那一栏当场补了一条批注，写着部门已阅。吊机还停着，工人没有散，铁贵把计件单折起来塞进雨衣内袋，收工前他站到你左边半步。' },
+        { label: '把单子收下，什么也不说', relation: 1, run: { intel: 2, track: { sin: 1 } },
+           after: '你把单子收下，什么也没有答话。警报灯亮到后半夜，三台吊机照旧停着。铁贵没有再问第二遍，只在点数时多看你一眼，那张单子在雨衣里被泡软了角。' },
+        { label: '说这不是你签的，转身走', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你转身走的时候背后有人骂了一句，铁贵没有回头。那批货第二天换了船期，警报灯亮了一整夜。报备号那一栏照旧挂着，计件数没有人签，点数还在继续。' },
       ],
     },
     {
@@ -2661,9 +2727,12 @@ window.GAME_DATA = (function () {
       text: '罢工进入第四天。冷库的制冷机一直在低鸣，货箱表面结了一层白霜。铁贵左手新换了绷带，边缘渗出一点黄。他把你叫到卷帘门后面，声音压得很低：「昨天夜里带走两个人，工号都记在我这儿。上面说停工时按天扣，扣满就把名额交给巡检。我要撑，就得让三十个人替我扛。」',
       when: { minFolded: 5 },
       options: [
-        { label: '替他把两个工号藏进旧档案', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'tg_hid_roster' },
-        { label: '劝他先把夜班撤下来', relation: 1, run: { intel: 2, track: { loyalty: 1 } } },
-        { label: '说这局你插不了手', relation: -2, run: { track: { loyalty: 2 } } },
+        { label: '替他把两个工号藏进旧档案', relation: 3, run: { intel: 3, track: { sin: 2, renown: 1 } }, flag: 'tg_hid_roster',
+           after: '你把两个工号混进旧档，归档日期往回写了半年。冷库那层白霜化了又结，他一直撑到第十四天。那两个人在复工名单里排在最后，谁也没有再点他们的名。' },
+        { label: '劝他先把夜班撤下来', relation: 1, run: { intel: 2, track: { loyalty: 1 } },
+           after: '他听了，夜班撤了三个小时，探照灯那晚扫过两次。停工照旧按天扣，他把计件单按在自己手里，没有往工人身上摊。十四天后他签了复工，条件写在一张纸上。' },
+        { label: '说这局你插不了手', relation: -2, run: { track: { loyalty: 2 } },
+           after: '你没有接这件事。罢工撑到第十九天，名单上少了七个人，四个是自己走的。铁贵此后没有再来找你，卷帘门下那盏灯一直亮着，谁也没有去关。' },
       ],
     },
     {
@@ -2676,9 +2745,12 @@ window.GAME_DATA = (function () {
       text: '工会礼堂里，吊机上那盏警报灯被人拆了下来，摆在讲台正中，玻璃罩裂了一道。铁贵站在灯后面，四天拖成了十一天，工人少了七个。他念完名单，抬起头看你：「我准备签字复工，条件我一个人扛，名字不写别人的。你要想拦现在说；你要想接这份名单，也现在说。」',
       when: { minFolded: 9 },
       options: [
-        { label: '站他这边，把名字接过来', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'tg_signed_with_him' },
-        { label: '把名单交给董事会换复工', relation: -2, run: { money: 60, track: { loyalty: 2 } }, flag: 'tg_sold_out' },
-        { label: '不拦他，也不接名单', relation: -1, run: { intel: 1, track: { sin: -1 } } },
+        { label: '站他这边，把名字接过来', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'tg_signed_with_him',
+           after: '你接了名单，在礼堂后面签了字。复工当天吊机只开了两台，名单里剩下的名字他一个都没有念出来。那盏裂口的警报灯留在讲台上，后来被人搬去了门房。' },
+        { label: '把名单交给董事会换复工', relation: -2, run: { money: 60, track: { loyalty: 2 } }, flag: 'tg_sold_out',
+           after: '名单交上去，复工第三天就批了，多出来的名额他一个也没有报。他在礼堂里站到所有人都走空才出去，没有看你一眼。到年底还有七个名字没有回到名册上。' },
+        { label: '不拦他，也不接名单', relation: -1, run: { intel: 1, track: { sin: -1 } },
+           after: '你没有拦他，也没有接名单。他签完字把名单折成四折放进口袋，台上那盏灯谁也没有动。带走的七个人后来在港区别的队里上工，见了工会的人不说话。' },
       ],
     },
 
@@ -2693,9 +2765,12 @@ window.GAME_DATA = (function () {
       text: '旧售票亭的玻璃上贴着停用七年的牌子。银面坐在里面，桌上一杯茶已经凉了，没动过。她没抬头：「码头明早六点四十会停一次电，十七分钟。停电那会儿，你的手机会收到一条不存在的到港通知。」你看了眼表，现在是六点三十八。她说完这句，才抬手示意你坐下。',
       when: { minFolded: 1 },
       options: [
-        { label: '坐下，问她凭什么知道', relation: 2, run: { intel: 3 }, flag: 'ym_sat_down' },
-        { label: '记下时间，先离开这里', relation: 0, run: { intel: 2, chips: 1 } },
-        { label: '说这种把戏没人信', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '坐下，问她凭什么知道', relation: 2, run: { intel: 3 }, flag: 'ym_sat_down',
+           after: '你坐下了。六点四十码头停了十七分钟电，你手机上那条不存在的到港通知准点响了。她给自己倒了杯热水，说这一次你先记住时间。你出门时她还在原位坐着。' },
+        { label: '记下时间，先离开这里', relation: 0, run: { intel: 2, chips: 1 },
+           after: '你把时间记在票根背面，走出了售票亭。六点三十八分你不在场，那条通知照常在六点四十到了你手上。她把杯子端起来看了一眼又放下，水一点也没有少。' },
+        { label: '说这种把戏没人信', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你说了这句话，她没有反驳，只把停用牌子往玻璃上贴正了一点。第二天码头没有停电，也没有通知。那张票根你后来找出来过，背面写着的时间是六点三十八。' },
       ],
     },
     {
@@ -2708,9 +2783,12 @@ window.GAME_DATA = (function () {
       text: '她约在停用货梯的机房，制冷机的低鸣比上次更响。门是从外面反锁的，锁舌上有新的刮痕。她从风衣内袋里抽出一张手写单，边角已经被攥软：「上周三下午三点十一分，有人拿这张单来提货。签名栏是我的字，但那不是我写的。」她说她的委托人已经在问这张单的下落，问到第二次就开始问她什么时候方便办离职。她把单子递到一半又收回去，「你拿着它，就等于替我把这件事认下来。」',
       when: { minFolded: 5, minRel: 2 },
       options: [
-        { label: '接过单子，替她扛住这件事', relation: 3, run: { intel: 3, track: { sin: 2, power: 1 } }, flag: 'ym_took_slip' },
-        { label: '不接，但帮她把签名比对清楚', relation: 1, run: { intel: 4, track: { sin: 1 } } },
-        { label: '让她自己交上去，你只当没见过', relation: -2, run: { track: { loyalty: 2, renown: -1 } } },
+        { label: '接过单子，替她扛住这件事', relation: 3, run: { intel: 3, track: { sin: 2, power: 1 } }, flag: 'ym_took_slip',
+           after: '你把单子接了过去。第二天委托人问到她，她说单子在别人手上。那份手写单你压在抽屉底下，边角的褶皱一直没有抹平。她的排班表照旧，只是每月少一班。' },
+        { label: '不接，但帮她把签名比对清楚', relation: 1, run: { intel: 4, track: { sin: 1 } },
+           after: '你没有接单子，把签名和档案里的旧笔迹对了一遍，差在收笔那一处。她把复印件收进风衣内袋，说这一份留着。委托人那边问了两回，之后就没有再问。' },
+        { label: '让她自己交上去，你只当没见过', relation: -2, run: { track: { loyalty: 2, renown: -1 } },
+           after: '她第二天自己交了上去。交接栏落的是她的编号，此后她不再进那间机房。路上碰见时她照例点头，只是不再提那张单子，凉茶杯也留在了桌上。' },
       ],
     },
     {
@@ -2723,9 +2801,12 @@ window.GAME_DATA = (function () {
       text: '还是那间售票亭，停用的牌子掉了，凉茶的杯底在桌上留下一个圈。银面把一张写满缩写的手写单推过来，纸边上的字迹不像同一支笔写的。「这些编号里有一个是我的，可这些编号不是我的。」她第一次用「你的人」这个词，话却停在半句上，「你替我把那句话带出去，我就算你这边的人。」',
       when: { minFolded: 9 },
       options: [
-        { label: '把话替她带出去，认下她', relation: 3, run: { intel: 3, track: { renown: 1, sin: 1 } }, flag: 'ym_spoke_for_her' },
-        { label: '把单子交上去，摘清自己', relation: -2, run: { money: 50, track: { loyalty: 2 } }, flag: 'ym_reported' },
-        { label: '把单子推回去，不接', relation: -1, run: { intel: 1, track: { sin: -1 } } },
+        { label: '把话替她带出去，认下她', relation: 3, run: { intel: 3, track: { renown: 1, sin: 1 } }, flag: 'ym_spoke_for_her',
+           after: '你把那句话带了出去，说的时候只报了编号，没有报名字。三天后有两个人来售票亭核过一次班次就走。她把那张手写单收回内袋，说这一句往后就算数。' },
+        { label: '把单子交上去，摘清自己', relation: -2, run: { money: 50, track: { loyalty: 2 } }, flag: 'ym_reported',
+           after: '你把单子交了上去，钱当天到账，交接栏签的是你的编号。第二天她照常坐在售票亭里，只是不再抬头看你，桌上那杯凉茶的水少了一指。' },
+        { label: '把单子推回去，不接', relation: -1, run: { intel: 1, track: { sin: -1 } },
+           after: '你把单子推了回去，她收进内袋，什么也没说，把凉茶倒了重添一杯。此后她没有再约过你，那些缩写的意思你到现在也不知道。亭子那盏灯改成了自动的。' },
       ],
     },
 
@@ -2740,9 +2821,12 @@ window.GAME_DATA = (function () {
       text: '轨道港的候船厅里，广播每九十秒报一次登船号。温仕成把一张纸质票夹在指缝间，票面上印的出发日期是后天，可舱位号在今天的系统里已经存在。「这张票不该有。」他说，「但它已经过了闸机。我只想知道，是你们部门放的行，还是有人借了你的编制号。」',
       when: { minFolded: 1 },
       options: [
-        { label: '把票收下，去查闸机记录', relation: 2, run: { intel: 3 }, flag: 'ws_took_ticket' },
-        { label: '让他自己走流程报备', relation: 0, run: { track: { loyalty: 1 } } },
-        { label: '说这票跟我部门无关', relation: -1, run: { intel: 1 } },
+        { label: '把票收下，去查闸机记录', relation: 2, run: { intel: 3 }, flag: 'ws_took_ticket',
+           after: '你查了那天的闸机日志，通行时间是六点零七分，用的是一张临时卡。温仕成把票收回去，说这条记录他自己再留一份。那张票后来没有上船，压在投诉台下面。' },
+        { label: '让他自己走流程报备', relation: 0, run: { track: { loyalty: 1 } },
+           after: '他第二天去报了备，流程走到第三道卡住，票被登记作废。候船厅的大屏照常滚字，他把你当熟客，见面只聊票的班次，再也不提那天的事。' },
+        { label: '说这票跟我部门无关', relation: -1, run: { intel: 1 },
+           after: '你说与部门无关，他把票折起来收进衣袋，说行，那我自己查。半个月后他查出一个编制号，那两个号在他的手写名单上排在一起，中间隔着一行。' },
       ],
     },
     {
@@ -2755,9 +2839,12 @@ window.GAME_DATA = (function () {
       text: '引航层的走廊结着一层薄冰，管道外壁挂了霜。温仕成蹲在消防柜前，借着工作灯抄一份名单，纸上有十七个名字，其中四个被划掉又写回。「改名单的人用的是你们部门的模板。」他把灯递给你，「三个月前九个，现在十七个。我不查底细，我只想活到下个月还能卖票。」',
       when: { minFolded: 5, minRel: 2 },
       options: [
-        { label: '替他做一份备份名单', relation: 2, run: { intel: 3, chips: 1 }, flag: 'ws_backup' },
-        { label: '劝他停手，先离港', relation: 1, run: { money: -40, track: { renown: 1 } } },
-        { label: '把名单收走，按流程上交', relation: -2, run: { money: 45, track: { loyalty: 2, sin: 1 } } },
+        { label: '替他做一份备份名单', relation: 2, run: { intel: 3, chips: 1 }, flag: 'ws_backup',
+           after: '你把十七个名字抄了一份，被划掉的四个也照着留着。他把备份塞进消防柜上面那格，说这一份不在他手里更保险。第二个月名单变成十九个，他没有再让你抄。' },
+        { label: '劝他停手，先离港', relation: 1, run: { money: -40, track: { renown: 1 } },
+           after: '他听了劝，把引航层的差事交出去，用两班船的时间离了港。名单留在管道夹缝里，后来谁也没有找到。候船厅那张投诉台的玻璃底下，一直压着一张没填完的纸。' },
+        { label: '把名单收走，按流程上交', relation: -2, run: { money: 45, track: { loyalty: 2, sin: 1 } },
+           after: '你把名单收走交了上去，钱走的是外部账。复核科顺着名单查了两个月，四个人被调岗。温仕成此后卖票更快了，收票找零一句多余的话也不说。' },
       ],
     },
     {
@@ -2770,9 +2857,12 @@ window.GAME_DATA = (function () {
       text: '他在登船口截住你，手里还是那份手写名单，第十七行下面多出一行新的，墨迹还没干。写的是他自己的名字，舱位号空着，改动用的还是你们部门的模板。「今天早上进的系统。」他把纸撕成两半，一半塞给你，「票我不卖了，人我得走。你拿这半张，够不够换我上那班船。」',
       when: { minFolded: 9 },
       options: [
-        { label: '用半张单换他上船', relation: 3, run: { intel: 4, track: { renown: 1, sin: 1 } }, flag: 'ws_sent_him_off' },
-        { label: '把两半纸都交上去', relation: -2, run: { money: 55, track: { loyalty: 3 } }, flag: 'ws_handed_list' },
-        { label: '不接单，让他自己走', relation: -1, run: { track: { sin: -1 } } },
+        { label: '用半张单换他上船', relation: 3, run: { intel: 4, track: { renown: 1, sin: 1 } }, flag: 'ws_sent_him_off',
+           after: '你把半张单送到了该到的地方，当晚闸口放行了一次。他把背包提起来又放下，说这一班他先不走。第十八行被核成一个化名，他此后照旧在候船厅卖票，手写名单收进了内袋。' },
+        { label: '把两半纸都交上去', relation: -2, run: { money: 55, track: { loyalty: 3 } }, flag: 'ws_handed_list',
+           after: '你把两半纸都交了上去，他的第十八行被核实，登船被拦。第二天他照常来卖票，工牌没有收，只是不再看登船口。名单按十八行结了案，第十九行那一栏空着。' },
+        { label: '不接单，让他自己走', relation: -1, run: { track: { sin: -1 } },
+           after: '你没有接那半张纸。他攥着两半站在登船口，站到闸机红灯扫了好几遍，最后塞进了自己口袋。此后他照旧卖票，只是每天收工前会往登船口那头看一眼。' },
       ],
     },
 
@@ -2787,9 +2877,12 @@ window.GAME_DATA = (function () {
       text: '轨道港的货运通道湿度常年七十往上，墙上挂着一层水珠，鞋底每一步都带响。雨客站在闸口外侧，穿着一件拧不干的雨衣，把一个密封袋按在胸口。他不是来递东西的，是来念话的：「潮说，穹顶第七接缝在响，已经响过三次。第三次，你能听见。」念完他没有立刻走，手指在袋子封口上按了两下，像在等一句别的话。你问他袋子里是什么，他说不归他管，他只负责把话带到，带完就空着手回去。',
       when: { minFolded: 2 },
       options: [
-        { label: '先问他这一趟跑了多久', relation: 2, run: { intel: 2, track: { renown: 1 } }, flag: 'yk_asked_him' },
-        { label: '让他把密封袋交给你', relation: 0, run: { intel: 3, track: { sin: 1 } } },
-        { label: '说接缝的事不该你管', relation: -2, run: { track: { loyalty: 1 } } },
+        { label: '先问他这一趟跑了多久', relation: 2, run: { intel: 2, track: { renown: 1 } }, flag: 'yk_asked_him',
+           after: '他说两天，路上换过三次车，密封袋一直按在胸口。他把雨衣下摆拧了一把水，说这趟跑得不算远。你回去查过一趟车次，最后一班比他说的晚四十分钟。' },
+        { label: '让他把密封袋交给你', relation: 0, run: { intel: 3, track: { sin: 1 } },
+           after: '他把袋子递过来，说里面是什么他不管，交出去他就当没带过。袋口那两下按过的印子还在。三天后潮那边有人来问袋子的下落，问你的人没有报名字。' },
+        { label: '说接缝的事不该你管', relation: -2, run: { track: { loyalty: 1 } },
+           after: '你说不管，他没有再念话，转身走进湿度里。第三次响声的日期他也没有报。第二天接缝外侧多了一道路过留下的水痕，脚印朝着港区里面。' },
       ],
     },
     {
@@ -2802,9 +2895,12 @@ window.GAME_DATA = (function () {
       text: '他在换乘站的长椅上等了两个多小时，雨衣没换，水在座位底下积成一小片。他先说完该传的话，说潮要你三天内回话，然后停了很久，才补上一句不属于传话的句子：「我有个妹妹在环带，工号被划进回收名单了。这句不是潮要我说的，是我自己要说。」',
       when: { minFolded: 5 },
       options: [
-        { label: '答应替他查那个工号', relation: 3, run: { intel: 3, track: { sin: 1, renown: 1 } }, flag: 'yk_promised' },
-        { label: '说清你能帮的和不能帮的', relation: 1, run: { intel: 2 } },
-        { label: '回绝，让他只传话就好', relation: -2, run: { track: { loyalty: 1 } } },
+        { label: '答应替他查那个工号', relation: 3, run: { intel: 3, track: { sin: 1, renown: 1 } }, flag: 'yk_promised',
+           after: '你去环带调了那个工号，还在册，排在回收名单的最后一位。你把结果告诉他时，他把雨衣上的水抹了一把，说这一句他自己记着。那件雨衣他后来换了一件，旧的一直没扔。' },
+        { label: '说清你能帮的和不能帮的', relation: 1, run: { intel: 2 },
+           after: '你把能碰的和碰不得的都讲了，他听完点头，把该传的话又念了一遍。他说这样也好，至少知道哪一步会断。临走时他把座位底下的水抹干，长椅让给了别人。' },
+        { label: '回绝，让他只传话就好', relation: -2, run: { track: { loyalty: 1 } },
+           after: '你说你只传话。他没有再提妹妹，把该念的那几句一字不差念完就走。那件雨衣此后每次出现都拧得比上次干。环带的回收名单你没有去查，那个工号还在册。' },
       ],
     },
     {
@@ -2817,9 +2913,12 @@ window.GAME_DATA = (function () {
       text: '他把你叫到第七接缝外侧，风从缝里穿过来，那件雨衣被吹得鼓起来。他把密封袋打开了，里面是妹妹的工牌和一张手写条，都不是潮的东西。「潮让我骗你一次，我没做。」他说，「这两样留给你，上不上报随你。你不报，我明天就得消失；你报了，我就回不去了。」',
       when: { minFolded: 9 },
       options: [
-        { label: '收下工牌，替他压住', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'yk_kept_him' },
-        { label: '上报，换他一条活路', relation: -1, run: { money: 50, track: { loyalty: 2, renown: -1 } }, flag: 'yk_reported_him' },
-        { label: '两样都不收，让他自己选', relation: 0, run: { intel: 1 } },
+        { label: '收下工牌，替他压住', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'yk_kept_him',
+           after: '你把工牌和手写条一起收下，压在抽屉最里层。他把雨衣下摆拧干，说这一份往后不算潮的。此后他照旧传话，念完就走，一句多余的话也不说。' },
+        { label: '上报，换他一条活路', relation: -1, run: { money: 50, track: { loyalty: 2, renown: -1 } }, flag: 'yk_reported_him',
+           after: '你把两样东西交了上去，换了个不追究的口径。他第二天在换乘站等着，手里空着，只穿着一件湿雨衣。此后他照常传话，只是不再自己走进接缝。' },
+        { label: '两样都不收，让他自己选', relation: 0, run: { intel: 1 },
+           after: '你把两样都推回去，没有接。他把工牌塞回雨衣内袋，说那就当我没说过。他转身往港区里走，雨衣下摆甩出一串水。此后传话他只报潮的句子，别的什么也不多讲。' },
       ],
     },
 
@@ -2834,9 +2933,12 @@ window.GAME_DATA = (function () {
       text: '环带维修层的长廊结着冰，走一步要踢一下脚尖的霜。荀戒举着手电逐格照焊缝，照完一格念一句：「第七段，编号 0417，无位移，无渗漏，结论合格。」念到中途他停住，把手电压低：「按规程，你不该在这一层。你可以解释，也可以现在离开，我不记。」',
       when: { minFolded: 1 },
       options: [
-        { label: '解释自己是来查编号的', relation: 2, run: { intel: 3 }, flag: 'xj_explained' },
-        { label: '递上证件，请他照章记录', relation: 1, run: { track: { loyalty: 1 } } },
-        { label: '不说话，转身离开', relation: 0, run: { intel: 1 } },
+        { label: '解释自己是来查编号的', relation: 2, run: { intel: 3 }, flag: 'xj_explained',
+           after: '你说了编号，他把手电压低，照了一下你的鞋底。他说这一层不该有人，但他没有记。当天巡检记录上那一段依旧是合格，一个字没有改。他合上本子，先把灯关了。' },
+        { label: '递上证件，请他照章记录', relation: 1, run: { track: { loyalty: 1 } },
+           after: '他接过证件看了一遍，照章在本子上记了一行，落款写的是他的编号。他说这样对谁都干净。此后你进环带，门禁都会多挂一行记录，谁也没有来清。' },
+        { label: '不说话，转身离开', relation: 0, run: { intel: 1 },
+           after: '你没有答，他也没有追。他照旧逐格照焊缝，念到第七段时停了一下。那本巡检本上当天没有多出任何一行字，只有编号 0417 后面画着一个很小的勾。' },
       ],
     },
     {
@@ -2849,9 +2951,12 @@ window.GAME_DATA = (function () {
       text: '他把手电照在第三十一格焊缝上，那里有一道新痕，编号被磨掉了一半。「按本子，这一格三个月前就封过了。」他翻回上一页，又翻回来，来回翻了三遍，最后把手电关了，「照规程我该报异常。异常上报要停整段环带，停一天，下面三千人的水就断一天。你说我记哪一页。」',
       when: { minFolded: 5 },
       options: [
-        { label: '让他按规程报，别自己扛', relation: 0, run: { track: { loyalty: 2, renown: -1 } } },
-        { label: '让他先瞒，你去查那道痕', relation: 2, run: { intel: 4, track: { sin: 1 } }, flag: 'xj_covered' },
-        { label: '说这不是你该管的', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '让他按规程报，别自己扛', relation: 0, run: { track: { loyalty: 2, renown: -1 } },
+           after: '他第二天报了异常，环带停了一天，下面三千人的配给水推迟了十二小时。异常记录归到他的编号底下，他照旧来巡检。那道新痕的编号被重新打了一遍，打在旁边半寸的地方。' },
+        { label: '让他先瞒，你去查那道痕', relation: 2, run: { intel: 4, track: { sin: 1 } }, flag: 'xj_covered',
+           after: '你去查那道痕，磨痕的走向是从里往外，工具留下的。他按你说的先瞒了，本子上那一格照旧写合格。半个月后复核科翻到这一页，他把话全揽在自己身上，没有提你。' },
+        { label: '说这不是你该管的', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你说不该管，他点了下头，把手电关了。异常那次谁也没有上报。那道痕在第三十一格上留着，他此后每次经过都照一下，照完就往下走，不再停。' },
       ],
     },
     {
@@ -2864,9 +2969,12 @@ window.GAME_DATA = (function () {
       text: '巡检本摊在操作台上，第三十一格那一页被重新写过，墨色和前后页都不一样。荀戒站在旁边，手电没开。「我改了。」他说得很平，「他们查下来，是我一个人的事。你只要做一件事：告诉我那道痕是人磨的，还是冻裂的。你说哪样，我就认哪样，我不再问你第二遍。」',
       when: { minFolded: 9 },
       options: [
-        { label: '替他把这道痕说成冻裂', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'xj_lied_for_him' },
-        { label: '如实说，是有人磨的', relation: -1, run: { intel: 4, track: { loyalty: 2, renown: -1 } }, flag: 'xj_told_truth' },
-        { label: '不答，让他自己去验', relation: 0, run: { intel: 2 } },
+        { label: '替他把这道痕说成冻裂', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'xj_lied_for_him',
+           after: '你说了冻裂，他当场在那一页补了两个字，补的墨色和前后一样。核查看过一遍就走了，第三十一格照旧算合格。他给你留了一小截铅笔头，说这一页是他三十年里改的第二回。' },
+        { label: '如实说，是有人磨的', relation: -1, run: { intel: 4, track: { loyalty: 2, renown: -1 } }, flag: 'xj_told_truth',
+           after: '你照实说了，他把本子合上，第二天照流程报了上去。第三十一格按异常处理，环带停水一天，他的工号后面挂了一条记录。他照旧来巡检，只是不再让你跟在后面。' },
+        { label: '不答，让他自己去验', relation: 0, run: { intel: 2 },
+           after: '你没有答，他自己把那一格拆开验了一遍。验出来的结论他写在本子背面，没有往上报。那一页的墨色后来渐渐和其他页一致了，谁也没有再提起。' },
       ],
     },
 
@@ -2881,9 +2989,12 @@ window.GAME_DATA = (function () {
       text: '穹顶外壳的水顺着缝隙往下滴，滴在一块拆到一半的义体上，把编号冲得看不清了。萨尔蹲在旁边，用一把断头螺丝刀刮线路板。你走近，她先把手里的东西塞进怀里，然后才看你：「里面的。四个人来过，三个要买我的件，一个要烧我的窝。」她伸出手：「你哪个。」',
       when: { minFolded: 2 },
       options: [
-        { label: '蹲下，帮她拆那块板', relation: 2, run: { intel: 2, gear: 1 }, flag: 'se_helped' },
-        { label: '说明你来问接缝的事', relation: 1, run: { intel: 3 } },
-        { label: '什么都不说，退回去', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '蹲下，帮她拆那块板', relation: 2, run: { intel: 2, gear: 1 }, flag: 'se_helped',
+           after: '你蹲下把板子接过来，她把断头螺丝刀往你手边挪了挪。拆到第三层编号牌露出来，她用指腹抹掉上面的水，说这一块留着。你走的时候她没有跟你道别，只把那块板翻过来码在了义体底下。' },
+        { label: '说明你来问接缝的事', relation: 1, run: { intel: 3 },
+           after: '你报了来意，她把螺丝刀收进怀里，说里面的人问过一次接缝，问完就再没来过。她指了接缝外沿的方位，说那边的冰比别处厚。你走之后她把窝口那两块帆布重新压了一遍。' },
+        { label: '什么都不说，退回去', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你没有答她的话，退回去时鞋底带出一片水。她在后面喊了一声，问你是哪一个，你没有回头。那块拆到一半的义体第二天被搬走了，原处只剩下一圈水印。' },
       ],
     },
     {
@@ -2896,9 +3007,12 @@ window.GAME_DATA = (function () {
       text: '她的窝被撬了，义体零件散了一地，编号牌全不见了。萨尔坐在门口，小腿肿着，没让人扶。她把一支还能用的滤水泵推到你脚边：「潮里泡过的东西，喝了不干净。」她说得很短，像每个字都要省着用，「你拿这个。换你帮我查一件事，谁把编号牌收走的。」',
       when: { minFolded: 5 },
       options: [
-        { label: '接下泵，答应替她查', relation: 3, run: { gear: 1, intel: 2, track: { sin: 1 } }, flag: 'se_deal' },
-        { label: '不收泵，只答应查编号牌', relation: 2, run: { intel: 3, track: { renown: 1 } } },
-        { label: '说外面的事你插不了手', relation: -2, run: { track: { loyalty: 1 } } },
+        { label: '接下泵，答应替她查', relation: 3, run: { gear: 1, intel: 2, track: { sin: 1 } }, flag: 'se_deal',
+           after: '你把泵接了下来，泵壳上的划痕朝着你这一侧。她报了一个编号牌的样子，说收回牌子的人只收编号，不收别的。第三天你查到收回点在下层，牌子已经进了打包箱，箱子封条上盖的是回收场的章。' },
+        { label: '不收泵，只答应查编号牌', relation: 2, run: { intel: 3, track: { renown: 1 } },
+           after: '你没有接泵，只把编号的事认了下来。她想了想，把泵放回脚边，说那就这么定。编号牌后来查出来了去向，是回收场那批货，她听完没有再去要，只把泵上的划痕又数了一遍。' },
+        { label: '说外面的事你插不了手', relation: -2, run: { track: { loyalty: 1 } },
+           after: '你说插不了手，她把泵收回怀里，说那就当我没提过。那批编号牌最后按失物处理，她此后再没有约你出过穹顶侧门。她窝口那两块帆布一直没换，颜色比别的都深。' },
       ],
     },
     {
@@ -2911,9 +3025,12 @@ window.GAME_DATA = (function () {
       text: '她带你到穹顶正下方一间没有窗的屋子，地上摆着十几块编号牌，都是从义体上拆下来的。她把滤水泵放回你手里，泵壳上多了几道新划痕。「这块是你部门发出去的。」她指着一块牌子，「你现在有两条路：带走它去交差，或者把它留下，帮我记这十几个人原来叫什么。」',
       when: { minFolded: 9 },
       options: [
-        { label: '留下，帮她记下名字', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'se_stayed' },
-        { label: '带牌子走，按流程上报', relation: -2, run: { money: 55, track: { loyalty: 2 } }, flag: 'se_took_plate' },
-        { label: '把泵还她，谁也不欠谁', relation: -1, run: { track: { sin: -1 } } },
+        { label: '留下，帮她记下名字', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'se_stayed',
+           after: '你留了下来，把十几块牌子上的编号一个一个念给她听，她念一个人的名字就往地上按一下。记到第九个她停了一次，说这一块记岔了。那天你出门时她已经把牌子按顺序码成了两摞。' },
+        { label: '带牌子走，按流程上报', relation: -2, run: { money: 55, track: { loyalty: 2 } }, flag: 'se_took_plate',
+           after: '你把其中一块带走上报，流程走了两周，最后写成失物登记，编号后面补了归宿栏。她第二个月照常在穹顶外等你，脚边那两摞牌子少了一块，空印子还留着。' },
+        { label: '把泵还她，谁也不欠谁', relation: -1, run: { track: { sin: -1 } },
+           after: '你把泵还了回去，她没有接，说拿着吧。你放在脚边就走了，走出去两百步回头看，她还站在原地。那块泵后来跟着她搬到了别处，泵壳上的划痕一直没补。' },
       ],
     },
 
@@ -2928,9 +3045,12 @@ window.GAME_DATA = (function () {
       text: '回收场的传送带一直响，制冷机把仓房压到零下。班头戴着一副磨白的皮手套，从带子上拎起一条拆到一半的义体手臂，翻过来看编号，又放回去。「这个月第三十二条。」他冲你抬了抬下巴，「你们部门的单子写的是拆干净，可这条手臂的接管还是热的。你说我照单办，还是照人办。」',
       when: { minFolded: 1 },
       options: [
-        { label: '让他照人办，先别拆', relation: 2, run: { intel: 2, track: { sin: 1 } }, flag: 'bt_kept_arm' },
-        { label: '照单办，把编号登记清楚', relation: 1, run: { track: { loyalty: 1 } } },
-        { label: '说活人不归你管，照单走', relation: -1, run: { track: { loyalty: 1, sin: 1 } } },
+        { label: '让他照人办，先别拆', relation: 2, run: { intel: 2, track: { sin: 1 } }, flag: 'bt_kept_arm',
+           after: '他照你说的把手套停了，手臂单独放进一只木箱，木箱挪去值班室。当天那批单子进度掉了三成。他把编号抄在一张纸上压进抽屉，说这纸上的人名得等他查清。' },
+        { label: '照单办，把编号登记清楚', relation: 1, run: { track: { loyalty: 1 } },
+           after: '他按单子拆了，编号登记得很清楚，拆下来的接管另放一格，写的是留存待验。这单事后被稽查科抽走核过一遍，没有挑出毛病。他戴上手套接着干，没有再问过别的话。' },
+        { label: '说活人不归你管，照单走', relation: -1, run: { track: { loyalty: 1, sin: 1 } },
+           after: '你说这不是你能管的，他没有再问。那条手臂当天下午进了熔炉，交接单上签的是他的编号。他此后见到你来场里，会先把传送带的开关拨慢一格。' },
       ],
     },
     {
@@ -2943,9 +3063,12 @@ window.GAME_DATA = (function () {
       text: '他把你领进值班室，拉开最下面那层抽屉：一支接管、一块编号牌、一张手写单，字是别人写的，签收栏空着。「这条手臂的主人还活着，在环带排队等排班。我把它拆下来的时候，接管还是温的。」他把手套摘了放在桌上，「巡检昨天来问过一次。你要想撇清，现在就可以走。」',
       when: { minFolded: 5, minRel: 2 },
       options: [
-        { label: '替他把接管登记成报废件', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'bt_faked_scrap' },
-        { label: '劝他把东西交出去止损', relation: 0, run: { track: { loyalty: 2, renown: -1 } } },
-        { label: '说不掺和，转身就走', relation: -2, run: { intel: 1 } },
+        { label: '替他把接管登记成报废件', relation: 3, run: { intel: 3, track: { sin: 2 } }, flag: 'bt_faked_scrap',
+           after: '你替他把接管登记成报废件，编号空着，签收栏填了设备损耗。巡检来看过一次台账就走了。那只接管后来一直缩在抽屉最里面，他换了几副手套都没扔。' },
+        { label: '劝他把东西交出去止损', relation: 0, run: { track: { loyalty: 2, renown: -1 } },
+           after: '你劝他交，他拖了两天，最后还是把接管送进了台账。巡检那边按主动上报处理，只记了一次警告。他此后不再把抽屉拉开给你看，值班室的灯换成了节能的。' },
+        { label: '说不掺和，转身就走', relation: -2, run: { intel: 1 },
+           after: '你转身就走，他在后面把抽屉推回原位，没有再说话。巡检半个月后来问了一次，他把远的事都揽在自己身上。此后那间值班室的门上班时间一直半开着。' },
       ],
     },
     {
@@ -2958,9 +3081,12 @@ window.GAME_DATA = (function () {
       text: '传送带停了，场里安静得能听见管道里过水的声响。班头那副皮手套塞在抽屉边上，抽屉开着，接管还在原位。他说巡检今早拿走了设备日志，明天要跟编号比对。「我不求你保我，求你保这条。」他把接管推到你面前，「主人在环带，工号写在纸上。你把它还回去，怎么算账随你。」',
       when: { minFolded: 9 },
       options: [
-        { label: '接下接管，答应还人', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'bt_returned_arm' },
-        { label: '把接管上交，换他免罚', relation: -1, run: { money: 50, track: { loyalty: 2 } }, flag: 'bt_handed_in' },
-        { label: '不接，让他自己交', relation: -2, run: { intel: 1, track: { sin: -1 } } },
+        { label: '接下接管，答应还人', relation: 3, run: { intel: 3, track: { renown: 2, sin: 1 } }, flag: 'bt_returned_arm',
+           after: '你把手接了下来，记清了纸上的工号。三天后你托环带的人把东西转过去，那人还在等排班。班头没有问你办了没有，只在交接单上把那一页翻了过去。' },
+        { label: '把接管上交，换他免罚', relation: -1, run: { money: 50, track: { loyalty: 2 } }, flag: 'bt_handed_in',
+           after: '你把东西交上去，巡检按主动上报处理，他记了警告没有调岗，钱是走你的账出去的。他此后见到你只聊货，不聊箱子，值班室那副皮手套换成了新的。' },
+        { label: '不接，让他自己交', relation: -2, run: { intel: 1, track: { sin: -1 } },
+           after: '你没有接，他自己写了份说明交上去，写明留存待验。处理下来记了一次警告，他留在线上，手套没换。值班室的抽屉他此后不再当着人拉开。' },
       ],
     },
 
@@ -2975,9 +3101,12 @@ window.GAME_DATA = (function () {
       text: '记忆银行的柜台是冷的，玻璃后面只亮着一盏斜面灯。无面接过你的号单，读了上面的编号，又读了一遍。「三十七号，登记用途是企业核查。」它把单子翻过来，在背面写了一行字，推回给你，「这行不属于本次核查，无面只是照着抄的。你来的时候，门口是不是有人在等你。」',
       when: { minFolded: 2 },
       options: [
-        { label: '承认门口是有人等过', relation: 2, run: { intel: 3 }, flag: 'wm_admitted' },
-        { label: '反问它抄的是谁的档案', relation: 1, run: { intel: 3, track: { sin: 1 } } },
-        { label: '说没有，把单子推回去', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '承认门口是有人等过', relation: 2, run: { intel: 3 }, flag: 'wm_admitted',
+           after: '你承认门口有人等过，它把号单翻回正面，在用途栏旁边补了一行很小的字。核查到第三项它停了停，说这一项不用写进去。你出门时门口那排椅子上已经换了一个人。' },
+        { label: '反问它抄的是谁的档案', relation: 1, run: { intel: 3, track: { sin: 1 } },
+           after: '它说是照着号单背面抄的，抄的时候并没有调档。它把单子推回给你，说这一行不属于本次核查，算它自己多写的。你走的时候它把那盏斜面灯挪了一寸，光照到了柜台边上。' },
+        { label: '说没有，把单子推回去', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你说没有，它把单子接过去归档，归档栏写着无附加信息。核查当天结束，柜台的灯按时关了一半。你第二次去的时候号单上已经换了一串号码，不是三十七。' },
       ],
     },
     {
@@ -2990,9 +3119,12 @@ window.GAME_DATA = (function () {
       text: '它把调阅记录摊在柜台上，最上面是你上次那张单子背面那行字的影印件。「无面归档时发现一段记忆，归属人是三十七号。」它说这句话时用了第三人称，「但那段记忆里的手不是无面的手，温度也不对。柜员没有温度。」它抬起头，「你能不能替无面看一眼，那段记忆里站在门口的人，是不是你。」',
       when: { minFolded: 5, minRel: 2 },
       options: [
-        { label: '承认那段记忆里是自己', relation: 2, run: { intel: 4, track: { sin: 1 } }, flag: 'wm_confirmed' },
-        { label: '要求调出完整档案', relation: 1, run: { intel: 4, track: { loyalty: -1 } } },
-        { label: '说柜员的事与你无关', relation: -1, run: { track: { loyalty: 1 } } },
+        { label: '承认那段记忆里是自己', relation: 2, run: { intel: 4, track: { sin: 1 } }, flag: 'wm_confirmed',
+           after: '你承认了，它把影印件收进抽屉，说这段记忆的归属就算核对完了。它没有追问手和温度的事，只把调阅记录往前翻了一页。柜台上那杯水它一口没动，一直放到下班。' },
+        { label: '要求调出完整档案', relation: 1, run: { intel: 4, track: { loyalty: -1 } },
+           after: '完整档案调了出来，中间缺了一页，缺的那页编号连着三十七号。它把复印件给你，说这一份不进柜台留存。此后你去记忆银行调阅，系统里都会多挂一条复核标记。' },
+        { label: '说柜员的事与你无关', relation: -1, run: { track: { loyalty: 1 } },
+           after: '你说与你无关，它把记录收回抽屉，说那就按无附加处理。核查照常结束，它重新坐回柜台后面读号、翻单、盖章。你此后再去，它只念号，不再多写一个字。' },
       ],
     },
     {
@@ -3005,9 +3137,12 @@ window.GAME_DATA = (function () {
       text: '斜面灯坏了一格，柜台暗下去半边。无面把一段记忆的编号写在一张手写单上推过来：「三十七号。归属人写着无面，可无面不记得存过。」它停了一下，「按规程，不属于柜员的记忆要当场抹除；按无面想做的，是把它取出来交给你。你替它选一个，无面不问理由，也不留记录。」',
       when: { minFolded: 9 },
       options: [
-        { label: '让它取出来，你带走', relation: 3, run: { intel: 4, track: { sin: 2, renown: 1 } }, flag: 'wm_extracted' },
-        { label: '让它按规程当场抹除', relation: -2, run: { track: { loyalty: 3 } }, flag: 'wm_erased' },
-        { label: '不替它选，让它自己定', relation: 1, run: { intel: 2, track: { sin: -1 } } },
+        { label: '让它取出来，你带走', relation: 3, run: { intel: 4, track: { sin: 2, renown: 1 } }, flag: 'wm_extracted',
+           after: '它把那段记忆取了出来，交到你手上，载体只有一张薄片。它说按规程这一件该抹，抹不抹它自己认。当天收柜前它照旧把号单排齐，只把那一格重新编了一次号。' },
+        { label: '让它按规程当场抹除', relation: -2, run: { track: { loyalty: 3 } }, flag: 'wm_erased',
+           after: '它当着你的面按了抹除，一格一格走完，屏幕上看不出动过。它说这样最省事，柜台还是柜台。此后它读号翻单照旧，只是不再用第三人称说自己。' },
+        { label: '不替它选，让它自己定', relation: 1, run: { intel: 2, track: { sin: -1 } },
+           after: '你没有替它选，它把单子扣在灯下坐了很久，最后收进了抽屉。第二天它照旧当班，只是开始自己留一份流水抄本，抄得很慢。那盏坏的斜面灯还是没换。' },
       ],
     },
   ];
@@ -6161,6 +6296,201 @@ window.GAME_DATA = (function () {
   ];
 })();
 
+/* ===== game/event-gates.js ===== */
+/* ==========================================================
+   事件触发条件表
+   200 条事件原本一条条件都没有，第 1 天就可能抽到本该后期才
+   发生的事。这里把条件集中成一张表，改条件只动这一个文件，
+   不用去翻四个上万行的大内容文件。
+
+   字段说明（全部可选，缺省即不限制）：
+     t     配重档：1 轻 / 2 中 / 3 重。早局偏爱轻事件，越往后
+           重事件权重越高（engine.evWeight）。
+     d     最少第几天才出现。
+     D     最迟第几天还可能出现，过期不再出。
+     f     最少折掉几张牌才出现。
+     F     最多折掉几张牌还可能出现。
+     a     限定在第几幕（1-5）。
+     w     硬条件，走剧情层那套条件族：
+             { track: { sin: [5, 99] } }  罪痕至少 5
+             { stat:  { intellect: [8,99] } }
+             { have:  ['flagA'] } / { not: ['flagB'] }
+
+   写法约定：条件只写「这条为什么还不能出」，不要写多余的限制。
+   事件池里永远保留足够多的可抽项，全部抽满会重开一轮。
+   ========================================================== */
+(function () {
+  'use strict';
+
+  /* ---------- 一、原生 14 条：开局就有，默认轻事件 ---------- */
+  var GATES = {
+    e1:  { t: 1, d: 1, D: 4, f: 0, F: 2 },       // 一个孩子递来信封
+    e2:  { t: 2, d: 2, f: 1 },                    // 监事会请你喝茶
+    e3:  { t: 2, d: 2, f: 1 },                    // 旧日同事的葬礼
+    e4:  { t: 1, d: 1, D: 6 },                    // 午夜，交易所有一份错单
+    e5:  { t: 2, d: 3, f: 2 },                    // 董事会在找你签字
+    e6:  { t: 1, d: 1, D: 5 },                    // 一条未被加密的私聊
+    e7:  { t: 2, d: 1, D: 6 },                    // 有人替你挡了一刀
+    e8:  { t: 2, d: 4, f: 2 },                    // 女术士的代理人
+    e9:  { t: 3, d: 5, f: 4, a: 3 },              // 旧档案：你自己的编号
+    e10: { t: 1, d: 2, D: 6 },                    // 一笔干净的生意
+    e11: { t: 1, d: 1, D: 6 },                    // 停电的三十七分钟
+    e12: { t: 2, d: 2, f: 1 },                    // 一名下线的求救
+    e13: { t: 3, d: 6, f: 5 },                    // 穹顶的雨
+    e14: { t: 3, d: 5, f: 4 },                    // 你的名字出现在牌桌上
+
+    /* ---------- 二、x1-x30：中局主线感，分城区铺 ---------- */
+    /* 高塔商业区：董事会与合规部，偏忠诚与权柄 */
+    x1:  { t: 1, d: 1, D: 5 },                    // 电梯里的四次刷卡
+    x2:  { t: 2, d: 3, f: 2 },                    // 监事会的空椅子
+    x3:  { t: 2, d: 4, f: 3 },                    // 一份没人认领的辞呈
+    x19: { t: 3, d: 6, f: 6, a: 3 },              // 董事会的投票
+    x25: { t: 3, d: 7, f: 8, a: 4 },              // 你的继任者
+
+    /* 交易所广场：清算与资本 */
+    x4:  { t: 1, d: 1, D: 5 },                    // 收盘前九十秒
+    x5:  { t: 2, d: 3, f: 2 },                    // 一位母亲的股权
+    x6:  { t: 2, d: 4, f: 3 },                    // 慈善晚宴的拍卖单
+    x20: { t: 2, d: 5, f: 4 },                    // 评级下调
+    x26: { t: 3, d: 6, f: 6 },                    // 一场公开的听证
+
+    /* 研究所园区：程砚与伦理审查 */
+    x7:  { t: 1, d: 1, D: 5 },                    // 三号门禁的静音区
+    x8:  { t: 2, d: 4, f: 3, a: 2 },              // 伦理审查的黑箱
+    x9:  { t: 2, d: 3, f: 2 },                    // 一只被退回的样品
+    x21: { t: 2, d: 5, f: 4 },                    // 断电的七分钟
+    x28: { t: 3, d: 6, f: 6 },                    // 不可签收品
+
+    /* 下层居住区：老鸦、陆晚，偏罪痕与声望 */
+    x10: { t: 1, d: 1 },                          // 下雨天的排队
+    x11: { t: 1, d: 1, D: 5 },                    // 诊所里的两份账单
+    x12: { t: 2, d: 3, f: 2 },                    // 巷子尽头的广播
+    x22: { t: 2, d: 4, f: 3 },                    // 一个孩子的名字
+    x27: { t: 3, d: 5, f: 5, w: { track: { sin: [4, 99] } } },   // 灰市的规矩
+
+    /* 工业港区：铁贵与工会 */
+    x13: { t: 1, d: 1, D: 5 },                    // 凌晨三点的装箱单
+    x14: { t: 2, d: 3, f: 2 },                    // 罢工的第四天
+    x15: { t: 3, d: 5, f: 4 },                    // 一艘没有登记的船
+    x23: { t: 2, d: 4, f: 3 },                    // 保险公司的电话
+    x29: { t: 3, d: 6, f: 6 },                    // 一箱没有标签的货
+
+    /* 轨道港：离城的那条路 */
+    x16: { t: 2, d: 2, f: 1 },                    // 候补名单
+    x17: { t: 2, d: 4, f: 3 },                    // 一个不想走的人
+    x18: { t: 3, d: 5, f: 5 },                    // 穹顶边缘的雨
+    x24: { t: 3, d: 6, f: 6 },                    // 轨道港的清舱
+    x30: { t: 3, d: 7, f: 8, a: 4 },              // 雨客的第二次见面
+
+    /* ---------- 三、m1-m16：初见，每人只一次 ---------- */
+    /* 前十二个是各自的第一次见面，开局期就该铺开；
+       后四个是第二面，要等关系上来。
+       metNpcs 的去重由 engine.evPass 统一处理。 */
+    m1:  { t: 1, d: 1, D: 3 }, m2:  { t: 1, d: 1, D: 3 },
+    m3:  { t: 1, d: 2, D: 4 }, m4:  { t: 1, d: 2, D: 4 },
+    m5:  { t: 1, d: 2, D: 4 }, m6:  { t: 1, d: 3, D: 5 },
+    m7:  { t: 1, d: 2, D: 4 }, m8:  { t: 1, d: 2, D: 4 },
+    m9:  { t: 1, d: 3, D: 5 }, m10: { t: 1, d: 3, D: 6 },
+    m11: { t: 1, d: 3, D: 6 }, m12: { t: 1, d: 4, D: 7 },
+    m13: { t: 2, d: 4, f: 3, w: { minRel: 3, npc: 'wen-duo' } },
+    m14: { t: 2, d: 4, f: 3, w: { minRel: 3, npc: 'lao-ya' } },
+    m15: { t: 2, d: 5, f: 4, w: { minRel: 3, npc: 'lu-wan' } },
+    m16: { t: 2, d: 5, f: 4, w: { minRel: 4, npc: 'yin-mian' } },
+  };
+
+  /* ---------- 四、v1-v60 与 y1-y80：按城区分进度带 ----------
+     两个批次的条件规则一致，只是 y 批整体比 v 批晚一档：
+     事件写得更具体、施压更硬，就不该在第 2 天冒出来。
+     同城区内按序号切三档：前 2 条中局、中 2 条偏后、后 2 条后期。
+  ------------------------------------------------------------ */
+  var LATE = { v: 0, y: 1 };     // y 批整体晚一档
+
+  function bandFor(n, late) {
+    /* n 是该城区内的序号 1..6（v）或 1..8（y），late 再加一档。
+       前两档开局就能抽到，过了第 5 天自动退出池子，把位置让给后期事件。 */
+    var k = n + late;
+    if (k <= 2) return { t: 1, d: 1, D: 5 };
+    if (k <= 4) return { t: 2, d: 2, f: 1 };
+    if (k <= 6) return { t: 2, d: 3, f: 3 };
+    return { t: 3, d: 4, f: 5 };
+  }
+
+  /* 把 v1..v60 / y1..y80 按「每城区连续 6 条 / 8 条」切开 */
+  (function buildBanded() {
+    var i, n;
+    for (i = 0; i < 60; i++) {
+      n = (i % 6) + 1;
+      GATES['v' + (i + 1)] = bandFor(n, LATE.v);
+    }
+    for (i = 0; i < 80; i++) {
+      n = (i % 8) + 1;
+      GATES['y' + (i + 1)] = bandFor(n, LATE.y);
+    }
+  })();
+
+  /* ---------- 五、少数条目补硬条件 ----------
+     这几条的内容本身依赖某个状态，不满足时看着会很突兀。
+     例：谈罪痕的、谈某人关系的、谈穹顶接缝的。
+  ------------------------------------------------------------ */
+  var EXTRA = {
+    /* 罪痕相关：身上没味道的人不该撞上清算行的追债戏 */
+    v12: { w: { track: { sin: [3, 99] } } },     // 清算行走廊里一个从没被叫到的号码
+    v24: { w: { track: { sin: [3, 99] } } },     // 巷口突然挂上牌子的那间诊室
+    y16: { w: { track: { sin: [4, 99] } } },     // 一份自愿放弃补偿的空白声明
+
+    /* 忠诚见底：董事会已经不打算留你了 */
+    v4:  { w: { track: { loyalty: [0, 5] } } },  // 季度通报会上被空掉的一栏名次
+    y5:  { w: { track: { loyalty: [0, 5] } } },  // 工位被换到走廊尽头的角落
+
+    /* 权柄起来以后：董事会开始把你当牌手 */
+    v14: { w: { track: { power: [5, 99] } } },   // 拍卖会清单上的一格旧编号
+    y8:  { w: { track: { power: [5, 99] } } },   // 董事会秘书推过来的那一页纸
+
+    /* 声望起来以后：外面开始有人替你说话 */
+    v9:  { w: { track: { renown: [5, 99] } } },  // 慈善晚宴上最后一件被拍卖的标的
+    y48: { w: { track: { renown: [5, 99] } } },  // 观景层投诉箱里的一封实名信
+
+    /* 穹顶之外：得先跟雨客或萨尔打过照面，才知道那条路存在 */
+    v55: { w: { met: 'yu-ke' } },                // 穹顶外带回来的一只箱子
+    v57: { w: { met: 'yu-ke' } },                // 气闸里的一名陌生人
+    v60: { d: 5, f: 5, w: { met: 'yu-ke' } },    // 穹顶接缝处的一枚螺栓
+    y79: { w: { met: 'sa-er' } },                // 潮的拾荒队这周要过穹顶一次
+    y80: { d: 6, f: 6, t: 3, w: { met: 'yu-ke' } }, // 穹顶第 41 号接缝的一次响动
+
+    /* 环带：得认识荀戒才有人带你上去 */
+    v37: { w: { met: 'xun-jie' } },
+    v42: { w: { met: 'xun-jie' } },
+    y49: { w: { met: 'xun-jie' } },
+    y55: { w: { met: 'xun-jie' } },
+
+    /* 记忆银行：得认识无面 */
+    v43: { w: { met: 'wu-mian' } },
+    v48: { w: { met: 'wu-mian' } },
+    y60: { w: { met: 'wu-mian' } },
+    y64: { w: { met: 'wu-mian' } },
+
+    /* 回收场：得认识班头 */
+    v49: { w: { met: 'ban-tou' } },
+    v54: { w: { met: 'ban-tou' } },
+    y66: { w: { met: 'ban-tou' } },
+    y72: { w: { met: 'ban-tou' } },
+  };
+
+  Object.keys(EXTRA).forEach(function (k) {
+    GATES[k] = Object.assign({}, GATES[k] || {}, EXTRA[k]);
+  });
+
+  window.EVENT_GATES = GATES;
+
+  /* 给没有写进表的条目一个安全默认：当轻事件处理，别把事件池饿死 */
+  window.gateOf = function (e) {
+    if (!e) return null;
+    var g = GATES[e.id];
+    if (g) return g;
+    return { t: e.tier || 1, d: 1 };
+  };
+})();
+
 /* ===== game/events-v6.js ===== */
 /* 随机事件扩充（第二批，80 条）。 */
 (function () {
@@ -7012,6 +7342,641 @@ window.GAME_DATA = (function () {
   };
 })();
 
+/* ===== game/audio.js ===== */
+/* ==========================================================
+   《七日指令》音效层 —— 全部用 Web Audio 合成，不带任何素材文件
+   风格取向：冷、干、电子感、克制。
+   取材自场景里的金属门禁、蜂鸣器、继电器、纸张折断与低频脉冲，
+   所以大量用的是“短噪声瞬态 + 窄带滤波 + 极快包络”，
+   只有结局音用正弦和弦，且刻意压低音量，避免出现欢庆感。
+   浏览器策略要求 AudioContext 必须在用户手势之后创建/恢复，
+   因此 init() 只做一件事：把上下文备好；没 init 前 play 一律静默。
+   ========================================================== */
+(function () {
+  'use strict';
+
+  const KEY = 'sdd.audio.v1';   // 开关状态的持久化键
+  const MAX_VOICES = 8;         // 同时发声上限，超了直接丢弃新音效，避免叠成爆音
+  const MIN_DUR = 0.05;         // 最短音效时长（秒），再短就只是一次爆点，谈不上辨识度
+  const MAX_DUR = 1.2;          // 最长音效时长（秒），再长会拖住后续判定的节奏
+  const TAIL = 0.15;            // 尾部余量（秒），给包络收干净和节点断开留时间
+
+  /* 全部可用音效名，顺序固定，界面层可直接用来做音效开关列表 */
+  const NAMES = [
+    'deal', 'hover', 'foldOk', 'foldFail', 'crit', 'fumble',
+    'draw', 'gain', 'warn', 'openPanel', 'endBad', 'endGood',
+  ];
+
+  let ctx = null;         // AudioContext，init 之前是 null
+  let master = null;      // 总输出，所有音效过这里，便于统一音量与静音
+  let noiseBuf = null;    // 噪声缓冲只生成一次，反复复用，省内存也省 CPU
+  let voices = 0;         // 当前还在发声的路数
+  let on = readEnabled(); // 开关状态，默认开启（除非系统要求减弱动效）
+
+  /* ---------------- 开关状态：读、写、以及系统偏好 ---------------- */
+
+  /* 系统开了“减弱动态效果”时，默认不发声；这也符合无障碍习惯 */
+  function prefersReduce() {
+    try {
+      const mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+      return !!(mq && mq.matches);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function readEnabled() {
+    try {
+      const raw = window.localStorage.getItem(KEY);
+      if (raw === '0') return false;
+      if (raw === '1') return true;
+    } catch (e) { /* 隐私模式下 localStorage 不可用，走默认值 */ }
+    return !prefersReduce();
+  }
+
+  function writeEnabled(v) {
+    try { window.localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {}
+  }
+
+  /* ---------------- 上下文与基础构件 ---------------- */
+
+  /* 噪声缓冲：1 秒白噪声。纸响、气流、碎裂感都从这一段里裁剪出来 */
+  function makeNoiseBuf(context) {
+    const len = Math.floor(context.sampleRate * 1);
+    const buf = context.createBuffer(1, len, context.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  function init() {
+    try {
+      if (ctx) { resumeCtx(); return; }
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;                       // 老浏览器不支持，之后所有 play 静默
+      ctx = new AC();
+      master = ctx.createGain();
+      master.gain.value = 0.45;              // 总音量压到一半以下，游戏里音效不该抢戏
+      master.connect(ctx.destination);
+      noiseBuf = makeNoiseBuf(ctx);
+      resumeCtx();
+    } catch (e) {
+      ctx = null;                            // 初始化失败就彻底退回静默模式
+      master = null;
+    }
+  }
+
+  /* 手势后再 resume。resume 返回 Promise，失败也只吞掉，绝不抛给调用方 */
+  function resumeCtx() {
+    try {
+      if (ctx && ctx.state === 'suspended' && ctx.resume) {
+        const p = ctx.resume();
+        if (p && p.catch) p.catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  /* 一次发声的记账对象：统一出口、记录到点该断开的节点 */
+  function newVoice() {
+    const v = {
+      t0: ctx.currentTime,
+      end: 0,
+      nodes: [],
+      out: null,
+      /* 登记一个节点的结束时间，用来算整体时长 */
+      note: function (until) { if (until > v.end) v.end = until; },
+      add: function (n) { v.nodes.push(n); return n; },
+    };
+    v.out = ctx.createGain();
+    v.out.gain.value = 1;                    // 出口固定 1，音量全在各自包络里控制
+    v.out.connect(master);
+    v.add(v.out);
+    voices++;
+    return v;
+  }
+
+  /* 收尾：到点把这一路的节点全部 stop + disconnect，防止节点泄漏 */
+  function release(v) {
+    const span = Math.max(MIN_DUR, Math.min(MAX_DUR, v.end - v.t0)) + TAIL;
+    window.setTimeout(function () {
+      voices = Math.max(0, voices - 1);
+      for (let i = 0; i < v.nodes.length; i++) {
+        const n = v.nodes[i];
+        try { if (n.stop) n.stop(); } catch (e) {}
+        try { n.disconnect(); } catch (e) {}
+      }
+      v.nodes.length = 0;
+    }, span * 1000);
+  }
+
+  /* 一个带扫频与包络的振荡器音。
+     f0->f1 用指数扫频：电子设备掉电/升调的听感更像线性扫频，
+     包络一律 起音 -> 峰值 -> 指数衰减到近零，避免出现“咔”的爆音。 */
+  function tone(v, opt) {
+    const t0 = v.t0 + (opt.at || 0);
+    const dur = opt.dur;
+    const o = ctx.createOscillator();
+    o.type = opt.type || 'sine';
+    o.frequency.setValueAtTime(opt.f0, t0);
+    if (opt.f1 && opt.f1 !== opt.f0) {
+      o.frequency.exponentialRampToValueAtTime(Math.max(1, opt.f1), t0 + dur);
+    }
+    const g = ctx.createGain();
+    const peak = opt.gain == null ? 0.2 : opt.gain;
+    const atk = opt.attack == null ? 0.004 : opt.attack;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + atk);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g);
+    let tail = g;
+    if (opt.filter) {
+      const f = ctx.createBiquadFilter();
+      f.type = opt.filter.type || 'lowpass';
+      f.frequency.setValueAtTime(Math.max(20, opt.filter.f0), t0);
+      if (opt.filter.f1 && opt.filter.f1 !== opt.filter.f0) {
+        f.frequency.exponentialRampToValueAtTime(Math.max(20, opt.filter.f1), t0 + dur);
+      }
+      f.Q.value = opt.filter.q == null ? 1 : opt.filter.q;
+      g.connect(f);
+      tail = f;
+      v.add(f);
+    }
+    tail.connect(opt.dest || v.out);
+    o.start(t0);
+    o.stop(t0 + dur + 0.02);
+    v.add(o);
+    v.add(g);
+    v.note(t0 + dur);
+    return o;
+  }
+
+  /* 一段经过滤波的噪声：纸响、气流、碎裂的底子都是它。
+     用 loop 播放同一段缓冲，靠增益包络裁出极短的一截。 */
+  function noise(v, opt) {
+    const t0 = v.t0 + (opt.at || 0);
+    const dur = opt.dur;
+    const s = ctx.createBufferSource();
+    s.buffer = noiseBuf;
+    s.loop = true;
+    const f = ctx.createBiquadFilter();
+    f.type = opt.filter || 'bandpass';
+    f.frequency.setValueAtTime(Math.max(20, opt.f0), t0);
+    if (opt.f1 && opt.f1 !== opt.f0) {
+      f.frequency.exponentialRampToValueAtTime(Math.max(20, opt.f1), t0 + dur);
+    }
+    f.Q.value = opt.q == null ? 1 : opt.q;
+    const g = ctx.createGain();
+    const peak = opt.gain == null ? 0.15 : opt.gain;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + (opt.attack == null ? 0.002 : opt.attack));
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    s.connect(f);
+    f.connect(g);
+    g.connect(opt.dest || v.out);
+    s.start(t0);
+    s.stop(t0 + dur + 0.02);
+    v.add(s);
+    v.add(f);
+    v.add(g);
+    v.note(t0 + dur);
+    return s;
+  }
+
+  /* ---------------- 音效配方表：每个都只用上面两个构件拼 ---------------- */
+  const SOUNDS = {
+    /* 发牌：卡落到桌面的纸响。只有噪声瞬态，不带任何音高 */
+    deal: function (v) {
+      noise(v, { dur: 0.055, filter: 'bandpass', f0: 2400, f1: 1200, q: 0.9, gain: 0.16, attack: 0.001 });
+    },
+
+    /* 悬停：极轻的高频点触。音量压到几乎只是“确认一下指针到了” */
+    hover: function (v) {
+      tone(v, { type: 'triangle', f0: 3200, dur: 0.03, gain: 0.045, attack: 0.001 });
+      noise(v, { dur: 0.02, filter: 'highpass', f0: 4200, q: 0.7, gain: 0.03, attack: 0.001 });
+    },
+
+    /* 折牌成功：金属切断感。两个不成谐波的方波叠出锋利的“咔”，带通削掉浑浊 */
+    foldOk: function (v) {
+      tone(v, {
+        type: 'square', f0: 1850, f1: 1400, dur: 0.1, gain: 0.09, attack: 0.001,
+        filter: { type: 'bandpass', f0: 2200, q: 1.6 },
+      });
+      tone(v, {
+        type: 'square', f0: 2680, f1: 2100, dur: 0.075, gain: 0.05, attack: 0.001,
+        filter: { type: 'highpass', f0: 1500 },
+      });
+      noise(v, { dur: 0.035, filter: 'highpass', f0: 3000, q: 0.8, gain: 0.09, attack: 0.001 });
+    },
+
+    /* 折牌失败：沉闷下坠。正弦下滑 + 低通兜住高频，听起来发闷而不是“错误提示” */
+    foldFail: function (v) {
+      tone(v, {
+        type: 'sine', f0: 240, f1: 82, dur: 0.34, gain: 0.17, attack: 0.006,
+        filter: { type: 'lowpass', f0: 900 },
+      });
+      tone(v, {
+        type: 'triangle', f0: 118, f1: 60, dur: 0.3, gain: 0.1, attack: 0.008,
+        filter: { type: 'lowpass', f0: 500 },
+      });
+      noise(v, { dur: 0.12, filter: 'lowpass', f0: 420, q: 0.7, gain: 0.07 });
+    },
+
+    /* 暴击：成功的金属锋之上再叠一层上行亮音，亮但不吵 */
+    crit: function (v) {
+      SOUNDS.foldOk(v);
+      tone(v, {
+        type: 'triangle', f0: 720, f1: 1720, dur: 0.26, gain: 0.1, attack: 0.004, at: 0.02,
+        filter: { type: 'lowpass', f0: 4200 },
+      });
+      tone(v, { type: 'sine', f0: 1440, f1: 2400, dur: 0.18, gain: 0.05, attack: 0.003, at: 0.06 });
+    },
+
+    /* 崩盘：低频冲击打底，宽噪声做碎裂感，整体不超过半秒 */
+    fumble: function (v) {
+      tone(v, {
+        type: 'sine', f0: 92, f1: 34, dur: 0.45, gain: 0.3, attack: 0.003,
+        filter: { type: 'lowpass', f0: 260 },
+      });
+      noise(v, { dur: 0.3, filter: 'lowpass', f0: 1100, f1: 300, q: 0.6, gain: 0.16, attack: 0.002 });
+      noise(v, { dur: 0.08, filter: 'bandpass', f0: 700, q: 0.8, gain: 0.09 });
+    },
+
+    /* 抽到新指令卡：两音符上行，间隔很短，像读卡器的“滴—嗒” */
+    draw: function (v) {
+      tone(v, {
+        type: 'triangle', f0: 660, dur: 0.09, gain: 0.11, attack: 0.003,
+        filter: { type: 'lowpass', f0: 3200 },
+      });
+      tone(v, {
+        type: 'triangle', f0: 990, dur: 0.14, gain: 0.11, attack: 0.003, at: 0.085,
+        filter: { type: 'lowpass', f0: 3600 },
+      });
+    },
+
+    /* 获得资源/关系提升：温和单音。慢起慢落，不带雀跃的上扬 */
+    gain: function (v) {
+      tone(v, {
+        type: 'sine', f0: 523, dur: 0.3, gain: 0.13, attack: 0.03,
+        filter: { type: 'lowpass', f0: 1800 },
+      });
+      tone(v, { type: 'sine', f0: 784, dur: 0.22, gain: 0.05, attack: 0.04, at: 0.03 });
+    },
+
+    /* 期限告警：两声重复蜂鸣。方波给电子味，带通把刺耳的高次谐波削掉 */
+    warn: function (v) {
+      const boom = {
+        type: 'square', f0: 890, dur: 0.1, gain: 0.1, attack: 0.002,
+        filter: { type: 'bandpass', f0: 1000, q: 2.2 },
+      };
+      tone(v, boom);
+      tone(v, { type: boom.type, f0: boom.f0, dur: boom.dur, gain: boom.gain, attack: boom.attack, at: 0.17, filter: boom.filter });
+    },
+
+    /* 打开面板：气动滑轨。噪声带通从低扫到高，像门缝吸了一口气 */
+    openPanel: function (v) {
+      noise(v, { dur: 0.2, filter: 'bandpass', f0: 380, f1: 1900, q: 1.1, gain: 0.1, attack: 0.012 });
+      tone(v, {
+        type: 'triangle', f0: 300, f1: 620, dur: 0.14, gain: 0.04, attack: 0.01,
+        filter: { type: 'lowpass', f0: 1500 },
+      });
+    },
+
+    /* 坏结局：下行低频拖长。两个八度关系叠在一起，尾巴更厚也更沉 */
+    endBad: function (v) {
+      tone(v, {
+        type: 'sine', f0: 168, f1: 58, dur: 1.0, gain: 0.2, attack: 0.05,
+        filter: { type: 'lowpass', f0: 700 },
+      });
+      tone(v, {
+        type: 'sine', f0: 84, f1: 30, dur: 1.0, gain: 0.16, attack: 0.06, at: 0.04,
+        filter: { type: 'lowpass', f0: 400 },
+      });
+      noise(v, { dur: 0.5, filter: 'lowpass', f0: 500, f1: 180, q: 0.6, gain: 0.05 });
+    },
+
+    /* 好结局：上行的三音和弦。起音慢、音量低，是“松开”而不是庆祝 */
+    endGood: function (v) {
+      const steps = [392, 494, 587];   // G4 B4 D5，大三和弦依次展开
+      for (let i = 0; i < steps.length; i++) {
+        tone(v, {
+          type: 'sine', f0: steps[i], dur: 0.9 - i * 0.12, gain: 0.1, attack: 0.07, at: i * 0.14,
+          filter: { type: 'lowpass', f0: 2400 },
+        });
+      }
+      tone(v, {
+        type: 'triangle', f0: 196, f1: 294, dur: 0.95, gain: 0.05, attack: 0.1,
+        filter: { type: 'lowpass', f0: 900 },
+      });
+    },
+  };
+
+  /* ---------------- 对外接口 ---------------- */
+
+  /* 播一个音效。opts 可选：
+     opts.gain  0..1 的音量缩放，默认 1
+     opts.delay 延迟秒数，默认 0 */
+  function play(name, opts) {
+    try {
+      if (!on) return;                        // 关掉了就什么都不做
+      if (!ctx || !master) return;            // 还没 init，静默返回
+      const build = SOUNDS[name];
+      if (!build) return;                     // 未知音效名静默忽略
+      if (voices >= MAX_VOICES) return;       // 并发超限，丢新的，不排队
+      resumeCtx();
+      const o = opts || {};
+      const v = newVoice();
+      if (o.gain != null) {
+        v.out.gain.value = Math.max(0, Math.min(1, o.gain));
+      }
+      if (o.delay) v.t0 = v.t0 + Math.max(0, o.delay);
+      build(v);
+      release(v);
+    } catch (e) { /* 音效永远不能影响游戏流程 */ }
+  }
+
+  function setEnabled(v) {
+    try {
+      on = !!v;
+      writeEnabled(on);
+    } catch (e) {}
+  }
+
+  /* 切换开关，返回切换后的状态，方便界面直接读回来渲染按钮 */
+  function toggle() {
+    try {
+      setEnabled(!on);
+      return on;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  window.GAME_AUDIO = {
+    init: init,
+    ready: function () { return !!(ctx && master); },
+    enabled: function () { return on; },
+    setEnabled: setEnabled,
+    toggle: toggle,
+    play: play,
+    names: function () { return NAMES.slice(); },
+    /* 这两个是给界面/调试用的补充信息，不属于约定接口，改起来不影响调用方 */
+    state: function () { return ctx ? ctx.state : 'none'; },
+    voices: function () { return voices; },
+  };
+})();
+
+/* ===== game/save.js ===== */
+/* 局内存档：把当前这一局原样存下来，下次打开还能接着玩。 */
+(function () {
+  'use strict';
+  const D = window.GAME_DATA;
+  const C = D.CONFIG;
+
+  /* 跨局档案用 sdd.profile.v1，这里必须另起一个 key。
+     两件事的生命周期完全不同：档案要跟人一辈子，这一局只活七天，
+     混在一起就会出现「清掉存档把命运点也清了」这种事故。 */
+  const KEY = 'sdd.run.v1';
+  const LOG_KEEP = 60;      // 日志只回溯这么多条，再多存档会被撑大
+  const MAX_DEPTH = 12;     // 快照最大深度，防止恶意/意外深链拖死序列化
+
+  /* ==========================================================
+     一、快照生成
+     状态里混了三类不能直接 JSON 化的东西：
+       1) 带方法的对象（s.rng）—— JSON 只留下数据字段，方法全丢
+       2) 数据表引用（s.origin / s.ending）—— 存下来会变成一份死副本，
+          以后改数据表也追不回来，所以只存 id
+       3) 意外混进来的函数、undefined、循环引用 —— 序列化要么丢字段要么抛错
+     所以先自己做一次深度克隆，把不能存的东西在进 JSON 之前就摘掉。
+     宁可少存一个字段，也不能让存档抛出去——抛一次，玩家这七天就没了。
+     ========================================================== */
+  function isPlainObject(v) {
+    if (!v || typeof v !== 'object') return false;
+    const proto = Object.getPrototypeOf(v);
+    return proto === Object.prototype || proto === null;
+  }
+
+  /* 返回 undefined 表示「这个值不要存」，调用方负责跳过该键 */
+  function clone(v, ancestors, depth) {
+    if (v === null) return null;
+    const t = typeof v;
+    if (t === 'number') return isFinite(v) ? v : 0;      // NaN / Infinity 存不回来，归零
+    if (t === 'string' || t === 'boolean') return v;
+    /* undefined / function / symbol / bigint 全部跳过 */
+    if (t !== 'object') return undefined;
+    if (depth > MAX_DEPTH) return undefined;
+    /* 祖先链检测循环引用：命中就断开这一支，不建环 */
+    if (ancestors.indexOf(v) >= 0) return undefined;
+    if (v instanceof Date) return v.toISOString();
+    const anc = ancestors.concat([v]);
+    if (Array.isArray(v)) {
+      const out = [];
+      for (let i = 0; i < v.length; i++) {
+        const c = clone(v[i], anc, depth + 1);
+        out.push(c === undefined ? null : c);            // 数组保长度，洞补 null
+      }
+      return out;
+    }
+    /* DOM 节点、Map、Set 这类非纯对象一律不存：存了也还原不回来 */
+    if (!isPlainObject(v)) return undefined;
+    const out = {};
+    Object.keys(v).forEach((k) => {
+      const c = clone(v[k], anc, depth + 1);
+      if (c !== undefined) out[k] = c;
+    });
+    return out;
+  }
+
+  function encode(S) {
+    const snap = clone(S, [], 0) || {};
+
+    /* rng 是本局随机流，带一堆方法。只留种子文本与显示名，
+       读回来用 create(seed) 重建——同一种子就是同一条序列，可复现。 */
+    const seed = (S.rng && S.rng.seedText) || S.seed || null;
+    const label = (S.rng && S.rng.label) || S.seedLabel || null;
+    delete snap.rng;
+    snap.__rng = { seed: seed, label: label };
+    snap.seed = seed;
+    snap.seedLabel = label;
+
+    /* origin / ending 是数据表里的对象引用，只存 id，读回来查表 */
+    snap.origin = S.origin ? S.origin.id : null;
+    snap.ending = S.ending ? S.ending.id : null;
+
+    /* 日志按天累积，保留太多存档会越来越大，只留最近的 */
+    if (Array.isArray(snap.log)) snap.log = snap.log.slice(0, LOG_KEEP);
+    if (Array.isArray(snap.dayLog)) snap.dayLog = snap.dayLog.slice(0, LOG_KEEP);
+    if (Array.isArray(snap.cardLog)) snap.cardLog = snap.cardLog.slice(-40);
+
+    return {
+      version: C.version,                 // 与跨局档案无关，跟着游戏数据版本走
+      at: new Date().toISOString(),
+      state: snap,
+    };
+  }
+
+  function decode(pack) {
+    if (!pack || typeof pack !== 'object') return null;
+    if (pack.version !== C.version) return null;
+    const S = pack.state;
+    if (!S || typeof S !== 'object') return null;
+
+    /* 随机流还原 */
+    const info = S.__rng || {};
+    const seed = info.seed || S.seed || null;
+    delete S.__rng;
+    S.seed = seed;
+    S.seedLabel = info.label || S.seedLabel || seed;
+    /* seed 为空时 create 会退回系统随机，好歹能把局开起来 */
+    S.rng = window.GAME_RNG.create(seed, info.label || null);
+
+    /* 数据表引用还原：id 找不到就退回默认值，不让 undefined 流进引擎 */
+    S.origin = (D.ORIGINS || []).find((o) => o.id === S.origin) || (D.ORIGINS || [])[0] || null;
+    S.ending = S.ending ? ((D.ENDINGS || []).find((e) => e.id === S.ending) || null) : null;
+
+    /* 老版本留下的字段可能不全，补齐形状，避免下游 .forEach 直接炸 */
+    if (!S.stats || typeof S.stats !== 'object') S.stats = {};
+    if (!S.tracks || typeof S.tracks !== 'object') S.tracks = {};
+    if (!Array.isArray(S.hand)) S.hand = [];
+    if (!Array.isArray(S.deck)) S.deck = [];
+    if (!Array.isArray(S.log)) S.log = [];
+    if (!Array.isArray(S.dayLog)) S.dayLog = [];
+    if (!Array.isArray(S.briefs)) S.briefs = [];
+    if (!Array.isArray(S.briefSeen)) S.briefSeen = [];
+    if (!S.dailyUsed || typeof S.dailyUsed !== 'object') S.dailyUsed = {};
+    if (!S.metNpcs || typeof S.metNpcs !== 'object') S.metNpcs = {};
+    if (!S.pathFoldCount || typeof S.pathFoldCount !== 'object') S.pathFoldCount = {};
+    if (!S.briefDistrictHits || typeof S.briefDistrictHits !== 'object') S.briefDistrictHits = {};
+    if (!S.relations || typeof S.relations !== 'object') S.relations = {};
+    if (typeof S.phase !== 'string') S.phase = 'play';
+    if (typeof S.day !== 'number' || !isFinite(S.day)) S.day = 1;
+    if (typeof S.phase === 'string' && S.phase !== 'play' && S.phase !== 'event' && S.phase !== 'end') S.phase = 'play';
+    if (S.phase === 'end' && !S.ending) S.phase = 'play';   // 没结局的 end 状态走不下去
+    return S;
+  }
+
+  /* ==========================================================
+     二、localStorage 包一层
+     隐私模式下 getItem/setItem 都可能直接抛，配额满了 setItem 也抛。
+     所有读写都在这里消化掉，绝不让异常冒到调用方。
+     ========================================================== */
+  function rawGet() {
+    try { return localStorage.getItem(KEY); } catch (e) { return null; }
+  }
+  function rawSet(txt) {
+    try { localStorage.setItem(KEY, txt); return true; } catch (e) { return false; }
+  }
+  function rawDel() {
+    try { localStorage.removeItem(KEY); } catch (e) { /* 隐私模式忽略 */ }
+  }
+
+  /* 统一读取入口：坏 JSON、旧版本一律当没有，并把脏档删掉，
+     免得每次进游戏都拿一份读不懂的东西反复失败。 */
+  function readPack() {
+    const raw = rawGet();
+    if (!raw) return null;
+    let pack = null;
+    try { pack = JSON.parse(raw); } catch (e) { pack = null; }
+    if (!pack || typeof pack !== 'object' || !pack.state) { rawDel(); return null; }
+    if (pack.version !== C.version) { rawDel(); return null; }
+    return pack;
+  }
+
+  /* ==========================================================
+     三、对外接口
+     ========================================================== */
+  function canSave(S) {
+    if (!S || typeof S !== 'object') return { ok: false, why: '没有进行中的这一局。' };
+    if (!S.origin) return { ok: false, why: '这一局还没开局。' };
+    if (S.phase === 'end' || S.ending) return { ok: false, why: '这一局已经收场了，不用存。' };
+    return { ok: true };
+  }
+
+  function save(S) {
+    const ok = canSave(S);
+    if (!ok.ok) return { ok: false, why: ok.why };
+    try {
+      if (!rawSet(JSON.stringify(encode(S)))) {
+        return { ok: false, why: '浏览器不让写本地存储（可能是隐私模式或空间已满）。' };
+      }
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, why: '存档写入失败。' };
+    }
+  }
+
+  function load() {
+    try {
+      const pack = readPack();
+      if (!pack) return null;
+      const S = decode(pack);
+      if (!S) { rawDel(); return null; }
+      return S;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function clear() { rawDel(); }
+
+  /* 摘要：只解析一层外层，不还原整局，给「继续上一局」按钮用。
+     按钮要的只是几个数字，没必要把整局 rebuild 一遍。 */
+  function meta() {
+    try {
+      const pack = readPack();
+      if (!pack) return null;
+      const st = pack.state || {};
+      const o = (D.ORIGINS || []).find((x) => x.id === st.origin) || null;
+      const e = st.ending ? ((D.ENDINGS || []).find((x) => x.id === st.ending) || null) : null;
+      return {
+        day: Number(st.day) || 0,
+        folded: Number(st.folded) || 0,
+        origin: o ? o.name : (st.origin || ''),
+        originId: st.origin || null,
+        endingName: e ? e.name : '',
+        savedAt: pack.at || '',
+        version: pack.version,
+      };
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function peek() {
+    const m = meta();
+    if (!m) return null;
+    try {
+      const pack = readPack();
+      const st = (pack && pack.state) || {};
+      return {
+        day: m.day,
+        folded: m.folded,
+        origin: m.origin,
+        originId: m.originId,
+        endingName: m.endingName,
+        savedAt: m.savedAt,
+        version: m.version,
+        seedLabel: st.seedLabel || st.seed || '',
+        phase: st.phase || 'play',
+        deadline: Number(st.deadline) || 0,
+        hand: Array.isArray(st.hand) ? st.hand.length : 0,
+        deck: Array.isArray(st.deck) ? st.deck.length : 0,
+      };
+    } catch (e) {
+      return m;   // 详细字段读不出来也不能让按钮没得显示
+    }
+  }
+
+  window.GAME_SAVE = {
+    KEY,
+    canSave,
+    save,
+    load,
+    clear,
+    peek,
+    meta,
+  };
+})();
+
 /* ===== game/rng.js ===== */
 /* ==========================================================
    《七日指令》随机数层
@@ -7789,18 +8754,115 @@ window.GAME_DATA = (function () {
     }
 
     const ev = pickEvent(s);
+    if (!ev) {
+      /* 事件池被条件筛空了（正常不该发生，gate 表留了兜底档）。
+         宁可给玩家一个安静的白天，也不要抛异常卡死。 */
+      pushLog(s, 'day', '第 ' + s.day + ' 天。今天没有别的事。');
+      s.phase = 'play';
+      return { ok: true, expired: expired, incoming: incoming };
+    }
     s.pendingEvent = ev;
     s.phase = 'event';
     pushLog(s, 'day', '第 ' + s.day + ' 天。剩余期限 ' + s.deadline + ' 天。');
     return { ok: true, event: ev, expired: expired, incoming: incoming };
   }
 
+  /* ==========================================================
+     事件抽取
+     以前就是把全部事件洗一遍按顺序发，200 条事件一条条件都没有，
+     第 1 天就可能抽到本该后期才发生的事。
+     现在分三层门控：
+     1) 硬条件：事件自带 when（复用剧情层那一套条件族）
+     2) 进度带：minDay / maxDay / minFolded / maxFolded / act
+     3) 配重：tier 越高越往后出，未标注的按轻事件处理
+     没通过条件的事件不消耗，留在池里等以后满足。
+     ========================================================== */
   let eventBag = [];
+  const evSeen = {};
+
+  /* 取这条事件的门控：优先用集中表 game/event-gates.js，没有就退回事件自带字段 */
+  function gateOf(e) {
+    if (!e) return null;
+    const T = window.EVENT_GATES;
+    if (T && T[e.id]) return T[e.id];
+    return null;
+  }
+
+  function evPass(s, e) {
+    if (!e) return false;
+    if (evSeen[e.id]) return false;
+    const g = gateOf(e) || {};
+    const ST = window.GAME_STORY;
+
+    /* 1) 硬条件：集中表的 w，或事件自带的 when。四族写法都支持 */
+    const when = g.w || e.when;
+    if (when && ST && typeof ST.condOk === 'function') {
+      if (!ST.condOk(s, when)) return false;
+    }
+
+    /* 2) 进度带：集中表优先，事件自带字段兜底 */
+    const day = s.day || 0;
+    const folded = s.folded || 0;
+    const minDay = g.d != null ? g.d : e.minDay;
+    const maxDay = g.D != null ? g.D : e.maxDay;
+    const minF = g.f != null ? g.f : e.minFolded;
+    const maxF = g.F != null ? g.F : e.maxFolded;
+    if (minDay != null && day < minDay) return false;
+    if (maxDay != null && day > maxDay) return false;
+    if (minF != null && folded < minF) return false;
+    if (maxF != null && folded > maxF) return false;
+
+    /* 3) 幕：集中表优先 */
+    const act = g.a != null ? g.a : e.act;
+    if (act != null) {
+      const a = ST && ST.actOf ? ST.actOf(folded) : null;
+      if (a && a.n !== act) return false;
+    }
+
+    /* 4) 初见：同一个人只初识一次 */
+    const who = npcIdOf(e);
+    if (who && String(e.title || '').indexOf('初见') >= 0) {
+      if (s.metNpcs && s.metNpcs[who]) return false;
+    }
+    return true;
+  }
+
+  /* 配重：早局偏爱轻事件，越往后重事件权重越高。
+     档位优先取集中表的 t，没有就用事件自带的 tier。 */
+  function evWeight(s, e) {
+    const g = gateOf(e) || {};
+    const tier = g.t != null ? g.t : (e.tier || 1);
+    const prog = Math.min(1, (s.folded || 0) / Math.max(1, C.deckGoal));
+    if (tier >= 3) return 0.12 + prog * 1.6;
+    if (tier === 2) return 0.45 + prog * 0.9;
+    return 1.25 - prog * 0.55;
+  }
+
   function pickEvent(s) {
     const all = D.EVENTS;
     if (!all.length) return null;
-    if (eventBag.length === 0) eventBag = shuffle(all.map((e, i) => i));
-    const e = all[eventBag.pop()];
+
+    /* 先找满足条件的候选 */
+    let pool = [];
+    for (let i = 0; i < all.length; i++) {
+      if (evPass(s, all[i])) pool.push(all[i]);
+    }
+    /* 全部用完（或条件太苛刻）就把已出清空，允许重开一轮 */
+    if (!pool.length) {
+      Object.keys(evSeen).forEach((k) => { delete evSeen[k]; });
+      for (let i = 0; i < all.length; i++) if (evPass(s, all[i])) pool.push(all[i]);
+    }
+    if (!pool.length) return null;
+
+    /* 按配重抽 */
+    let total = 0;
+    const w = pool.map((e) => { const x = Math.max(0.01, evWeight(s, e)); total += x; return x; });
+    let r = rngOf().next() * total;
+    let pickIdx = 0;
+    for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r <= 0) { pickIdx = i; break; } }
+    const e = pool[pickIdx];
+    evSeen[e.id] = 1;
+
     const npcId = npcIdOf(e);
     const out = {
       id: e.id, title: e.title, text: e.text, options: e.options,
@@ -7919,20 +8981,6 @@ window.GAME_DATA = (function () {
     return D.ENDINGS.find((e) => e.id === id) || D.ENDINGS[D.ENDINGS.length - 1];
   }
 
-  /* ==========================================================
-     十二、命运商店（局内直接购买，主页另有一套永久升级）
-     ========================================================== */
-  function buyShop(s, id) {
-    const it = D.SHOP.find((x) => x.id === id);
-    if (!it) return { ok: false, why: '没有这件东西。' };
-    if (s.fortune < it.cost) return { ok: false, why: '命运点数不够。' };
-    s.fortune -= it.cost;
-    const lines = [];
-    applyEffect(s, it.run, lines);
-    pushLog(s, 'info', '命运商店：' + it.name);
-    return { ok: true, lines: lines };
-  }
-
   function pushLog(s, kind, text) {
     s.log.unshift({ kind: kind, text: text, day: s.day });
     if (s.log.length > 80) s.log.pop();
@@ -7942,8 +8990,8 @@ window.GAME_DATA = (function () {
      十三、导出
      ========================================================== */
   window.GAME_ENGINE = {
-    newGame, fold, doAction, swapCard, endDay, resolveEvent, buyShop,
-    resolveStory, pickStory, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
+    newGame, fold, doAction, swapCard, endDay, resolveEvent,
+    resolveStory, pickStory, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,
@@ -9129,12 +10177,83 @@ window.GAME_DATA = (function () {
     return gained;
   }
 
-  /* ---------------- 结算 ---------------- */
+  /* ==========================================================
+     结算：按「这一局打成什么样」给命运点
+     以前只算折了几张牌，结局好坏、委托做没做、活了几天、
+     认识了谁，一律不算。现在每一项都单独计分，并留下明细，
+     终局屏可以逐条展示给玩家看。
+     ========================================================== */
+
+  /* 结局分量：越难达成的结局给得越多。
+     「被回收」「自由落体」是失败，只给一点参与分。 */
+  const ENDING_SCORE = {
+    v2_true: 40,   // 牌不再发下来
+    emperor: 30,   // 穹顶之上的名字
+    sultan: 28,    // 新的苏丹
+    hero: 26,      // 脏手的善人
+    w1: 24,        // 账本之外
+    ghost_out: 22, // 幽灵离场
+    w3: 20,        // 雨落进来
+    dog: 18,       // 忠犬归位
+    w5: 16,        // 十八块钱的葬礼
+    w4: 14,        // 第十二名
+    w6: 12,        // 穹顶照着旧样子
+    w2: 10,        // 替她签收
+    survivor: 10,  // 活着就好
+    v2_fake: 8,    // 最配合的那个人（看着赢，其实被留下）
+    v2_bad: 6,     // 我认得这张脸吗
+    purged: 3,     // 被回收
+    broken: 2,     // 三十六层高的自由落体
+  };
+
+  function scoreRun(s) {
+    const rows = [];
+    const add = (label, value, note) => {
+      if (value) rows.push({ label: label, value: value, note: note || '' });
+    };
+    const tr = s.tracks || {};
+    const win = (s.folded || 0) >= C.deckGoal;
+
+    /* 折牌：命中多少条指令。这就是原来的全部算法，现在只是明细里的一项 */
+    add('折断的指令卡', Math.max(0, s.fortune || 0), (s.folded || 0) + ' / ' + C.deckGoal + ' 张');
+
+    /* 结局：这一局最后落成什么样，是最大的一笔 */
+    const eid = s.ending ? s.ending.id : '';
+    const ev = eid ? (ENDING_SCORE[eid] != null ? ENDING_SCORE[eid] : 8) : 0;
+    add('结局', ev, s.ending ? s.ending.name : '未结束');
+
+    /* 委托：做成的算，超期和回绝要扣 */
+    const done = s.briefDone || 0, over = s.briefExpired || 0, refuse = s.briefRefused || 0;
+    add('委托交差', done * 3, done + ' 件');
+    add('委托超期', -over, over + ' 件');
+    add('委托回绝', -refuse, refuse + ' 件');
+
+    /* 存活天数：活下来本身在这座城里就算成绩 */
+    add('存活天数', Math.min(30, s.day || 0), (s.day || 0) + ' 天');
+
+    /* 关系：认识的人越多，下一局开局能拿到的牌源越多 */
+    const met = Object.keys(s.metNpcs || {}).length;
+    add('认识的人', Math.min(16, met), met + ' 人');
+
+    /* 名望四轨的总积累 */
+    const sum = (tr.loyalty || 0) + (tr.renown || 0) + (tr.sin || 0) + (tr.power || 0);
+    add('名望积累', Math.round(sum / 4),
+      '忠诚 ' + (tr.loyalty || 0) + ' · 声望 ' + (tr.renown || 0) +
+      ' · 罪痕 ' + (tr.sin || 0) + ' · 权柄 ' + (tr.power || 0));
+
+    /* 通关：十二张全折完，额外给一笔 */
+    add('折完全部十二张', win ? 12 : 0, win ? '通关' : '未完');
+
+    const total = rows.reduce((a, r) => a + r.value, 0);
+    return { rows: rows, total: Math.max(0, total), win: win };
+  }
+
   function settle(p, s) {
-    const earned = Math.max(0, s.fortune);
+    const sc = scoreRun(s);
+    const earned = sc.total;
     p.fortune += earned;
     p.runs += 1;
-    const win = s.folded >= C.deckGoal;
+    const win = sc.win;
     if (win) p.wins += 1;
     const eid = s.ending ? s.ending.id : 'none';
     p.endings[eid] = (p.endings[eid] || 0) + 1;
@@ -9146,17 +10265,19 @@ window.GAME_DATA = (function () {
       days: s.day,
       folded: s.folded,
       points: earned,
+      rows: sc.rows,
+      win: win,
       tracks: Object.assign({}, s.tracks),
     };
     if (!p.best || run.points > p.best.points) p.best = run;
     p.lastRun = run;
     save(p);
-    return { earned: earned, total: p.fortune, run: run, win: win };
+    return { earned: earned, total: p.fortune, run: run, win: win, rows: sc.rows };
   }
 
   function ownedCount(p) { return NEXUS.filter((it) => levelOf(p, it.id) > 0).length; }
 
-  window.GAME_META = { NEXUS, KEY, blank, load, save, reset, levelOf, canBuy, buy, refundAll, applyToRun, settle, ownedCount };
+  window.GAME_META = { NEXUS, KEY, blank, load, save, reset, levelOf, canBuy, buy, refundAll, applyToRun, settle, scoreRun, ENDING_SCORE, ownedCount };
 })();
 
 /* ===== game/map.js ===== */
@@ -9438,6 +10559,8 @@ window.GAME_DATA = (function () {
   const MET = window.GAME_META;
   const B = window.GAME_BRIEFS;
   const RNG = window.GAME_RNG;
+  const AU = window.GAME_AUDIO;   // 音效层，全部合成，无素材
+  const SV = window.GAME_SAVE;    // 局内存档：关掉页面还能接着玩
   const $ = (id) => document.getElementById(id);
 
   let S = null;
@@ -9454,6 +10577,21 @@ window.GAME_DATA = (function () {
     purge: ART + 'card-purge.webp',
   };
   const PORTRAIT = (id) => (id ? ART + id + '.webp' : '');
+
+  /* 城区场景图：目前只有环带维修层与后来补的几张，
+     表里没有的城区就不显示这一块。 */
+  const DISTRICT_ART = {
+    tower:    ART + 'district-tower.webp',
+    exchange: ART + 'district-exchange.webp',
+    lab:      ART + 'district-lab.webp',
+    slum:     ART + 'district-slum.webp',
+    docks:    ART + 'district-docks.webp',
+    orbit:    ART + 'district-orbit.webp',
+    ring:     ART + 'district-ring.webp',
+    memory:   ART + 'district-memory.webp',
+    salvage:  ART + 'district-salvage.webp',
+    outside:  ART + 'district-outside.webp',
+  };
 
   /* 立绘兜底：新城区角色图未生成时退回同区已有肖像，避免出现碎图 */
   const FALLBACK = {
@@ -9502,6 +10640,21 @@ window.GAME_DATA = (function () {
      主页
      ========================================================== */
   function renderHome() {
+    /* 有存档就把「继续上一局」亮出来，并写清存到哪了 */
+    const rb = $('btn-resume');
+    if (rb) {
+      let m = null;
+      try { m = SV ? SV.meta() : null; } catch (e) { m = null; }
+      if (m) {
+        const when = String(m.savedAt || '').replace('T', ' ').slice(5, 16);
+        $('resume-sub').textContent = '第 ' + m.day + ' 天 · 已折 ' + m.folded + '/12 · ' +
+          (m.origin || '') + ' · ' + when;
+        rb.hidden = false;
+      } else {
+        rb.hidden = true;
+      }
+    }
+
     $('pf-fortune').textContent = P.fortune;
     $('pf-runs').textContent = P.runs;
     $('pf-wins').textContent = P.wins;
@@ -9546,6 +10699,74 @@ window.GAME_DATA = (function () {
       else b.onclick = () => onBuy(it.id);
       wrap.appendChild(el);
     });
+  }
+
+  /* ==========================================================
+     结局图鉴
+     档案里早就统计了每个结局见过几次，只是从来没展示过。
+     见过的摊开来，没见过的只留一行编号 —— 让玩家知道还差几个。
+     ========================================================== */
+  const ENDING_HINT = {
+    v2_true: '把规则本身改掉',
+    v2_fake: '看起来赢了，其实被留下当下一副牌',
+    v2_bad: '活着出来了，但不太认得自己',
+    sultan: '权柄够高、罪痕够深、忠诚够低',
+    emperor: '权柄封顶，而手上还不算太脏',
+    hero: '声望够高，罪痕压得很低',
+    ghost_out: '罪痕几乎没有，声望也不高',
+    dog: '忠诚极高，但权柄一直上不去',
+    purged: '罪痕满值',
+    broken: '忠诚归零，或期限归零',
+    w1: '权柄与声望双高，罪痕极低',
+    w2: '权柄中上、罪痕不浅、声望平平',
+    w3: '忠诚跌破底线，罪痕已经攒起来了',
+    w4: '罪痕很高，忠诚很低，但牌折完了',
+    w5: '通关时身上没剩几个钱，声望却不低',
+    w6: '四轨全落在中段，哪一边都不站',
+    survivor: '十二张折完，仅此而已',
+  };
+  const ENDING_KIND = {
+    v2_true: '真好', v2_fake: '假好', v2_bad: '坏',
+    purged: '失败', broken: '失败',
+  };
+
+  function renderCompendium() {
+    const P2 = P || {};
+    const seen = P2.endings || {};
+    const got = Object.keys(seen).length;
+    $('cp-count').textContent = got;
+
+    const wrap = $('cp-list');
+    wrap.innerHTML = '';
+    D.ENDINGS.slice().sort((a, b) => (b.priority || 0) - (a.priority || 0)).forEach((e) => {
+      const n = seen[e.id] || 0;
+      const kind = ENDING_KIND[e.id] || '';
+      const el = document.createElement('div');
+      el.className = 'cp-card' + (n ? '' : ' locked') + (kind ? ' k-' + kind : '');
+      if (n) {
+        el.innerHTML =
+          '<div class="cp-top">' +
+            (kind ? '<span class="cp-kind t-' + kind + '">' + kind + '</span>' : '') +
+            '<b class="cp-name">' + esc(e.name) + '</b>' +
+            (n > 1 ? '<span class="cp-times">×' + n + '</span>' : '<span class="cp-times new">首次</span>') +
+          '</div>' +
+          '<p class="cp-text">' + esc(e.text) + '</p>' +
+          ((window.AFTERSTORY || {})[e.id]
+            ? '<div class="cp-after"><span>后来</span>' + esc(window.AFTERSTORY[e.id]) + '</div>' : '') +
+          '<div class="cp-hint">' + esc(ENDING_HINT[e.id] || '') + '</div>';
+      } else {
+        el.innerHTML =
+          '<div class="cp-top"><b class="cp-name">未知结局</b></div>' +
+          '<div class="cp-lock">◆</div>' +
+          '<div class="cp-hint">' + esc(ENDING_HINT[e.id] || '还没见过这一种') + '</div>';
+      }
+      wrap.appendChild(el);
+    });
+  }
+
+  function openCompendium() {
+    renderCompendium();
+    show('screen-compendium');
   }
 
   function onBuy(id) {
@@ -9614,6 +10835,7 @@ window.GAME_DATA = (function () {
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
     if (gained.length) hint('本局已生效：' + gained.join('、'), 4200);
+    autosave();
     // 开局先来一条委托，让新系统立刻可见
     if (B && !S.briefs.length) { B.spawn(S); renderAll(); }
     setTimeout(() => hint('种子 ' + S.seedLabel + ' · 遇到新的委托点顶部 ◈', 4200), 1400);
@@ -9622,10 +10844,29 @@ window.GAME_DATA = (function () {
   }
 
   function quitToHome() {
-    if (S && !S.ending && !confirm('回到主页？这一局尚未结束，进度会丢失（已获得的命运点不会）。')) return;
+    if (S && !S.ending && !confirm('回到主页？进度已自动保存，下次可以接着玩。')) return;
     S = null;
     show('screen-home');
     renderHome();
+  }
+
+  /* 接着上一局：把状态原样读回来，重建本该由 start() 做的那些接线 */
+  function resumeRun() {
+    let back = null;
+    try { back = SV ? SV.load() : null; } catch (e) { back = null; }
+    if (!back) { toast('没有可继续的牌局', '存档读不出来，可能已过期或损坏。开一局新的吧。'); return; }
+    S = back;
+    selectedUid = null;
+    settled = null;
+    lastHandCount = null;
+    show('screen-game');
+    M.buildNodes($('map-grid'), onNodeClick);
+    M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
+    renderAll();
+    /* 存下来的时候可能正停在一个待处理的事件或剧情上 */
+    if (S.pendingStory) { setTimeout(() => queueStory(S.pendingStory), 260); }
+    else if (S.pendingEvent) { setTimeout(() => showEvent(S.pendingEvent), 260); }
+    else { setTimeout(() => hint('接着第 ' + S.day + ' 天 · 已折 ' + S.folded + '/12', 4200), 500); }
   }
 
   /* ==========================================================
@@ -9768,6 +11009,13 @@ window.GAME_DATA = (function () {
     wrap.querySelectorAll('[data-swap]').forEach((b) => {
       b.onclick = (e) => { e.stopPropagation(); onSwap(b.getAttribute('data-swap')); };
     });
+    /* 发牌音：手牌张数变了才响，不然每次刷新都在响 */
+    if (lastHandCount !== null && S.hand.length > lastHandCount) {
+      for (let i = 0; i < Math.min(3, S.hand.length - lastHandCount); i++) {
+        setTimeout(() => sfx('deal'), i * 90);
+      }
+    }
+    lastHandCount = S.hand.length;
   }
 
   function renderActions() {
@@ -9837,6 +11085,7 @@ window.GAME_DATA = (function () {
 
   /* ---------- 对话屏 ---------- */
   let talkNpc = null;
+  let lastHandCount = null;   // 用来判断手牌是不是刚变多
 
   function openTalk(npcId) {
     talkNpc = npcId;
@@ -9997,6 +11246,20 @@ window.GAME_DATA = (function () {
     $('dt-title').textContent = info.district.name;
     $('dt-desc').textContent = info.district.desc || '';
 
+    /* 城区场景图：有的城区才有，没有就整块不显示，不留空框 */
+    const sc = $('dt-scene');
+    if (sc) {
+      const art = DISTRICT_ART[distId];
+      if (art) {
+        sc.innerHTML = '<img src="' + art + '" alt="" loading="lazy" ' +
+          'onerror="this.parentNode.hidden=true;">';
+        sc.hidden = false;
+      } else {
+        sc.hidden = true;
+        sc.innerHTML = '';
+      }
+    }
+
     // 委托
     const bh = $('dt-brief-head'), bw = $('dt-briefs');
     if (info.briefs.length) {
@@ -10065,6 +11328,8 @@ window.GAME_DATA = (function () {
     M.setSelected(null);
     $('chk-boost').checked = false;
     $('chip-range').value = '0';
+    if (r.pass) sfx(r.crit ? 'crit' : 'foldOk');
+    else sfx(r.fumble ? 'fumble' : 'foldFail');
     const title = r.pass ? (r.crit ? '暴击 · 指令达成' : '指令达成') : (r.fumble ? '崩盘 · 指令失败' : '指令失败');
     const delay = node ? 420 : 0;
     if (delay) setTimeout(() => { showResult(title, r.lines, r.pass); afterAction(); }, delay);
@@ -10127,7 +11392,19 @@ window.GAME_DATA = (function () {
 
   function afterAction() {
     renderAll();
-    if (S.phase === 'end' && S.ending) showEnd();
+    if (S.phase === 'end' && S.ending) {
+      /* 收场了就清掉存档，免得下次进来「继续」到一个已结束的局 */
+      try { if (SV) SV.clear(); } catch (e) {}
+      showEnd();
+      return;
+    }
+    autosave();
+  }
+
+  /* 自动存档：每一次会改变状态的动作之后都写一遍。
+     失败不提示 —— 玩家不需要知道隐私模式下的存储限制。 */
+  function autosave() {
+    try { if (SV && S) SV.save(S); } catch (e) { /* 静默 */ }
   }
 
   /* ==========================================================
@@ -10475,6 +11752,25 @@ window.GAME_DATA = (function () {
 
     $('end-points').textContent = '+' + settled.earned;
     $('end-total').textContent = settled.total;
+
+    /* 结算明细：这一局每项表现各换了多少命运点，逐条摊开。
+       以前只有一个总数，玩家不知道钱是怎么来的。 */
+    const rows = settled.rows || (settled.run && settled.run.rows) || [];
+    const rb = $('end-breakdown');
+    if (rb) {
+      if (rows.length) {
+        rb.innerHTML = rows.map((r) => {
+          const cls = r.value < 0 ? 'neg' : '';
+          return '<div class="eb-row ' + cls + '">' +
+            '<span class="eb-l">' + esc(r.label) + '</span>' +
+            '<span class="eb-n">' + esc(r.note || '') + '</span>' +
+            '<b class="eb-v">' + (r.value > 0 ? '+' : '') + r.value + '</b>' +
+          '</div>';
+        }).join('') + '<div class="eb-row eb-sum"><span class="eb-l">合计</span>' +
+          '<span class="eb-n"></span><b class="eb-v">+' + settled.earned + '</b></div>';
+        rb.hidden = false;
+      } else { rb.hidden = true; rb.innerHTML = ''; }
+    }
     show('screen-end');
   }
 
@@ -10498,11 +11794,107 @@ window.GAME_DATA = (function () {
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   }
 
+  /* 音效：浏览器要求 AudioContext 在用户手势之后才能启动，
+     所以第一次点任意按钮时顺手 init 一次，之后一路可用。
+     拿不到就静默 —— 音效永远不该影响能不能玩。 */
+  function sfx(name) {
+    try { if (AU) AU.play(name); } catch (e) { /* 静默 */ }
+  }
+  function armAudio() {
+    try { if (AU && !AU.ready()) AU.init(); } catch (e) { /* 静默 */ }
+  }
+  document.addEventListener('pointerdown', armAudio, { once: true });
+  document.addEventListener('keydown', armAudio, { once: true });
+
   /* ==========================================================
      绑定
      ========================================================== */
   $('btn-play').onclick = gotoOrigin;
+  $('btn-resume').onclick = resumeRun;
   $('btn-howto').onclick = () => show('screen-howto');
+  $('btn-compendium').onclick = openCompendium;
+
+  /* 音效开关：状态写进 localStorage，刷新后保持 */
+  function renderAudioBtn() {
+    const b = $('btn-audio');
+    if (!b) return;
+    const on = AU ? AU.enabled() : false;
+    b.classList.toggle('off', !on);
+    b.textContent = on ? '♪ 音效' : '♪ 已关';
+  }
+  $('btn-audio').onclick = () => {
+    armAudio();
+    if (AU) AU.toggle();
+    renderAudioBtn();
+    if (AU && AU.enabled()) sfx('gain');
+  };
+  renderAudioBtn();
+
+  /* ==========================================================
+     键盘
+     桌面端全靠鼠标太慢。只绑最常用的几个，不抢输入框的键。
+     ========================================================== */
+  function typing(e) {
+    const t = e.target;
+    if (!t) return false;
+    const tag = (t.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || t.isContentEditable;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (typing(e)) return;
+    const gameOn = document.getElementById('screen-game').classList.contains('active');
+    const storyOn = !document.getElementById('story-layer').hidden;
+
+    /* Esc：先关剧情层，再关抽屉，最后取消选中 */
+    if (e.key === 'Escape') {
+      if (storyOn) { return; }             // 剧情层必须选完，不给 Esc 逃
+      if ($('drawer').classList.contains('on')) { openDrawer(null); return; }
+      if (selectedUid) { selectedUid = null; M.setSelected(null); renderHand(); }
+      return;
+    }
+
+    if (!gameOn || storyOn || !S || S.phase === 'end') return;
+
+    /* 1-9 选牌 */
+    if (/^[1-9]$/.test(e.key)) {
+      const i = parseInt(e.key, 10) - 1;
+      if (S.hand[i]) {
+        selectedUid = S.hand[i].uid;
+        M.setSelected(selectedUid);
+        renderHand();
+        sfx('hover');
+      }
+      return;
+    }
+
+    /* Enter：把选中的牌投出去 */
+    if (e.key === 'Enter' && selectedUid) {
+      const c = S.hand.find((x) => x.uid === selectedUid);
+      const t = c ? E.assetOf(c.target) : null;
+      if (t && t.district) onDrop(selectedUid, t.district, false);
+      else toast('牌上没有目标', '这张牌暂时没有可投放的地点。');
+      return;
+    }
+
+    /* 空格：结束这一天 */
+    if (e.key === ' ' || e.code === 'Space') {
+      e.preventDefault();
+      onEndDay();
+      return;
+    }
+
+    /* 面板快捷键 */
+    const map = { a: 'actions', t: 'tracks', p: 'people', l: 'log' };
+    const k = String(e.key).toLowerCase();
+    if (map[k]) {
+      const cur = $('drawer').classList.contains('on') ? document.querySelector('.rail-btn.on') : null;
+      const want = document.querySelector('.rail-btn[data-panel="' + map[k] + '"]');
+      if (cur && cur === want) openDrawer(null);
+      else if (want) openDrawer(map[k]);
+    }
+  });
+  $('cp-back').onclick = () => { show('screen-home'); renderHome(); };
   $('howto-close').onclick = () => show('screen-home');
   $('btn-nexus').onclick = () => { renderNexus(); show('screen-nexus'); };
   $('nx-back').onclick = () => { show('screen-home'); renderHome(); };

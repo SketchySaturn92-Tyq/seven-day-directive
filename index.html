@@ -42,9 +42,12 @@
       </div>
 
       <div class="home-actions">
+        <button id="btn-resume" class="btn btn-gold btn-lg" hidden>继续上一局<span id="resume-sub" class="resume-sub"></span></button>
         <button id="btn-play" class="btn btn-primary btn-lg">开始新的牌局</button>
         <button id="btn-howto" class="btn">怎么玩</button>
         <button id="btn-nexus" class="btn btn-gold">命运商店<i id="nexus-dot" class="dot" hidden></i></button>
+        <button id="btn-compendium" class="btn">结局图鉴</button>
+        <button id="btn-audio" class="btn btn-ghost" title="音效开关">♪ 音效</button>
       </div>
 
       <div class="seed-row">
@@ -89,6 +92,27 @@
       <div class="row">
         <button id="nx-back" class="btn btn-ghost">返回</button>
         <button id="nx-refund" class="btn btn-ghost btn-sm">全部重置并退还点数</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 结局图鉴 ============ -->
+  <section id="screen-compendium" class="screen">
+    <img class="title-bg" src="assets/map-city.webp" alt="">
+    <div class="title-scrim"></div>
+    <div class="nexus-scroll">
+      <header class="nexus-head">
+        <div>
+          <h2>结局图鉴</h2>
+          <p class="muted">你在这座穹顶里落到过的每一种下场。没见过的只留编号。</p>
+        </div>
+        <div class="nexus-fortune">
+          <i>✦</i><b id="cp-count">0</b><span>/ 17 已见</span>
+        </div>
+      </header>
+      <div id="cp-list" class="cp-list"></div>
+      <div class="row">
+        <button id="cp-back" class="btn btn-ghost">返回主页</button>
       </div>
     </div>
   </section>
@@ -199,6 +223,7 @@
   <!-- ============ 城区详情 ============ -->
   <section id="screen-district" class="screen overlay">
     <div class="modal">
+      <div id="dt-scene" class="dt-scene" hidden></div>
       <div class="modal-tag" id="dt-tag">城区</div>
       <h2 id="dt-title">——</h2>
       <p id="dt-desc" class="muted">——</p>
@@ -310,6 +335,7 @@
         <p id="end-after-text"></p>
       </div>
       <div id="end-summary" class="chips"></div>
+      <div id="end-breakdown" class="end-breakdown" hidden></div>
       <div class="end-reward">
         <div class="er-row"><span>本局命运点</span><b id="end-points">+0</b></div>
         <div class="er-row"><span>可用命运点</span><b id="end-total">0</b></div>
@@ -340,6 +366,14 @@
         <li><b>遇见人。</b>开局你会陆续遇到十二个名字，每次初见都交代他是谁、你们怎么认识的。他们在「认识」抽屉里。</li>
         <li><b>通关后带走命运点。</b>回到命运商店买永久强化，下一局开局就生效。</li>
       </ol>
+      <h2>键盘</h2>
+      <ul class="howto-list">
+        <li><b>1 - 9</b>　选中第几张手牌。</li>
+        <li><b>Enter</b>　把选中的牌投放到它的目标城区。</li>
+        <li><b>空格</b>　结束这一天。</li>
+        <li><b>A / T / P / L</b>　打开行动 / 名望 / 认识 / 记录面板。</li>
+        <li><b>Esc</b>　取消选中，或关掉当前面板。</li>
+      </ul>
       <div class="row"><button id="howto-close" class="btn btn-primary">明白了</button></div>
     </div>
   </section>

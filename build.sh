@@ -24,9 +24,12 @@ ORDER=(
   game/voice-b.js
   game/lore.js
   game/card-sources.js
+  game/event-gates.js
   game/events-v6.js
   game/afterstory.js
   # 3) 随机数层
+  game/audio.js
+  game/save.js
   game/rng.js
   # 4) 引擎（会合并上面的数据）
   game/engine.js
