@@ -1,5 +1,5 @@
 /* 自动生成，请勿直接编辑。改 game/ 下的源码后运行 ./build.sh */
-/* 生成时间: 2026-09-30T06:00:02Z */
+/* 生成时间: 2026-09-30T08:20:29Z */
 
 /* ===== game/data.js ===== */
 /* ==========================================================
@@ -22,18 +22,22 @@ window.GAME_DATA = (function () {
 
 
   /* ---------------- 城区（地图舞台） ---------------- */
+  /* 城区分五段开放。
+     一开局只给高塔商业区 —— 一张空地图上只有一个点，
+     玩家没有「我该去哪」这个问题；等到他办完第一件事，
+     再一层层把地图放开。stage 字段就是它属于第几段。 */
   const DISTRICTS = [
-    { id: 'tower',    name: '高塔商业区', en: 'TOWER',    x: 0.455, y: 0.2, color: '#7aa2f7', portrait: 'portrait-monitor',
+    { id: 'tower', stage: 1,    name: '高塔商业区', en: 'TOWER',    x: 0.455, y: 0.2, color: '#7aa2f7', portrait: 'portrait-monitor',
       desc: '董事会在最高的那层。电梯要刷三次权限，所有人都在笑。' },
-    { id: 'exchange', name: '交易所广场', en: 'EXCHANGE', x: 0.66, y: 0.34, color: '#e0b44a', portrait: 'portrait-scientist',
+    { id: 'exchange', stage: 2, name: '交易所广场', en: 'EXCHANGE', x: 0.66, y: 0.34, color: '#e0b44a', portrait: 'portrait-scientist',
       desc: '穹顶集团的心脏。所有资本在这里换成信仰，再换成别人的命。' },
-    { id: 'lab',      name: '研究所园区', en: 'LAB',      x: 0.855, y: 0.145, color: '#4ad0c8', portrait: 'portrait-scientist',
+    { id: 'lab', stage: 3,      name: '研究所园区', en: 'LAB',      x: 0.855, y: 0.145, color: '#4ad0c8', portrait: 'portrait-scientist',
       desc: '在造一件没人敢签收的东西。走廊全程静音。' },
-    { id: 'slum',     name: '下层居住区', en: 'SLUM',     x: 0.4, y: 0.56, color: '#c86bd8', portrait: 'portrait-fixer',
+    { id: 'slum', stage: 2,     name: '下层居住区', en: 'SLUM',     x: 0.4, y: 0.56, color: '#c86bd8', portrait: 'portrait-fixer',
       desc: '酸性雨落在这里会变成泥。所有的线人都住在这儿。' },
-    { id: 'docks',    name: '工业港区',   en: 'DOCKS',    x: 0.72, y: 0.64, color: '#e0554a', portrait: 'portrait-enforcer',
+    { id: 'docks', stage: 3,    name: '工业港区',   en: 'DOCKS',    x: 0.72, y: 0.64, color: '#e0554a', portrait: 'portrait-enforcer',
       desc: '合法外壳，非法内脏。凌晨三点最热闹。' },
-    { id: 'orbit',    name: '轨道港',     en: 'ORBIT',    x: 0.905, y: 0.47, color: '#9fb0c4', portrait: 'portrait-witch',
+    { id: 'orbit', stage: 4,    name: '轨道港',     en: 'ORBIT',    x: 0.905, y: 0.47, color: '#9fb0c4', portrait: 'portrait-witch',
       desc: '离开这颗星球只有一条路，而路是别人的。' },
   ];
 
@@ -748,19 +752,19 @@ window.GAME_DATA = (function () {
   /* ---------------- 新增城区（六区 -> 十区） ---------------- */
   window.DISTRICTS_EXTRA = [
     {
-      id: 'ring', name: '环带维修层', en: 'RING', x: 0.105, y: 0.12, color: '#98a2ad', portrait: 'portrait-peng',
+      id: 'ring', stage: 4, name: '环带维修层', en: 'RING', x: 0.105, y: 0.12, color: '#98a2ad', portrait: 'portrait-peng',
       desc: '穹顶内侧的夹层，管壁一直在响。照明坏了一半没人换，剩下的把影子拉得很长。空气是铁锈和绝缘漆的味道。',
     },
     {
-      id: 'memory', name: '记忆银行', en: 'MEMORY', x: 0.935, y: 0.29, color: '#86b6cf', portrait: 'portrait-dai',
+      id: 'memory', stage: 5, name: '记忆银行', en: 'MEMORY', x: 0.935, y: 0.29, color: '#86b6cf', portrait: 'portrait-dai',
       desc: '恒温负十八度，走廊只有制冷机的低鸣。柜台后面存着几十万份人格备份，每一份都比你值钱。光很冷，是蓝色的。',
     },
     {
-      id: 'salvage', name: '回收场', en: 'SALVAGE', x: 0.43, y: 0.88, color: '#c9763c', portrait: 'portrait-fixer',
+      id: 'salvage', stage: 4, name: '回收场', en: 'SALVAGE', x: 0.43, y: 0.88, color: '#c9763c', portrait: 'portrait-fixer',
       desc: '义体、旧枪、报废终端在这里被拆成零件，再按斤卖回去。白天空地冒烟，夜里有人翻找还温的货。味道是焦塑料。',
     },
     {
-      id: 'outside', name: '穹顶之外', en: 'OUTSIDE', x: 0.91, y: 0.91, color: '#7ea86b', portrait: 'portrait-yuke',
+      id: 'outside', stage: 5, name: '穹顶之外', en: 'OUTSIDE', x: 0.91, y: 0.91, color: '#7ea86b', portrait: 'portrait-yuke',
       desc: '接缝外侧，官方不允许任何人走的非法口子——轨道港那条路要票要号，这里只要肯淋雨。酸雨斜着落下来，把一切泡成绿色，站够十分钟衣服就发痒。远处有灯，那不是城。',
     },
   ];
@@ -9272,6 +9276,30 @@ window.GAME_DATA = (function () {
     return !!(s && s.approved && s.approved[npcId]);
   }
 
+  /* ---------------- 段位 ----------------
+     一局分五段，每段放一批城区和一批人出来。
+     以前一开局就把十城十六人全摊在桌上，玩家没有「我该去哪」这个问题。
+     段位只看折了几张牌，规则简单到不用解释。 */
+  const STAGE_AT = [0, 1, 3, 5, 8];   // 进第 N 段需要的折牌数
+
+  function stageOf(s) {
+    const f = (s && s.folded) || 0;
+    let n = 1;
+    for (let i = 0; i < STAGE_AT.length; i++) if (f >= STAGE_AT[i]) n = i + 1;
+    return n;
+  }
+
+  /* 这个城区开放了吗 */
+  function districtOpen(s, distId) {
+    const d = (D.DISTRICTS || []).find((x) => x.id === distId);
+    if (!d) return false;
+    return (d.stage || 1) <= stageOf(s);
+  }
+
+  function openDistricts(s) {
+    return (D.DISTRICTS || []).filter((d) => (d.stage || 1) <= stageOf(s));
+  }
+
   /* ---------------- 申领：保底牌源 ----------------
      折不动牌的时候，还能走一趟流程再要一张。
      代价是 2 点行动，等于放弃当天的一半行动力。
@@ -9385,10 +9413,16 @@ window.GAME_DATA = (function () {
     return x ? x.name : k;
   };
 
+  /* 选目标只从「已经开放的城区」里挑。
+     不然分段开放之后会出现这种情况：开局给你一张牌，
+     目标在第八张才开放的穹顶之外 —— 玩家手上拿着牌，却哪儿都投不了。 */
   function pickTarget(s, card) {
     const path = pathOf(card.pathId);
-    let pool = D.ASSETS.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
-    if (!pool.length) pool = D.ASSETS.filter((a) => a.level === card.tier);
+    const avail = D.ASSETS.filter((a) => districtOpen(s, a.district));
+    const base = avail.length ? avail : D.ASSETS;
+    let pool = base.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
+    if (!pool.length) pool = base.filter((a) => a.level === card.tier);
+    if (!pool.length) pool = base;
     if (!pool.length) return null;
     return pick(pool).id;
   }
@@ -9686,6 +9720,7 @@ window.GAME_DATA = (function () {
   /* ==========================================================
      九、换牌
      ========================================================== */
+  /* 换牌：重新挑一个目标。挑之前把「目标在未开放城区」的旧目标也一起换掉。 */
   function swapCard(s, uid) {
     const idx = s.hand.findIndex((c) => c.uid === uid);
     if (idx < 0) return { ok: false, why: '牌不在手里。' };
@@ -10073,7 +10108,8 @@ window.GAME_DATA = (function () {
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent,
-    resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
+    resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent,
+    stageOf, districtOpen, openDistricts, STAGE_AT, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,
@@ -10573,8 +10609,10 @@ window.GAME_DATA = (function () {
       title: e.title,
       text: e.text,
       options: e.options,
-      // 第 1 天出两条，之后每天两条，最多排到第 8 天
-      minDay: Math.min(8, 1 + Math.floor(i / 2)),
+      /* 认识人也是分段的：一开局只放两个人出来。
+         以前是按天数每天两条，最多排到第八天 —— 结果玩家前三天就认识一半人，
+         记不住谁是谁。现在跟城区用同一套段位：折得越多，认识的人越多。 */
+      meetStage: Math.min(5, 1 + Math.floor(i / 3)),
       order: i,
     }));
   }
@@ -10597,9 +10635,10 @@ window.GAME_DATA = (function () {
     }
 
     // 2) 初见：到日子就出，保证玩家前八天认识足够多的人
+    const stage = E.stageOf ? E.stageOf(S) : 5;
     const meets = meetScenes()
       .filter((sc) => !fired(S, sc.id))
-      .filter((sc) => S.day >= sc.minDay)
+      .filter((sc) => (sc.meetStage || 1) <= stage)
       .filter((sc) => {
         // 已经认识的人不再重复初见
         const e = D.EVENTS.find((x) => x.id === sc.eventId);
@@ -11446,6 +11485,9 @@ window.GAME_DATA = (function () {
       const pos = placeOf(d, remap);
       const el = document.createElement('button');
       el.className = 'node';
+      /* 还没开放的城区先不画上去。一张只有一个点的地图，
+         比一张十个点但九个不能用的地图好懂。 */
+      el.dataset.stage = d.stage || 1;
       el.dataset.district = d.id;
       el.style.left = (pos.x * 100).toFixed(2) + '%';
       el.style.top = (pos.y * 100).toFixed(2) + '%';
@@ -11467,9 +11509,22 @@ window.GAME_DATA = (function () {
     if (!host || !S) return;
     const briefMap = window.GAME_BRIEFS ? window.GAME_BRIEFS.byDistrict(S) : {};
 
+    const stage = E.stageOf ? E.stageOf(S) : 5;
     D.DISTRICTS.forEach((d) => {
       const el = host.querySelector('.node[data-district="' + d.id + '"]');
       if (!el) return;
+      /* 到段位才露出来。刚开的那一批给一个短动画，让玩家看见地图长大了。 */
+      const open = (d.stage || 1) <= stage;
+      const wasHidden = el.classList.contains('locked');
+      el.classList.toggle('locked', !open);
+      if (open && wasHidden) {
+        el.classList.add('just-open');
+        setTimeout(() => el.classList.remove('just-open'), 1600);
+      }
+      if (!open) {
+        el.querySelector('.node-meta').innerHTML = '';
+        return;
+      }
 
       const cards = S.hand.filter((c) => districtOfAsset(c.target) === d.id);
       const foldable = cards.filter((c) => E.canFold(S, c).ok);
@@ -12049,10 +12104,12 @@ window.GAME_DATA = (function () {
     const gained = MET.applyToRun(S, P);
     selectedUid = null;
     settled = null;
+    lastStage = null;          // 新的一局重新数段位
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
+    M.syncNodes(S);            // 一开局就要把没开放的城区藏起来
     if (gained.length) hint('本局已生效：' + gained.join('、'), 4200);
     autosave();
     // 开局先来一条委托，让新系统立刻可见
@@ -12078,10 +12135,12 @@ window.GAME_DATA = (function () {
     selectedUid = null;
     settled = null;
     lastHandCount = null;
+    lastStage = null;
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
+    M.syncNodes(S);
     /* 存下来的时候可能正停在一个待处理的事件或剧情上 */
     if (S.pendingStory) { setTimeout(() => queueStory(S.pendingStory), 260); }
     else if (S.pendingEvent) { setTimeout(() => showEvent(S.pendingEvent), 260); }
@@ -12667,9 +12726,27 @@ window.GAME_DATA = (function () {
 
   let pendingEvent = null;
 
+  /* 段位推进：地图和人物是分五段放开的。
+     刚进新段时告诉玩家这一批多了什么，不然他不会注意到地图长大了。 */
+  let lastStage = null;
+  function noticeStage() {
+    if (!S || !E.stageOf) return;
+    const now = E.stageOf(S);
+    if (lastStage === null) { lastStage = now; return; }
+    if (now <= lastStage) { lastStage = now; return; }
+    lastStage = now;
+    const open = E.openDistricts ? E.openDistricts(S) : [];
+    const names = open.map((d) => d.name);
+    const fresh = names.slice(-4);
+    hint('第 ' + now + ' 段 · 地图又放开一块：' + fresh.join('、'), 6000);
+    sfx('draw');
+    M.syncNodes(S);
+  }
+
   function afterAction() {
     /* 折完第一张之后补讲制度来历 —— 这时候他才看得懂 */
     if (S && S.folded > 0) maybeIntro('firstFold');
+    noticeStage();
     renderAll();
     if (S.phase === 'end' && S.ending) {
       /* 收场了就清掉存档，免得下次进来「继续」到一个已结束的局 */

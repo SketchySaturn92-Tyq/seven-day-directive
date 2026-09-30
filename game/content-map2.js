@@ -5,19 +5,19 @@
   /* ---------------- 新增城区（六区 -> 十区） ---------------- */
   window.DISTRICTS_EXTRA = [
     {
-      id: 'ring', name: '环带维修层', en: 'RING', x: 0.105, y: 0.12, color: '#98a2ad', portrait: 'portrait-peng',
+      id: 'ring', stage: 4, name: '环带维修层', en: 'RING', x: 0.105, y: 0.12, color: '#98a2ad', portrait: 'portrait-peng',
       desc: '穹顶内侧的夹层，管壁一直在响。照明坏了一半没人换，剩下的把影子拉得很长。空气是铁锈和绝缘漆的味道。',
     },
     {
-      id: 'memory', name: '记忆银行', en: 'MEMORY', x: 0.935, y: 0.29, color: '#86b6cf', portrait: 'portrait-dai',
+      id: 'memory', stage: 5, name: '记忆银行', en: 'MEMORY', x: 0.935, y: 0.29, color: '#86b6cf', portrait: 'portrait-dai',
       desc: '恒温负十八度，走廊只有制冷机的低鸣。柜台后面存着几十万份人格备份，每一份都比你值钱。光很冷，是蓝色的。',
     },
     {
-      id: 'salvage', name: '回收场', en: 'SALVAGE', x: 0.43, y: 0.88, color: '#c9763c', portrait: 'portrait-fixer',
+      id: 'salvage', stage: 4, name: '回收场', en: 'SALVAGE', x: 0.43, y: 0.88, color: '#c9763c', portrait: 'portrait-fixer',
       desc: '义体、旧枪、报废终端在这里被拆成零件，再按斤卖回去。白天空地冒烟，夜里有人翻找还温的货。味道是焦塑料。',
     },
     {
-      id: 'outside', name: '穹顶之外', en: 'OUTSIDE', x: 0.91, y: 0.91, color: '#7ea86b', portrait: 'portrait-yuke',
+      id: 'outside', stage: 5, name: '穹顶之外', en: 'OUTSIDE', x: 0.91, y: 0.91, color: '#7ea86b', portrait: 'portrait-yuke',
       desc: '接缝外侧，官方不允许任何人走的非法口子——轨道港那条路要票要号，这里只要肯淋雨。酸雨斜着落下来，把一切泡成绿色，站够十分钟衣服就发痒。远处有灯，那不是城。',
     },
   ];

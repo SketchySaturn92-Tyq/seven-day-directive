@@ -57,6 +57,9 @@
       const pos = placeOf(d, remap);
       const el = document.createElement('button');
       el.className = 'node';
+      /* 还没开放的城区先不画上去。一张只有一个点的地图，
+         比一张十个点但九个不能用的地图好懂。 */
+      el.dataset.stage = d.stage || 1;
       el.dataset.district = d.id;
       el.style.left = (pos.x * 100).toFixed(2) + '%';
       el.style.top = (pos.y * 100).toFixed(2) + '%';
@@ -78,9 +81,22 @@
     if (!host || !S) return;
     const briefMap = window.GAME_BRIEFS ? window.GAME_BRIEFS.byDistrict(S) : {};
 
+    const stage = E.stageOf ? E.stageOf(S) : 5;
     D.DISTRICTS.forEach((d) => {
       const el = host.querySelector('.node[data-district="' + d.id + '"]');
       if (!el) return;
+      /* 到段位才露出来。刚开的那一批给一个短动画，让玩家看见地图长大了。 */
+      const open = (d.stage || 1) <= stage;
+      const wasHidden = el.classList.contains('locked');
+      el.classList.toggle('locked', !open);
+      if (open && wasHidden) {
+        el.classList.add('just-open');
+        setTimeout(() => el.classList.remove('just-open'), 1600);
+      }
+      if (!open) {
+        el.querySelector('.node-meta').innerHTML = '';
+        return;
+      }
 
       const cards = S.hand.filter((c) => districtOfAsset(c.target) === d.id);
       const foldable = cards.filter((c) => E.canFold(S, c).ok);

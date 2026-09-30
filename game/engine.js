@@ -293,6 +293,30 @@
     return !!(s && s.approved && s.approved[npcId]);
   }
 
+  /* ---------------- 段位 ----------------
+     一局分五段，每段放一批城区和一批人出来。
+     以前一开局就把十城十六人全摊在桌上，玩家没有「我该去哪」这个问题。
+     段位只看折了几张牌，规则简单到不用解释。 */
+  const STAGE_AT = [0, 1, 3, 5, 8];   // 进第 N 段需要的折牌数
+
+  function stageOf(s) {
+    const f = (s && s.folded) || 0;
+    let n = 1;
+    for (let i = 0; i < STAGE_AT.length; i++) if (f >= STAGE_AT[i]) n = i + 1;
+    return n;
+  }
+
+  /* 这个城区开放了吗 */
+  function districtOpen(s, distId) {
+    const d = (D.DISTRICTS || []).find((x) => x.id === distId);
+    if (!d) return false;
+    return (d.stage || 1) <= stageOf(s);
+  }
+
+  function openDistricts(s) {
+    return (D.DISTRICTS || []).filter((d) => (d.stage || 1) <= stageOf(s));
+  }
+
   /* ---------------- 申领：保底牌源 ----------------
      折不动牌的时候，还能走一趟流程再要一张。
      代价是 2 点行动，等于放弃当天的一半行动力。
@@ -406,10 +430,16 @@
     return x ? x.name : k;
   };
 
+  /* 选目标只从「已经开放的城区」里挑。
+     不然分段开放之后会出现这种情况：开局给你一张牌，
+     目标在第八张才开放的穹顶之外 —— 玩家手上拿着牌，却哪儿都投不了。 */
   function pickTarget(s, card) {
     const path = pathOf(card.pathId);
-    let pool = D.ASSETS.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
-    if (!pool.length) pool = D.ASSETS.filter((a) => a.level === card.tier);
+    const avail = D.ASSETS.filter((a) => districtOpen(s, a.district));
+    const base = avail.length ? avail : D.ASSETS;
+    let pool = base.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
+    if (!pool.length) pool = base.filter((a) => a.level === card.tier);
+    if (!pool.length) pool = base;
     if (!pool.length) return null;
     return pick(pool).id;
   }
@@ -707,6 +737,7 @@
   /* ==========================================================
      九、换牌
      ========================================================== */
+  /* 换牌：重新挑一个目标。挑之前把「目标在未开放城区」的旧目标也一起换掉。 */
   function swapCard(s, uid) {
     const idx = s.hand.findIndex((c) => c.uid === uid);
     if (idx < 0) return { ok: false, why: '牌不在手里。' };
@@ -1094,7 +1125,8 @@
      ========================================================== */
   window.GAME_ENGINE = {
     newGame, fold, doAction, swapCard, endDay, resolveEvent,
-    resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
+    resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent,
+    stageOf, districtOpen, openDistricts, STAGE_AT, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
     checkDC, successRate, canFold, trackLine, checkEnd,
     boostCost, statName, trackName,

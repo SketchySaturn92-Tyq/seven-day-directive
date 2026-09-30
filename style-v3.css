@@ -1078,3 +1078,49 @@
 }
 .person .appr.yes{color:#04211f;background:var(--ok)}
 .person .appr.no{color:var(--ink3);border:1px solid var(--line2)}
+
+/* ==========================================================
+   分段开放：还没到的城区不显示
+   一开局只有高塔商业区一个点。地图是一层层长出来的，
+   不是一开始摊十个点让玩家自己找。
+   ========================================================== */
+.node.locked{
+  display:none;
+}
+/* 刚开放的那一批：冒一下，让玩家看见地图长大了 */
+.node.just-open .node-ring{
+  animation:nodeOpen 1.6s cubic-bezier(.22,1.2,.36,1);
+}
+.node.just-open .node-core{
+  animation:nodeOpenCore 1.6s cubic-bezier(.22,1.2,.36,1);
+}
+@keyframes nodeOpen{
+  0%{width:14px;height:14px;opacity:0}
+  40%{width:78px;height:78px;opacity:1;border-color:var(--ok)}
+  70%{width:56px;height:56px;opacity:.9}
+  100%{width:42px;height:42px;opacity:.32}
+}
+@keyframes nodeOpenCore{
+  0%{transform:scale(.4);opacity:0}
+  50%{transform:scale(1.9);opacity:1}
+  100%{transform:scale(1);opacity:.62}
+}
+/* 刚开放时节点名也亮一下 */
+.node.just-open .node-name{
+  background:rgba(95,208,138,.9);color:#04211f;font-weight:700;
+  transition:background .6s,color .6s;
+}
+@media (prefers-reduced-motion: reduce){
+  .node.just-open .node-ring,
+  .node.just-open .node-core{animation:none}
+}
+
+/* 地图上标一句「这一段开到哪」 */
+.map-stage{
+  position:absolute;left:50%;top:calc(var(--hud-h) + 12px);transform:translateX(-50%);
+  z-index:29;pointer-events:none;
+  font-size:11px;color:#bfe9e5;padding:4px 13px;border-radius:999px;
+  background:rgba(8,14,19,.82);border:1px solid var(--line2);white-space:nowrap;
+  opacity:.92;
+}
+.map-stage b{color:var(--gold);font-weight:700}

@@ -204,8 +204,10 @@
       title: e.title,
       text: e.text,
       options: e.options,
-      // 第 1 天出两条，之后每天两条，最多排到第 8 天
-      minDay: Math.min(8, 1 + Math.floor(i / 2)),
+      /* 认识人也是分段的：一开局只放两个人出来。
+         以前是按天数每天两条，最多排到第八天 —— 结果玩家前三天就认识一半人，
+         记不住谁是谁。现在跟城区用同一套段位：折得越多，认识的人越多。 */
+      meetStage: Math.min(5, 1 + Math.floor(i / 3)),
       order: i,
     }));
   }
@@ -228,9 +230,10 @@
     }
 
     // 2) 初见：到日子就出，保证玩家前八天认识足够多的人
+    const stage = E.stageOf ? E.stageOf(S) : 5;
     const meets = meetScenes()
       .filter((sc) => !fired(S, sc.id))
-      .filter((sc) => S.day >= sc.minDay)
+      .filter((sc) => (sc.meetStage || 1) <= stage)
       .filter((sc) => {
         // 已经认识的人不再重复初见
         const e = D.EVENTS.find((x) => x.id === sc.eventId);

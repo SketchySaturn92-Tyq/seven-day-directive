@@ -18,18 +18,22 @@ window.GAME_DATA = (function () {
 
 
   /* ---------------- 城区（地图舞台） ---------------- */
+  /* 城区分五段开放。
+     一开局只给高塔商业区 —— 一张空地图上只有一个点，
+     玩家没有「我该去哪」这个问题；等到他办完第一件事，
+     再一层层把地图放开。stage 字段就是它属于第几段。 */
   const DISTRICTS = [
-    { id: 'tower',    name: '高塔商业区', en: 'TOWER',    x: 0.455, y: 0.2, color: '#7aa2f7', portrait: 'portrait-monitor',
+    { id: 'tower', stage: 1,    name: '高塔商业区', en: 'TOWER',    x: 0.455, y: 0.2, color: '#7aa2f7', portrait: 'portrait-monitor',
       desc: '董事会在最高的那层。电梯要刷三次权限，所有人都在笑。' },
-    { id: 'exchange', name: '交易所广场', en: 'EXCHANGE', x: 0.66, y: 0.34, color: '#e0b44a', portrait: 'portrait-scientist',
+    { id: 'exchange', stage: 2, name: '交易所广场', en: 'EXCHANGE', x: 0.66, y: 0.34, color: '#e0b44a', portrait: 'portrait-scientist',
       desc: '穹顶集团的心脏。所有资本在这里换成信仰，再换成别人的命。' },
-    { id: 'lab',      name: '研究所园区', en: 'LAB',      x: 0.855, y: 0.145, color: '#4ad0c8', portrait: 'portrait-scientist',
+    { id: 'lab', stage: 3,      name: '研究所园区', en: 'LAB',      x: 0.855, y: 0.145, color: '#4ad0c8', portrait: 'portrait-scientist',
       desc: '在造一件没人敢签收的东西。走廊全程静音。' },
-    { id: 'slum',     name: '下层居住区', en: 'SLUM',     x: 0.4, y: 0.56, color: '#c86bd8', portrait: 'portrait-fixer',
+    { id: 'slum', stage: 2,     name: '下层居住区', en: 'SLUM',     x: 0.4, y: 0.56, color: '#c86bd8', portrait: 'portrait-fixer',
       desc: '酸性雨落在这里会变成泥。所有的线人都住在这儿。' },
-    { id: 'docks',    name: '工业港区',   en: 'DOCKS',    x: 0.72, y: 0.64, color: '#e0554a', portrait: 'portrait-enforcer',
+    { id: 'docks', stage: 3,    name: '工业港区',   en: 'DOCKS',    x: 0.72, y: 0.64, color: '#e0554a', portrait: 'portrait-enforcer',
       desc: '合法外壳，非法内脏。凌晨三点最热闹。' },
-    { id: 'orbit',    name: '轨道港',     en: 'ORBIT',    x: 0.905, y: 0.47, color: '#9fb0c4', portrait: 'portrait-witch',
+    { id: 'orbit', stage: 4,    name: '轨道港',     en: 'ORBIT',    x: 0.905, y: 0.47, color: '#9fb0c4', portrait: 'portrait-witch',
       desc: '离开这颗星球只有一条路，而路是别人的。' },
   ];
 

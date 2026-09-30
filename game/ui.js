@@ -284,10 +284,12 @@
     const gained = MET.applyToRun(S, P);
     selectedUid = null;
     settled = null;
+    lastStage = null;          // 新的一局重新数段位
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
+    M.syncNodes(S);            // 一开局就要把没开放的城区藏起来
     if (gained.length) hint('本局已生效：' + gained.join('、'), 4200);
     autosave();
     // 开局先来一条委托，让新系统立刻可见
@@ -313,10 +315,12 @@
     selectedUid = null;
     settled = null;
     lastHandCount = null;
+    lastStage = null;
     show('screen-game');
     M.buildNodes($('map-grid'), onNodeClick);
     M.attachDrag($('map-grid'), () => S, onDrop, onPickCard);
     renderAll();
+    M.syncNodes(S);
     /* 存下来的时候可能正停在一个待处理的事件或剧情上 */
     if (S.pendingStory) { setTimeout(() => queueStory(S.pendingStory), 260); }
     else if (S.pendingEvent) { setTimeout(() => showEvent(S.pendingEvent), 260); }
@@ -902,9 +906,27 @@
 
   let pendingEvent = null;
 
+  /* 段位推进：地图和人物是分五段放开的。
+     刚进新段时告诉玩家这一批多了什么，不然他不会注意到地图长大了。 */
+  let lastStage = null;
+  function noticeStage() {
+    if (!S || !E.stageOf) return;
+    const now = E.stageOf(S);
+    if (lastStage === null) { lastStage = now; return; }
+    if (now <= lastStage) { lastStage = now; return; }
+    lastStage = now;
+    const open = E.openDistricts ? E.openDistricts(S) : [];
+    const names = open.map((d) => d.name);
+    const fresh = names.slice(-4);
+    hint('第 ' + now + ' 段 · 地图又放开一块：' + fresh.join('、'), 6000);
+    sfx('draw');
+    M.syncNodes(S);
+  }
+
   function afterAction() {
     /* 折完第一张之后补讲制度来历 —— 这时候他才看得懂 */
     if (S && S.folded > 0) maybeIntro('firstFold');
+    noticeStage();
     renderAll();
     if (S.phase === 'end' && S.ending) {
       /* 收场了就清掉存档，免得下次进来「继续」到一个已结束的局 */
