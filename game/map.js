@@ -108,6 +108,10 @@
       el.querySelector('.node-meta').innerHTML = badges.join('');
       el.setAttribute('aria-label', d.name + '：可折 ' + foldable.length + '，委托 ' + briefs.length);
     });
+
+    /* 节点位置可能因为画幅变化移动过，引线跟着重画 */
+    lastS = S;
+    drawGuide(S);
   }
 
   let currentUid = null;
@@ -118,6 +122,78 @@
     return districtOfAsset(c.target) === distId;
   }
   function setSelected(uid) { currentUid = uid; }
+
+  /* ---------------- 地图指引引线 ----------------
+     选一张手牌，就从牌上拉一条线到目标城区。
+     以前只在右上角弹一句「目标在某某区」，眼睛还得自己在图上找；
+     现在线直接指过去，端点带脉冲圈，目标节点同步亮一档。
+     牌在底栏、线在地图层，两边坐标系不同，所以要换算成图层内坐标。
+  ------------------------------------------------ */
+  let guideTimer = null;
+
+  function drawGuide(S) {
+    const svg = document.getElementById('map-guide');
+    const path = document.getElementById('guide-path');
+    const dot = document.getElementById('guide-dot');
+    if (!svg || !path || !dot || !host) return;
+
+    const clear = () => {
+      svg.classList.remove('on');
+      dot.classList.remove('pulse');
+      path.setAttribute('d', '');
+      document.querySelectorAll('.node.guide').forEach((n) => n.classList.remove('guide'));
+    };
+
+    if (!S || !currentUid) { clear(); return; }
+    const card = S.hand.find((c) => c.uid === currentUid);
+    if (!card) { clear(); return; }
+    const distId = districtOfAsset(card.target);
+    if (!distId) { clear(); return; }
+
+    /* 起点：手牌上这张牌的中心，换算到地图层的相对坐标 */
+    const cardEl = document.querySelector('#hand .card[data-uid="' + currentUid + '"]');
+    const layer = document.getElementById('map-layer');
+    if (!cardEl || !layer) { clear(); return; }
+    const lr = layer.getBoundingClientRect();
+    const cr = cardEl.getBoundingClientRect();
+    const sx = cr.left + cr.width / 2 - lr.left;
+    const sy = cr.top - lr.top;                 // 从牌的上沿出发，别从中心穿过底栏
+
+    /* 终点：目标城区节点 */
+    const nr = nodeRect(distId);
+    if (!nr) { clear(); return; }
+    const ex = nr.cx - lr.left;
+    const ey = nr.cy - lr.top;
+
+    /* 三次贝塞尔：控制点往上抬，线从底栏拱上去正好落在节点上 */
+    const midY = Math.min(sy, ey) - Math.max(60, Math.abs(sy - ey) * 0.35);
+    const d = 'M ' + sx.toFixed(1) + ' ' + sy.toFixed(1) +
+              ' C ' + sx.toFixed(1) + ' ' + midY.toFixed(1) + ' ' +
+              ex.toFixed(1) + ' ' + midY.toFixed(1) + ' ' +
+              ex.toFixed(1) + ' ' + ey.toFixed(1);
+    path.setAttribute('d', d);
+    dot.setAttribute('cx', ex.toFixed(1));
+    dot.setAttribute('cy', ey.toFixed(1));
+    dot.classList.add('pulse');
+    svg.classList.add('on');
+
+    document.querySelectorAll('.node').forEach((n) => {
+      n.classList.toggle('guide', n.dataset.district === distId);
+    });
+  }
+
+  /* 画幅变化或横向滚动手牌时线要跟着重画，不然会错位。
+     这里没有实时状态可读，所以记住最近一次 syncNodes 传进来的 S。 */
+  let lastS = null;
+  function armGuide() {
+    if (guideTimer) cancelAnimationFrame(guideTimer);
+    guideTimer = requestAnimationFrame(() => {
+      guideTimer = null;
+      drawGuide(lastS);
+    });
+  }
+  window.addEventListener('resize', armGuide);
+  document.addEventListener('scroll', armGuide, true);
 
   /* ---------------- 拖拽投放 ---------------- */
   function attachDrag(container, getState, onDrop, onPickCard) {
@@ -260,5 +336,5 @@
     return nr.cx >= lr.left && nr.cx <= lr.right && nr.cy >= lr.top && nr.cy <= lr.bottom;
   }
 
-  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, summary, nodeRect, districtVisible };
+  window.GAME_MAP = { buildNodes, syncNodes, attachDrag, districtDetail, districtById, districtOfAsset, setSelected, drawGuide, summary, nodeRect, districtVisible };
 })();

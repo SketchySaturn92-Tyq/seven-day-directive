@@ -1280,19 +1280,33 @@
   $('btn-howto').onclick = () => show('screen-howto');
   $('btn-compendium').onclick = openCompendium;
 
-  /* 音效开关：状态写进 localStorage，刷新后保持 */
+  /* 音效与 BGM 两个开关，状态各自写进 localStorage，刷新后保持。
+     分开是有意的：有人只想关音乐，留着折牌与判定的音效反馈。 */
   function renderAudioBtn() {
     const b = $('btn-audio');
-    if (!b) return;
-    const on = AU ? AU.enabled() : false;
-    b.classList.toggle('off', !on);
-    b.textContent = on ? '♪ 音效' : '♪ 已关';
+    if (b) {
+      const on = AU ? AU.enabled() : false;
+      b.classList.toggle('off', !on);
+      b.textContent = on ? '♪ 音效' : '♪ 已关';
+    }
+    const m = $('btn-bgm');
+    if (m) {
+      const on = AU ? AU.bgmEnabled() : false;
+      m.classList.toggle('off', !on);
+      m.textContent = on ? '♫ 音乐' : '♫ 已关';
+    }
   }
   $('btn-audio').onclick = () => {
     armAudio();
     if (AU) AU.toggle();
     renderAudioBtn();
     if (AU && AU.enabled()) sfx('gain');
+  };
+  $('btn-bgm').onclick = () => {
+    armAudio();
+    if (AU) AU.bgmToggle();
+    renderAudioBtn();
+    if (AU && AU.bgmEnabled()) sfx('gain');
   };
   renderAudioBtn();
 

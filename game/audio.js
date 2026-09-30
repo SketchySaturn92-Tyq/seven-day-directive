@@ -10,7 +10,8 @@
 (function () {
   'use strict';
 
-  const KEY = 'sdd.audio.v1';   // 开关状态的持久化键
+  const KEY = 'sdd.audio.v1';   // 音效开关状态的持久化键
+  const BGM_KEY = 'sdd.bgm.v1'; // BGM 开关单独存，会有人只想关音乐不想关音效
   const MAX_VOICES = 8;         // 同时发声上限，超了直接丢弃新音效，避免叠成爆音
   const MIN_DUR = 0.05;         // 最短音效时长（秒），再短就只是一次爆点，谈不上辨识度
   const MAX_DUR = 1.2;          // 最长音效时长（秒），再长会拖住后续判定的节奏
@@ -26,7 +27,8 @@
   let master = null;      // 总输出，所有音效过这里，便于统一音量与静音
   let noiseBuf = null;    // 噪声缓冲只生成一次，反复复用，省内存也省 CPU
   let voices = 0;         // 当前还在发声的路数
-  let on = readEnabled(); // 开关状态，默认开启（除非系统要求减弱动效）
+  let on = readEnabled(); // 音效开关，默认开启（除非系统要求减弱动效）
+  let bgmOn = readBgmEnabled(); // BGM 开关，独立于音效
 
   /* ---------------- 开关状态：读、写、以及系统偏好 ---------------- */
 
@@ -53,6 +55,21 @@
     try { window.localStorage.setItem(KEY, v ? '1' : '0'); } catch (e) {}
   }
 
+  /* BGM 单独一套读写。会有人只想关音乐、留着音效反馈，
+     所以不跟 KEY 混在一起。 */
+  function readBgmEnabled() {
+    try {
+      const raw = window.localStorage.getItem(BGM_KEY);
+      if (raw === '0') return false;
+      if (raw === '1') return true;
+    } catch (e) { /* 隐私模式走默认值 */ }
+    return !prefersReduce();
+  }
+
+  function writeBgmEnabled(v) {
+    try { window.localStorage.setItem(BGM_KEY, v ? '1' : '0'); } catch (e) {}
+  }
+
   /* ---------------- 上下文与基础构件 ---------------- */
 
   /* 噪声缓冲：1 秒白噪声。纸响、气流、碎裂感都从这一段里裁剪出来 */
@@ -71,10 +88,14 @@
       if (!AC) return;                       // 老浏览器不支持，之后所有 play 静默
       ctx = new AC();
       master = ctx.createGain();
-      master.gain.value = 0.45;              // 总音量压到一半以下，游戏里音效不该抢戏
+      /* 总音量压到一半以下，游戏里音效不该抢戏。
+         关掉音效时这里直接归零 —— play() 只是不再新建声音，
+         已经在小节里跑的 BGM 得靠总闸才停得住。 */
+      master.gain.value = on ? 0.45 : 0.0001;
       master.connect(ctx.destination);
       noiseBuf = makeNoiseBuf(ctx);
       resumeCtx();
+      bgmSync();                             // 上下文备好了，BGM 该响就响起来
     } catch (e) {
       ctx = null;                            // 初始化失败就彻底退回静默模式
       master = null;
@@ -325,6 +346,185 @@
     },
   };
 
+  /* ==========================================================
+     BGM —— 程序化环境音乐
+     同样不带任何素材：用振荡器铺一条缓慢的和声进行，
+     加极稀疏的点缀音。风格跟音效一致：冷、克制、不抢戏。
+     落点是「穹顶里的电梯广告」那种感觉 —— 有调性、循环，
+     但你不会想跟着哼，因为它是背景不是主角。
+
+     实现要点：
+     - 一个前瞻调度器（lookahead），每 250ms 看一次未来 1.2 秒的排期，
+       这样即使主线程卡一下，音乐节拍也不会抖。
+     - 每次换和弦新建一组声部，到点自己 stop + disconnect，不留节点。
+     - 单独一条 bgmGain，音量压得很低，且与音效总闸联动。
+     - 标签页隐藏时停排期，回到前台补上，省电也避免后台响。
+     ========================================================== */
+
+  const BGM_STEP = 4.2;        // 一个和弦持续多少秒（慢，像长音铺底）
+  const BGM_LOOKAHEAD = 0.25;  // 调度器心跳（秒）
+  const BGM_AHEAD = 1.2;       // 每次往前排多少秒
+  const BGM_VOL = 0.16;        // BGM 单独音量，再经总闸 0.45，实际很轻
+
+  let bgmGain = null;          // BGM 专用总线，便于淡入淡出
+  let bgmTimer = null;         // 调度器句柄
+  let bgmNext = 0;             // 下一个和弦的绝对时间
+  let bgmStep = 0;             // 走到和声进行第几小节
+  let bgmLive = false;         // 是否正在播放
+
+  /* D 小调上的四小节循环。用音名频率写死，避免引入音高换算。 */
+  const BGM_CHORDS = [
+    { root: 146.83, notes: [220.00, 261.63, 329.63] },   // Dm
+    { root: 116.54, notes: [233.08, 293.66, 349.23] },   // Bb
+    { root: 174.61, notes: [220.00, 261.63, 349.23] },   // F
+    { root: 130.81, notes: [196.00, 233.08, 293.66] },   // Cm/Gm 色彩
+  ];
+
+  /* 一个和声块：低频垫底 + 三个内声部，全部慢起慢落 */
+  function bgmVoicing(t0, chord, i) {
+    const dest = bgmGain;
+    if (!dest) return;
+
+    /* 低频：只放根音的低八度，极慢的起音，做“地底管线”的底噪感 */
+    tone({
+      t0: t0 - ctx.currentTime,
+      end: 0,
+      note: function () {},
+      add: function () {},
+      out: dest,
+      nodes: [],
+    }, {
+      type: 'sine', f0: chord.root / 2, dur: BGM_STEP + 2.2, gain: 0.1,
+      attack: 1.6, dest: dest, filter: { type: 'lowpass', f0: 320 },
+    });
+
+    /* 内声部：三层，逐层延迟进入，起音 1.2 秒，是“铺”不是“弹” */
+    chord.notes.forEach(function (f, k) {
+      tone({
+        t0: t0 - ctx.currentTime,
+        end: 0, note: function () {}, add: function () {},
+        out: dest, nodes: [],
+      }, {
+        type: k === 0 ? 'triangle' : 'sine',
+        f0: f, dur: BGM_STEP + 1.6, gain: 0.055 - k * 0.008,
+        attack: 1.2, at: k * 0.35, dest: dest,
+        filter: { type: 'lowpass', f0: 1700 },
+      });
+    });
+
+    /* 点缀：每两小节才落一颗，音高在和弦内挑一个高的，
+       像远处某个终端在报数。极轻，偶尔才注意到。 */
+    if (i % 2 === 0) {
+      const pick = chord.notes[chord.notes.length - 1] * 2;
+      tone({
+        t0: t0 - ctx.currentTime,
+        end: 0, note: function () {}, add: function () {},
+        out: dest, nodes: [],
+      }, {
+        type: 'sine', f0: pick, dur: 2.4, gain: 0.03, attack: 0.35,
+        at: 1.1, dest: dest, filter: { type: 'lowpass', f0: 2600 },
+      });
+    }
+
+    /* 空调声：一层极轻的滤波噪声，把安静处的空白填掉，不然停顿会很干 */
+    noise({
+      t0: t0 - ctx.currentTime,
+      end: 0, note: function () {}, add: function () {},
+      out: dest, nodes: [],
+    }, {
+      dur: BGM_STEP, filter: 'bandpass', f0: 620, q: 0.5,
+      gain: 0.012, attack: 1.0, dest: dest,
+    });
+  }
+
+  /* 调度器：往前看 BGM_AHEAD 秒，把还没排的和弦补上 */
+  function bgmTick() {
+    if (!bgmLive || !ctx || !bgmGain) return;
+    const now = ctx.currentTime;
+    while (bgmNext < now + BGM_AHEAD) {
+      const chord = BGM_CHORDS[bgmStep % BGM_CHORDS.length];
+      bgmVoicing(bgmNext, chord, bgmStep);
+      bgmNext += BGM_STEP;
+      bgmStep++;
+    }
+  }
+
+  /* 开关或上下文的实际状态变了，就调这里对齐 */
+  function bgmSync() {
+    try {
+      if (!ctx || !master) return;
+      if (on && bgmOn) bgmStart();
+      else bgmStop();
+    } catch (e) {}
+  }
+
+  function bgmStart() {
+    try {
+      if (bgmLive || !ctx || !master) return;
+      bgmGain = ctx.createGain();
+      bgmGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      bgmGain.gain.exponentialRampToValueAtTime(BGM_VOL, ctx.currentTime + 3.5); // 慢慢淡入
+      bgmGain.connect(master);
+      bgmStep = 0;
+      bgmNext = ctx.currentTime + 0.4;
+      bgmLive = true;
+      bgmTick();
+      bgmTimer = window.setInterval(bgmTick, BGM_LOOKAHEAD * 1000);
+      document.addEventListener('visibilitychange', bgmVisibility);
+    } catch (e) { bgmLive = false; }
+  }
+
+  function bgmStop() {
+    try {
+      if (!bgmLive) return;
+      bgmLive = false;
+      if (bgmTimer) { window.clearInterval(bgmTimer); bgmTimer = null; }
+      document.removeEventListener('visibilitychange', bgmVisibility);
+      if (bgmGain) {
+        const g = bgmGain, t = ctx ? ctx.currentTime : 0;
+        try {
+          g.gain.cancelScheduledValues(t);
+          g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + 1.2);   // 淡出再断
+        } catch (e) {}
+        window.setTimeout(function () {
+          try { g.disconnect(); } catch (e) {}
+        }, 1500);
+        bgmGain = null;
+      }
+    } catch (e) {}
+  }
+
+  /* 切到后台就别排新音了，回前台接着排 */
+  function bgmVisibility() {
+    try {
+      if (document.hidden) {
+        if (bgmTimer) { window.clearInterval(bgmTimer); bgmTimer = null; }
+      } else if (bgmLive && !bgmTimer) {
+        if (ctx) bgmNext = Math.max(bgmNext, ctx.currentTime + 0.3);
+        bgmTick();
+        bgmTimer = window.setInterval(bgmTick, BGM_LOOKAHEAD * 1000);
+      }
+    } catch (e) {}
+  }
+
+  function setBgmEnabled(v) {
+    try {
+      bgmOn = !!v;
+      writeBgmEnabled(bgmOn);
+      bgmSync();
+    } catch (e) {}
+  }
+
+  function bgmToggle() {
+    try {
+      setBgmEnabled(!bgmOn);
+      return bgmOn;
+    } catch (e) {
+      return false;
+    }
+  }
+
   /* ---------------- 对外接口 ---------------- */
 
   /* 播一个音效。opts 可选：
@@ -349,10 +549,24 @@
     } catch (e) { /* 音效永远不能影响游戏流程 */ }
   }
 
+  /* 总闸。音效与 BGM 一起受它控制，分开开关用各自的 setBgmEnabled。 */
+  function applyMasterLevel() {
+    try {
+      if (!ctx || !master) return;
+      const now = ctx.currentTime;
+      const target = on ? 0.45 : 0.0001;
+      master.gain.cancelScheduledValues(now);
+      master.gain.setValueAtTime(Math.max(0.0001, master.gain.value), now);
+      master.gain.exponentialRampToValueAtTime(target, now + (on ? 0.35 : 0.6));
+    } catch (e) {}
+  }
+
   function setEnabled(v) {
     try {
       on = !!v;
       writeEnabled(on);
+      applyMasterLevel();
+      bgmSync();
     } catch (e) {}
   }
 
@@ -374,6 +588,12 @@
     toggle: toggle,
     play: play,
     names: function () { return NAMES.slice(); },
+    /* --- BGM：与音效分开开关，但同受总闸控制 --- */
+    bgmEnabled: function () { return bgmOn; },
+    setBgmEnabled: setBgmEnabled,
+    bgmToggle: bgmToggle,
+    bgmLive: function () { return bgmLive; },
+    bgmStart: bgmSync,
     /* 这两个是给界面/调试用的补充信息，不属于约定接口，改起来不影响调用方 */
     state: function () { return ctx ? ctx.state : 'none'; },
     voices: function () { return voices; },

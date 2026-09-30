@@ -48,6 +48,7 @@
         <button id="btn-nexus" class="btn btn-gold">命运商店<i id="nexus-dot" class="dot" hidden></i></button>
         <button id="btn-compendium" class="btn">结局图鉴</button>
         <button id="btn-audio" class="btn btn-ghost" title="音效开关">♪ 音效</button>
+        <button id="btn-bgm" class="btn btn-ghost" title="背景音乐开关">♫ 音乐</button>
       </div>
 
       <div class="seed-row">
@@ -137,6 +138,11 @@
     <div id="map-layer">
       <img id="map-bg" class="map-bg" src="assets/map-city.webp" alt="穹顶城市">
       <div id="map-grid" class="map-grid"></div>
+      <!-- 选中手牌时，从牌指向目标城区的引线 -->
+      <svg id="map-guide" class="map-guide" aria-hidden="true">
+        <path id="guide-path" class="guide-path" d=""></path>
+        <circle id="guide-dot" class="guide-dot" r="5"></circle>
+      </svg>
       <div class="map-vignette"></div>
     </div>
 

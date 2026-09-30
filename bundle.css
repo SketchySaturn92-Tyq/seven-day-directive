@@ -1487,3 +1487,99 @@ body{
   background:linear-gradient(180deg,transparent 42%,rgba(9,13,18,.9));
 }
 @media (orientation:landscape) and (max-height:560px){ .dt-scene{height:78px} }
+
+/* ==========================================================
+   v6·卡牌尺寸统一
+   原来每张牌的高度由内容决定：目标名 + 城区名一长就换行，
+   卡片被撑到 223px，跟旁边 205px 的对不齐。
+   现在把三个会变的地方都钉死：名条单行、目标行单行、动作行固定高。
+   超长一律省略号，鼠标悬停看 title。
+   ========================================================== */
+.hand .card{
+  height:206px;
+  display:flex;flex-direction:column;
+}
+/* 名条：品级 + 路径都不许换行 */
+.hand .card .card-band{
+  flex:0 0 auto;height:22px;padding:0 7px;
+  flex-wrap:nowrap;overflow:hidden;
+}
+.hand .card .card-band .card-path{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;
+}
+.hand .card .card-band .card-tier{flex:0 0 auto}
+/* 插画：固定高，不许被挤 */
+.hand .card .card-art{flex:0 0 auto;height:74px}
+/* 文字板：占满剩下的高度，内部自己排 */
+.hand .card .card-body{
+  flex:1 1 auto;min-height:0;
+  display:flex;flex-direction:column;
+}
+.hand .card .card-verb{
+  flex:0 0 auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+/* 目标行：关键是这行 —— 名字与城区各占一半，都不换行 */
+.hand .card .card-target{
+  flex:0 0 auto;height:18px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:6px;overflow:hidden;
+}
+.hand .card .card-target > span:first-child{
+  flex:1 1 auto;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.hand .card .card-target .zone{
+  flex:0 1 auto;max-width:52%;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;
+}
+.hand .card .card-rate{flex:0 0 auto;height:17px;margin-top:4px}
+.hand .card .card-act{flex:0 0 auto;margin-top:auto;padding-top:6px;height:31px}
+
+/* 手机横屏：整体压低，仍然等高等宽 */
+@media (orientation:landscape) and (max-height:560px){
+  .hand .card{height:170px}
+  .hand .card .card-band{height:19px;padding:0 5px}
+  .hand .card .card-art{height:54px}
+  .hand .card .card-target{height:16px}
+  .hand .card .card-rate{height:15px;margin-top:2px;font-size:9.5px}
+  .hand .card .card-act{height:27px;padding-top:4px}
+  .hand .card .card-act .btn{font-size:9.5px;min-height:19px}
+}
+@media (orientation:landscape) and (max-height:420px){
+  .hand .card{height:152px}
+  .hand .card .card-art{height:44px}
+}
+
+/* ==========================================================
+   地图指引引线
+   选一张手牌，就从牌画一条线到目标城区，端点带脉冲圈。
+   以前只在右上角弹一句话，眼睛得自己在地图上找。
+   ========================================================== */
+.map-guide{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:22;overflow:visible;
+  opacity:0;transition:opacity .22s;
+}
+.map-guide.on{opacity:1}
+.guide-path{
+  fill:none;stroke:var(--cyan);stroke-width:2;stroke-linecap:round;
+  stroke-dasharray:7 6;filter:drop-shadow(0 0 6px rgba(74,208,200,.75));
+  animation:guideFlow 1s linear infinite;
+}
+@keyframes guideFlow{from{stroke-dashoffset:0}to{stroke-dashoffset:-26}}
+.guide-dot{
+  fill:var(--cyan);stroke:rgba(255,255,255,.9);stroke-width:1.5;
+  filter:drop-shadow(0 0 8px rgba(74,208,200,.9));
+}
+.guide-dot.pulse{animation:guidePulse 1.4s ease-out infinite}
+@keyframes guidePulse{
+  0%{r:5;opacity:1}
+  70%{r:17;opacity:.15}
+  100%{r:5;opacity:1}
+}
+/* 目标节点再亮一档，和引线对上 */
+.node.guide .node-ring{border-color:var(--cyan);border-width:2px;opacity:1;width:62px;height:62px}
+.node.guide .node-core{transform:scale(1.5);opacity:1}
+
+/* 关闭状态：按钮变灰划掉，一眼看出 */
+#btn-bgm.off{opacity:.45;text-decoration:line-through}
