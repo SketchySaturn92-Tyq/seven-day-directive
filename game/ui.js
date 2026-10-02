@@ -685,8 +685,10 @@
   }
 
   function openDrawer(name) {
-    const titles = { actions: '行动', tracks: '名望与属性', people: '认识的人', log: '记录', district: '城区' };
+    const titles = { tracks: '名望与属性', people: '认识的人', log: '记录' };
     if (drawerOpen === name) return closeDrawer();
+    /* 地点是独立页面，不再挤在抽屉里；开抽屉时顺手把它收掉 */
+    closeDistrictPage();
     $('drawer-title').textContent = titles[name] || name;
     setDrawer(name);
   }
@@ -744,29 +746,46 @@
     onFold(uid);
   }
 
-  let lastDistrict = null;   // 动作结算后要原地刷新这一栏
+  let lastDistrict = null;   // 动作结算后要原地刷新这一页
+
+  function districtPageOpen() {
+    const el = $('district-page');
+    return !!(el && !el.hidden);
+  }
 
   function openDistrict(distId) {
     lastDistrict = distId;
     maybeIntro('openDistrict');
     const info = M.districtDetail(S, distId);
     if (!info) return;
-    $('dt-tag').textContent = info.district.en || '';
-    $('dt-title').textContent = info.district.name;
-    $('dt-desc').textContent = info.district.desc || '';
+    renderDistrictPage(info);
+  }
 
-    /* 城区场景图：有的城区才有，没有就整块不显示，不留空框 */
-    const sc = $('dt-scene');
-    if (sc) {
-      const art = DISTRICT_ART[distId];
-      if (art) {
-        sc.innerHTML = '<img src="' + art + '" alt="" loading="lazy" ' +
-          'onerror="this.parentNode.hidden=true;">';
-        sc.hidden = false;
-      } else {
-        sc.hidden = true;
-        sc.innerHTML = '';
-      }
+  /* 地点页面：左边这个地方的样子，右边一张纸写清这里能做什么，
+     底部一排缩略图直接在地点之间翻。
+     以前这里是左侧抽屉里的一栏，点右边的城区得把眼睛横穿整个屏幕。 */
+  function renderDistrictPage(info) {
+    const distId = info.district.id;
+    const page = $('district-page');
+    if (!page) return;
+
+    /* 打开地点页时把抽屉收掉，两个面板不叠在一起 */
+    if (isDrawerOpen()) closeDrawer();
+
+    $('dp-tag').textContent = info.district.en || '';
+    $('dp-title').textContent = info.district.name;
+    $('dp-desc').textContent = info.district.desc || '';
+    $('dp-paper-title').textContent = info.district.name;
+
+    const sc = $('dp-scene');
+    const art = DISTRICT_ART[distId];
+    if (art) {
+      sc.innerHTML = '<img src="' + art + '" alt="" ' +
+        'onerror="this.parentNode.classList.add(\'no-art\');this.remove();">';
+      sc.classList.remove('no-art');
+    } else {
+      sc.innerHTML = '';
+      sc.classList.add('no-art');
     }
 
     // 委托
@@ -783,9 +802,8 @@
           '<span class="note">' + esc(r.text) + '</span>' +
           (r.ok ? '<button class="btn btn-primary btn-sm go">交差</button>' : '<span class="note">还差：' + esc(r.why) + '</span>');
         if (r.ok) el.querySelector('.go').onclick = () => {
-          const at = distId;
           onSolveBrief(r.uid);
-          setTimeout(() => openDistrict(at), 40);   // 交完差这一栏要重画
+          setTimeout(() => refreshDistrictPage(), 40);   // 交完差这一页要重画
         };
         bw.appendChild(el);
       });
@@ -804,9 +822,8 @@
         (r.ok ? '<button class="btn btn-primary btn-sm go">' + esc(r.verb) + '</button>'
               : '<span class="note">' + esc(r.why) + '</span>');
       if (r.ok) el.querySelector('.go').onclick = () => {
-          const at = distId;
           onFold(r.uid);
-          setTimeout(() => openDistrict(at), 620);   // 折牌有裂开动画，等它播完再刷新
+          setTimeout(() => refreshDistrictPage(), 620);   // 折牌有裂开动画，等它播完再刷新
         };
       cw.appendChild(el);
     });
@@ -818,11 +835,65 @@
       ? info.events.map((x) => '<span>' + esc(x) + '</span>').join('')
       : '<span style="opacity:.6">暂无</span>';
 
-    /* 以前这里是 show('screen-district')，一整页模态框把地图盖死。
-       现在改成抽屉里的一栏：地图、手牌、指引线全都还看得见。 */
     renderDistrictActions(distId);
-    setDrawer('district');
-    $('drawer-title').textContent = info.district.name;
+    renderDistrictStrip(distId);
+    page.hidden = false;
+    page.classList.add('on');
+    /* 纸面滚回顶部：换一个地点还是停在上一个的滚动位置会很怪 */
+    const paper = page.querySelector('.parchment-inner');
+    if (paper) paper.scrollTop = 0;
+  }
+
+  /* 内容变了（折完牌、交完委托）原地重画这一页 */
+  function refreshDistrictPage() {
+    if (!districtPageOpen() || !lastDistrict) return;
+    const info = M.districtDetail(S, lastDistrict);
+    if (info) renderDistrictPage(info);
+  }
+
+  function closeDistrictPage() {
+    const page = $('district-page');
+    if (page) { page.hidden = true; page.classList.remove('on'); }
+  }
+
+  /* 底部一排地点缩略图。照着实体版的排布：等高小图横排，当前那张有亮框。 */
+  function renderDistrictStrip(current) {
+    const wrap = $('dp-index');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    D.DISTRICTS.forEach((d) => {
+      const open = E.districtOpen ? E.districtOpen(S, d.id) : true;
+      const el = document.createElement('button');
+      el.className = 'dp-thumb' + (d.id === current ? ' on' : '') + (open ? '' : ' locked');
+      el.dataset.district = d.id;
+      const art = DISTRICT_ART[d.id];
+      el.innerHTML = '<span class="dp-thumb-art"' +
+          (art ? ' style="background-image:url(' + art + ')"' : '') + '></span>' +
+        '<span class="dp-thumb-name">' + esc(open ? d.name : '未开放') + '</span>';
+      if (open) el.onclick = () => { if (d.id !== current) openDistrict(d.id); };
+      else el.setAttribute('disabled', 'disabled');
+      wrap.appendChild(el);
+    });
+    /* 箭头的可用状态要按「已开放」的那一串算，不能按全部地点算 ——
+       否则开场只有高塔开放时，「下一个」看着能点，点下去却没反应。
+       stepDistrict 也是走这一串，两边必须同一个口径。 */
+    const openIds = D.DISTRICTS
+      .filter((d) => (E.districtOpen ? E.districtOpen(S, d.id) : true))
+      .map((d) => d.id);
+    const at = openIds.indexOf(current);
+    $('dp-prev').disabled = at <= 0;
+    $('dp-next').disabled = at < 0 || at >= openIds.length - 1;
+  }
+
+  /* 上一个 / 下一个只走已开放的城区，跳过锁着的
+     （否则点半天没反应，像卡住了） */
+  function stepDistrict(dir) {
+    const ids = D.DISTRICTS.filter((d) => (E.districtOpen ? E.districtOpen(S, d.id) : true)).map((d) => d.id);
+    if (!ids.length) return;
+    let i = ids.indexOf(lastDistrict);
+    if (i < 0) i = 0;
+    const j = Math.max(0, Math.min(ids.length - 1, i + dir));
+    if (j !== i) openDistrict(ids[j]);
   }
 
   /* ==========================================================
@@ -874,7 +945,8 @@
     /* 花掉第一笔行动点之后，把「这些东西能拿来干什么」补上 */
     maybeIntro('firstAction');
     afterAction();
-    if (drawerOpen === 'district' && lastDistrict) openDistrict(lastDistrict);
+    /* 在某个地点的页面上办完事，就地刷新那一页，别把玩家弹回地图 */
+    if (districtPageOpen()) refreshDistrictPage();
   }
 
   function onSolveBrief(uid) {
@@ -1578,7 +1650,9 @@
     show('screen-game');
     if (pendingEvent) { const ev = pendingEvent; pendingEvent = null; setTimeout(() => showEvent(ev), 60); }
   };
-  $('dt-close').onclick = () => closeDrawer();
+  $('dp-back').onclick = () => closeDistrictPage();
+  $('dp-prev').onclick = () => stepDistrict(-1);
+  $('dp-next').onclick = () => stepDistrict(1);
   $('drawer-close').onclick = closeDrawer;
   $('btn-endday').onclick = onEndDay;
   document.querySelectorAll('.rail-btn').forEach((b) => { b.onclick = () => openDrawer(b.dataset.panel); });

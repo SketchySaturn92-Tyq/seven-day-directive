@@ -200,28 +200,6 @@
           <p class="pane-hint">遇见过的名字。你在穹顶里的全部社会关系。</p>
           <div id="people" class="people"></div>
         </div>
-        <div id="pane-district" class="pane">
-          <!-- 城区详情。以前点地图会弹一整页模态框，把地图整个盖住；
-               现在改成抽屉里的一栏，地图和手牌都还看得见。 -->
-          <div id="dt-scene" class="dt-scene" hidden></div>
-          <div class="modal-tag" id="dt-tag">城区</div>
-          <h4 id="dt-title" class="dt-title">——</h4>
-          <p id="dt-desc" class="muted dt-desc">——</p>
-          <!-- 行动挂在地点上：站在哪儿，才能办哪儿的事。
-               行动点也挪到这里显示，因为只有在这里才会被花掉。 -->
-          <div class="ap-line">行动点 <b id="hud-ap">4</b> / <span id="hud-apmax">4</span></div>
-          <h4 class="sub-t">在这里能做的事</h4>
-          <div id="dt-actions" class="actions"></div>
-          <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
-          <div id="dt-briefs" class="dt-briefs"></div>
-          <h4 class="sub-t">可投放的指令</h4>
-          <div id="dt-cards" class="dt-list"></div>
-          <h4 class="sub-t">目标</h4>
-          <div id="dt-assets" class="chips"></div>
-          <h4 class="sub-t">此地会发生</h4>
-          <div id="dt-events" class="chips"></div>
-          <div class="row"><button id="dt-close" class="btn btn-ghost btn-sm">收起</button></div>
-        </div>
         <div id="pane-log" class="pane">
           <div id="log" class="log"></div>
         </div>
@@ -243,6 +221,58 @@
       <span class="ed-main">结束这一天</span>
       <span class="ed-sub">期限 −1</span>
     </button>
+
+    <!-- ============ 地点页面 ============
+         点开一个地点，进它自己的页面：左边是这个地方的样子，
+         右边是一张纸，写着这里是什么地方、能做什么。
+         底部一排缩略图可以在地点之间直接翻，不用回地图。
+         参考的结构是「左景右纸、底排可切」，内容全部是本作自己的。 -->
+    <div id="district-page" class="district-page" hidden>
+      <article class="dp-card">
+        <div class="dp-left">
+          <div id="dp-scene" class="dp-scene"></div>
+          <div class="dp-left-foot">
+            <span class="modal-tag" id="dp-tag">城区</span>
+            <h2 id="dp-title" class="dp-title">——</h2>
+            <p id="dp-desc" class="dp-desc">——</p>
+          </div>
+        </div>
+
+        <div class="dp-right">
+          <div class="parchment">
+            <div class="parchment-inner">
+              <header class="dp-paper-head">
+                <h3 id="dp-paper-title">——</h3>
+                <div class="ap-line">行动点 <b id="hud-ap">4</b> / <span id="hud-apmax">4</span></div>
+              </header>
+
+              <h4 class="sub-t">在这里能做的事</h4>
+              <div id="dt-actions" class="actions"></div>
+
+              <h4 class="sub-t" id="dt-brief-head" hidden>这里的委托</h4>
+              <div id="dt-briefs" class="dt-briefs"></div>
+
+              <h4 class="sub-t">可投放的指令</h4>
+              <div id="dt-cards" class="dt-list"></div>
+
+              <h4 class="sub-t">目标</h4>
+              <div id="dt-assets" class="chips"></div>
+
+              <h4 class="sub-t">此地会发生</h4>
+              <div id="dt-events" class="chips"></div>
+            </div>
+          </div>
+        </div>
+
+        <button id="dp-back" class="dp-back" title="回到地图（Esc）">✕</button>
+      </article>
+
+      <nav class="dp-strip">
+        <button id="dp-prev" class="dp-arrow" title="上一个地点">‹</button>
+        <div id="dp-index" class="dp-index"></div>
+        <button id="dp-next" class="dp-arrow" title="下一个地点">›</button>
+      </nav>
+    </div>
 
     <div id="map-hint" class="map-hint"></div>
   </section>
