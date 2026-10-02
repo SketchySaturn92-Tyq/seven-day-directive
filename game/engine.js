@@ -132,9 +132,16 @@
     let uid = 0;
     D.PATHS.forEach((p) => {
       D.TIERS.forEach((t) => {
-        const count = t.id === 3 ? 1 : 2;   // 4 路径 × (2+2+1) = 20 张
+        /* 品级越高，发放越少：黑铁 2、青铜 2、白银 1、曜金 1
+           4 路径 × 6 = 24 张。门槛越高，牌越稀。 */
+        const count = t.id >= 3 ? 1 : 2;
         for (let i = 0; i < count; i++) {
-          deck.push({ uid: 'c' + (uid++), pathId: p.id, tier: t.id, need: t.need, target: null });
+          deck.push({
+            uid: 'c' + (uid++), pathId: p.id, tier: t.id, need: t.need,
+            /* 卡牌自带的力量：既是任务的门槛，也是可烧掉的资源 */
+            power: t.power || t.id, stat: p.stat,
+            target: null,
+          });
         }
       });
     });
@@ -433,10 +440,20 @@
   /* 选目标只从「已经开放的城区」里挑。
      不然分段开放之后会出现这种情况：开局给你一张牌，
      目标在第八张才开放的穹顶之外 —— 玩家手上拿着牌，却哪儿都投不了。 */
+  /* 目标池要排除「已经被用掉的对象」。
+     对标苏丹的纵欲卡「同一个人只能被用来满足一次」：
+     一个目标被折掉之后就出局，牌桌上的可选项会越用越少，
+     逼玩家不断去开新城区、认识新的人。 */
+  function targetPool(s) {
+    const spent = s.spentAssets || {};
+    const avail = D.ASSETS.filter((a) => districtOpen(s, a.district) && !spent[a.id]);
+    if (avail.length) return avail;
+    return D.ASSETS.filter((a) => !spent[a.id]);
+  }
+
   function pickTarget(s, card) {
     const path = pathOf(card.pathId);
-    const avail = D.ASSETS.filter((a) => districtOpen(s, a.district));
-    const base = avail.length ? avail : D.ASSETS;
+    const base = targetPool(s);
     let pool = base.filter((a) => a.tags.indexOf(path.id) >= 0 && a.level === card.tier);
     if (!pool.length) pool = base.filter((a) => a.level === card.tier);
     if (!pool.length) pool = base;
@@ -444,11 +461,27 @@
     return pick(pool).id;
   }
 
+  /* 某个目标被折掉后，手里其它指向它的牌要改派目标，
+     否则那些牌会变成废牌，玩家会觉得是 bug 而不是压力。 */
+  function retargetHand(s, spentId) {
+    const moved = [];
+    (s.hand || []).forEach((c) => {
+      if (c.target !== spentId) return;
+      const nid = pickTarget(s, c);
+      if (nid && nid !== spentId) {
+        c.target = nid;
+        const a = assetOf(nid);
+        moved.push(a ? a.name : nid);
+      }
+    });
+    return moved;
+  }
+
   /* ==========================================================
      六、判定
      dc 由 级别 / 目标抗性 / 主属性 / 装备 / 权柄 / 加注 共同决定
      ========================================================== */
-  function checkDC(s, card, boost) {
+  function checkDC(s, card, boost, fuelPower) {
     const path = pathOf(card.pathId);
     const target = assetOf(card.target);
     let dc = 6 + card.tier * 2;
@@ -457,19 +490,28 @@
     dc -= s.gear;
     dc -= Math.floor(s.tracks.power / 4);
     dc -= (boost || 0);
+    dc -= (fuelPower || 0);
     return clamp(dc, 3, 19);
   }
 
-  function successRate(s, card, boost) {
-    return clamp((21 - checkDC(s, card, boost)) / 20, 0.05, 0.95);
+  function successRate(s, card, boost, fuelPower) {
+    return clamp((21 - checkDC(s, card, boost, fuelPower)) / 20, 0.05, 0.95);
   }
 
-  function roll(s, card, boost) {
-    const dc = checkDC(s, card, boost);
+  function roll(s, card, boost, fuelPower) {
+    const dc = checkDC(s, card, boost, fuelPower);
     const r = 1 + rnd(20);
     const pass = r >= dc || r === 20;
     s.lastRoll = { r: r, dc: dc, pass: pass, crit: r === 20, fumble: r === 1 };
     return s.lastRoll;
+  }
+
+  /* 可烧掉的燃料牌：手上任何一张「不是本次要折的那张」的指令卡。
+     它自带的力量会变成这一次判定的加值，代价是这张牌被消耗——
+     也就是说，你为了折掉眼前这张，放弃了另一条任务线。
+     这正是苏丹里「卡既是任务又是资源」的那个抉择。 */
+  function fuelOptions(s, excludeUid) {
+    return (s.hand || []).filter((c) => c.uid !== excludeUid);
   }
 
   /* ==========================================================
@@ -480,6 +522,7 @@
     const target = assetOf(card.target);
     if (!target) return { ok: false, why: '这张牌没有可用目标，先换一张。' };
     if (target.level !== card.tier) return { ok: false, why: '指令级别与目标级别不匹配。' };
+    if (s.spentAssets && s.spentAssets[target.id]) return { ok: false, why: '这个目标已经出局了，换一张。' };
     if (s.ap < 2) return { ok: false, why: '这一天已经没有力气出门了。' };
     return { ok: true, why: pathOf(card.pathId).verb + target.name };
   }
@@ -491,7 +534,7 @@
     return Math.max(10, BOOST_COST - (s.boostDiscount || 0));
   }
 
-  function fold(s, uid, useBoost, chipSpend) {
+  function fold(s, uid, useBoost, chipSpend, fuelUid) {
     const card = s.hand.find((c) => c.uid === uid);
     if (!card) return { ok: false, why: '牌不在手里。' };
     const gate = canFold(s, card);
@@ -510,16 +553,33 @@
       if (chipsUsed > 0) { s.chips -= chipsUsed * CHIP_PER; boost += chipsUsed; }
     }
 
+    /* 烧牌：把另一张指令卡当资源投入，
+       它的 power 直接压低判定线。代价是这张牌没了。 */
+    let fuelCard = null, fuelPower = 0;
+    if (fuelUid && fuelUid !== uid) {
+      fuelCard = s.hand.find((c) => c.uid === fuelUid);
+      if (!fuelCard) return { ok: false, why: '要投入的那张牌不在手里。' };
+      fuelPower = fuelCard.power || fuelCard.tier || 1;
+    }
+
     const path = pathOf(card.pathId);
     const target = assetOf(card.target);
-    const out = roll(s, card, boost);
+    const out = roll(s, card, boost, fuelPower);
     s.ap -= 2;
 
     const res = { ok: true, pass: out.pass, crit: out.crit, fumble: out.fumble, r: out.r, dc: out.dc, lines: [], fold: false };
     const extra = [];
     if (useBoost) extra.push('现金加注 +' + BOOST_VAL);
     if (chipsUsed) extra.push('投入 ' + (chipsUsed * CHIP_PER) + ' 芯片 +' + chipsUsed);
-    res.lines.push('掷出 ' + out.r + '，判定线 ' + out.dc + '（成功率 ' + Math.round(successRate(s, card, boost) * 100) + '%）' + (extra.length ? '，' + extra.join('、') : '') + '。');
+    if (fuelCard) extra.push('烧掉「' + label(fuelCard) + '」+' + fuelPower);
+    res.lines.push('掷出 ' + out.r + '，判定线 ' + out.dc + '（成功率 ' + Math.round(successRate(s, card, boost, fuelPower) * 100) + '%）' + (extra.length ? '，' + extra.join('、') : '') + '。');
+
+    /* 燃料牌无论成败都会消耗：纸烧了就是烧了 */
+    if (fuelCard) {
+      s.hand = s.hand.filter((c) => c.uid !== fuelCard.uid);
+      res.lines.push('「' + label(fuelCard) + '」作废。');
+      pushLog(s, 'warn', '烧牌：' + label(fuelCard) + ' → 本次判定 +' + fuelPower);
+    }
 
     if (out.pass) {
       res.lines.push(path.verb + '「' + target.name + '」成功。');
@@ -542,6 +602,16 @@
       s.deadline = C.deadlineDays;
       res.fold = true;
       res.lines.push('牌已折断，期限重置为 7 天。');
+
+      /* 目标出局：这个对象已经被用掉了，牌桌上不再可选。
+         对标苏丹「同一个人只能被用来满足一次」。 */
+      s.spentAssets = s.spentAssets || {};
+      if (target && !s.spentAssets[target.id]) {
+        s.spentAssets[target.id] = s.day;
+        const moved = retargetHand(s, target.id);
+        res.lines.push('「' + target.name + '」出局，不再作为目标。');
+        if (moved.length) res.lines.push('手上改派：' + moved.join('、') + '。');
+      }
 
       // 给委托系统记账
       s.pathFoldCount[path.id] = (s.pathFoldCount[path.id] || 0) + 1;

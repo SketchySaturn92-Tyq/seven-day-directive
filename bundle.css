@@ -269,7 +269,7 @@ body{
 }
 #dock > *{pointer-events:auto}
 .dock-tools{display:flex;flex-direction:column;gap:6px;min-width:96px}
-.tool-check,.tool-chip{
+.tool-check,.tool-chip,.tool-fuel{
   display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink2);
   border:1px solid var(--line);border-radius:8px;padding:5px 8px;cursor:pointer;
   background:rgba(10,15,20,.7);
@@ -278,6 +278,14 @@ body{
 .tool-chip{flex-direction:column;align-items:stretch;gap:3px}
 .tool-chip b{color:var(--cyan)}
 .tool-chip input[type=range]{width:100%;accent-color:var(--cyan);cursor:pointer}
+/* 烧牌：把另一张指令卡当资源烧掉，换判定加值 */
+.tool-fuel{flex-direction:column;align-items:stretch;gap:3px}
+.tool-fuel b{color:var(--red)}
+.tool-fuel select{
+  width:100%;max-width:150px;font-size:10.5px;color:var(--ink2);
+  background:rgba(6,10,14,.9);border:1px solid var(--line);border-radius:5px;
+  padding:2px 3px;cursor:pointer;
+}
 .hand{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;flex:1;padding:4px 2px 6px;align-items:flex-end;scrollbar-width:thin}
 .hand::-webkit-scrollbar{height:6px}
 .hand::-webkit-scrollbar-thumb{background:rgba(120,160,200,.3);border-radius:3px}
@@ -300,6 +308,13 @@ body{
 .card-body{padding:6px 8px 8px}
 .card-tier{font-size:9.5px;letter-spacing:.12em;color:var(--c);font-weight:700}
 .card-path{font-size:15px;font-weight:800;line-height:1.25}
+/* 卡牌自带的力量角标：可烧掉换判定加值 */
+.card-power{
+  position:absolute;right:5px;top:4px;font-size:10px;font-weight:800;
+  color:#0b0f14;background:var(--c,#8d99ae);border-radius:9px;
+  min-width:15px;height:15px;line-height:15px;text-align:center;padding:0 3px;
+  box-shadow:0 1px 3px rgba(0,0,0,.5);
+}
 .card-verb{font-size:10.5px;color:var(--ink3);margin-top:1px}
 .card-target{font-size:11px;color:#d6e6f2;margin-top:5px;display:flex;justify-content:space-between;gap:4px}
 .card-target .zone{color:var(--ink3);font-size:10px}
@@ -1457,23 +1472,28 @@ body{
 }
 /* 黑铁：冷灰边 */
 .card.t1{border-color:rgba(150,170,190,.28)}
-/* 白银：亮边 + 一点点内衬光 */
+/* 青铜：暖调薄边，比黑铁亮一点，比白银暗 */
 .card.t2{
+  border-color:rgba(185,130,90,.42);
+  box-shadow:0 1px 0 rgba(255,220,190,.10) inset, 0 8px 20px rgba(0,0,0,.5);
+}
+/* 白银：亮边 + 一点点内衬光 */
+.card.t3{
   border-color:rgba(206,222,238,.45);
   box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 8px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(206,222,238,.1);
 }
 /* 曜金：描金边 + 名条描金字（对应实体牌里苏丹卡的处理） */
-.card.t3{
+.card.t4{
   border-color:var(--gold);
   box-shadow:0 1px 0 rgba(255,255,255,.16) inset, 0 8px 22px rgba(0,0,0,.55), 0 0 14px rgba(201,168,90,.22);
 }
-.card.t3 .card-tier{color:var(--gold);text-shadow:0 0 8px rgba(201,168,90,.5)}
-.card.t3 .card-path{color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,.8), 0 0 10px rgba(201,168,90,.3)}
-.card.t3 .card-band{background:linear-gradient(180deg,rgba(24,18,6,.95),rgba(4,8,12,.6))}
+.card.t4 .card-tier{color:var(--gold);text-shadow:0 0 8px rgba(201,168,90,.5)}
+.card.t4 .card-path{color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,.8), 0 0 10px rgba(201,168,90,.3)}
+.card.t4 .card-band{background:linear-gradient(180deg,rgba(24,18,6,.95),rgba(4,8,12,.6))}
 
 /* 悬停：抬起来的时候描边亮一度 */
 .card:hover{transform:translateY(-8px)}
-.card.t3:hover{box-shadow:0 18px 38px rgba(0,0,0,.65), 0 0 18px rgba(201,168,90,.3)}
+.card.t4:hover{box-shadow:0 18px 38px rgba(0,0,0,.65), 0 0 18px rgba(201,168,90,.3)}
 
 /* 手机横屏：名条要压到两行内不挤 */
 @media (orientation:landscape) and (max-height:520px){

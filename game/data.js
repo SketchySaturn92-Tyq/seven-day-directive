@@ -13,7 +13,7 @@ window.GAME_DATA = (function () {
     handMax: 7,             // 手牌上限
     statCap: 10,
     trackCap: 12,
-    version: '5.0.0',
+    version: '7.0.0',
   };
 
 
@@ -73,11 +73,18 @@ window.GAME_DATA = (function () {
     },
   ];
 
-  /* ---------------- 三个品级 ---------------- */
+  /* ---------------- 四个品级 ----------------
+     对标苏丹的岩/青铜/白银/黄金四档。
+     每一档除了门槛 need，还带一个 power：
+     这是「指令卡自带的力量」，也是本次优化的核心——
+     苏丹卡既是任务，本身也带属性值（如「白银杀戮卡 战斗3」），
+     可以当作资源牌投进判定。这里把同样的机制搬过来：
+     指令卡的 power 可以烧掉，换成另一次判定的加值。 */
   const TIERS = [
-    { id: 1, key: 'iron', name: '黑铁', need: 1, color: '#8d99ae', diff: 0 },
-    { id: 2, key: 'silver', name: '白银', need: 2, color: '#cfd8e3', diff: 12 },
-    { id: 3, key: 'gold', name: '曜金', need: 3, color: '#f2c14e', diff: 26 },
+    { id: 1, key: 'iron',   name: '黑铁', need: 1, color: '#8d99ae', diff: 0,  power: 2 },
+    { id: 2, key: 'bronze', name: '青铜', need: 2, color: '#b9825a', diff: 10, power: 3 },
+    { id: 3, key: 'silver', name: '白银', need: 3, color: '#cfd8e3', diff: 18, power: 4 },
+    { id: 4, key: 'gold',   name: '曜金', need: 4, color: '#f2c14e', diff: 28, power: 6 },
   ];
 
   /* ---------------- 属性 ---------------- */
@@ -145,6 +152,11 @@ window.GAME_DATA = (function () {
     { id: 'a12', name: '穹顶交易所', level: 3, tags: ['capital', 'expand'], resist: 3, district: 'exchange', note: '所有资本在此换成信仰。' },
     { id: 'a13', name: '董事会监事', level: 3, tags: ['purge', 'control'], resist: 3, district: 'tower', note: '他手里有一份名单，名单上有你。' },
     { id: 'a14', name: '轨道港', level: 3, tags: ['expand', 'capital'], resist: 4, district: 'orbit', note: '离开这颗星球只有一条路。' },
+    /* 第四品级：对标苏丹的黄金卡。门槛最高，只此四席。 */
+    { id: 'a15', name: '董事会席位', level: 4, tags: ['control', 'capital'], resist: 4, district: 'tower', note: '一张椅子，七个名字，其中一个空着。' },
+    { id: 'a16', name: '穹顶主脑', level: 4, tags: ['capital', 'purge'], resist: 5, district: 'lab', note: '它不是人，但它记得每一个人。' },
+    { id: 'a17', name: '环带指挥权', level: 4, tags: ['expand', 'purge'], resist: 5, district: 'orbit', note: '谁下令，谁就活过这一天。' },
+    { id: 'a18', name: '记忆银行金库', level: 4, tags: ['purge', 'control'], resist: 4, district: 'memory', note: '你所有的罪都在这里，按编号归档。' },
   ];
 
   /* ---------------- 日常行动 ---------------- */

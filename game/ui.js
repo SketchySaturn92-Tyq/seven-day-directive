@@ -450,6 +450,7 @@
         '<div class="card-band">' +
           '<span class="card-tier">' + esc(t.name) + '</span>' +
           '<span class="card-path">' + esc(p.name) + '</span>' +
+          '<span class="card-power" title="这张牌自带的力量，可以烧掉换判定加值">' + (c.power || c.tier) + '</span>' +
         '</div>' +
         '<div class="card-art" style="background-image:url(' + CARD_ART[c.pathId] + ')"></div>' +
         '<div class="card-body">' +
@@ -475,6 +476,36 @@
       }
     }
     lastHandCount = S.hand.length;
+    renderFuelPicker();
+  }
+
+  /* 烧牌下拉：列出手上除当前选中之外的所有指令卡，
+     每一条都标出它自带的力量值。选它 = 把它烧掉换加值。 */
+  function renderFuelPicker() {
+    const sel = $('fuel-pick');
+    if (!sel) return;
+    const keep = sel.value;
+    sel.innerHTML = '<option value="">不烧</option>';
+    (S.hand || []).forEach((c) => {
+      if (selectedUid && c.uid === selectedUid) return;
+      const p = E.pathOf(c.pathId), t = E.tierOf(c.tier);
+      const o = document.createElement('option');
+      o.value = c.uid;
+      o.textContent = t.name + '·' + p.name + ' +' + (c.power || c.tier);
+      sel.appendChild(o);
+    });
+    if (keep && sel.querySelector('option[value="' + keep + '"]')) sel.value = keep;
+    updateFuelPower();
+    sel.onchange = updateFuelPower;
+  }
+
+  function updateFuelPower() {
+    const sel = $('fuel-pick');
+    const out = $('fuel-power');
+    if (!out) return;
+    if (!sel || !sel.value) { out.textContent = '0'; return; }
+    const c = (S.hand || []).find((x) => x.uid === sel.value);
+    out.textContent = c ? ('+' + (c.power || c.tier)) : '0';
   }
 
   /* 每个城区有自己的行动表。
@@ -906,11 +937,13 @@
     if (!gate.ok) { toast('无法执行', gate.why); return; }
     const boost = $('chk-boost').checked;
     const chipSpend = parseInt($('chip-range').value, 10) || 0;
+    const fuelSel = $('fuel-pick');
+    const fuelUid = fuelSel && fuelSel.value ? fuelSel.value : null;
     /* 先让这张牌在手上裂开，再刷新界面。折牌就是这个游戏的核心动作，
        值得半秒的交代。 */
     const node = document.querySelector('#hand .card[data-uid="' + uid + '"]');
     if (node) node.classList.add('breaking');
-    const r = E.fold(S, uid, boost, chipSpend);
+    const r = E.fold(S, uid, boost, chipSpend, fuelUid);
     if (!r.ok) {
       if (node) node.classList.remove('breaking');
       toast('无法执行', r.why);
@@ -920,6 +953,7 @@
     M.setSelected(null);
     $('chk-boost').checked = false;
     $('chip-range').value = '0';
+    if (fuelSel) fuelSel.value = '';
     if (r.pass) sfx(r.crit ? 'crit' : 'foldOk');
     else sfx(r.fumble ? 'fumble' : 'foldFail');
     const title = r.pass ? (r.crit ? '暴击 · 指令达成' : '指令达成') : (r.fumble ? '崩盘 · 指令失败' : '指令失败');

@@ -726,23 +726,28 @@
 }
 /* 黑铁：冷灰边 */
 .card.t1{border-color:rgba(150,170,190,.28)}
-/* 白银：亮边 + 一点点内衬光 */
+/* 青铜：暖调薄边，比黑铁亮一点，比白银暗 */
 .card.t2{
+  border-color:rgba(185,130,90,.42);
+  box-shadow:0 1px 0 rgba(255,220,190,.10) inset, 0 8px 20px rgba(0,0,0,.5);
+}
+/* 白银：亮边 + 一点点内衬光 */
+.card.t3{
   border-color:rgba(206,222,238,.45);
   box-shadow:0 1px 0 rgba(255,255,255,.14) inset, 0 8px 20px rgba(0,0,0,.5), 0 0 0 1px rgba(206,222,238,.1);
 }
 /* 曜金：描金边 + 名条描金字（对应实体牌里苏丹卡的处理） */
-.card.t3{
+.card.t4{
   border-color:var(--gold);
   box-shadow:0 1px 0 rgba(255,255,255,.16) inset, 0 8px 22px rgba(0,0,0,.55), 0 0 14px rgba(201,168,90,.22);
 }
-.card.t3 .card-tier{color:var(--gold);text-shadow:0 0 8px rgba(201,168,90,.5)}
-.card.t3 .card-path{color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,.8), 0 0 10px rgba(201,168,90,.3)}
-.card.t3 .card-band{background:linear-gradient(180deg,rgba(24,18,6,.95),rgba(4,8,12,.6))}
+.card.t4 .card-tier{color:var(--gold);text-shadow:0 0 8px rgba(201,168,90,.5)}
+.card.t4 .card-path{color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,.8), 0 0 10px rgba(201,168,90,.3)}
+.card.t4 .card-band{background:linear-gradient(180deg,rgba(24,18,6,.95),rgba(4,8,12,.6))}
 
 /* 悬停：抬起来的时候描边亮一度 */
 .card:hover{transform:translateY(-8px)}
-.card.t3:hover{box-shadow:0 18px 38px rgba(0,0,0,.65), 0 0 18px rgba(201,168,90,.3)}
+.card.t4:hover{box-shadow:0 18px 38px rgba(0,0,0,.65), 0 0 18px rgba(201,168,90,.3)}
 
 /* 手机横屏：名条要压到两行内不挤 */
 @media (orientation:landscape) and (max-height:520px){

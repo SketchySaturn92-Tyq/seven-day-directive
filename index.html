@@ -213,6 +213,12 @@
           <span>芯片 <b id="chip-show">0</b></span>
           <input type="range" id="chip-range" min="0" max="0" value="0" step="1">
         </label>
+        <!-- 烧牌：把手上另一张指令卡当资源投进去，换本次判定的加值。
+             这是对标苏丹卡「既是任务、本身也带属性值」的那条机制。 -->
+        <label class="tool-fuel" title="烧掉另一张指令卡，把它自带的力量换成本次判定的加值。牌烧了就没了。">
+          <span>烧牌 <b id="fuel-power">0</b></span>
+          <select id="fuel-pick"><option value="">不烧</option></select>
+        </label>
       </div>
       <div id="hand" class="hand"></div>
     </div>
