@@ -330,7 +330,8 @@
       return {
         uid: c.uid,
         label: t.name + '·' + p.name + '「' + (target ? target.name : '无目标') + '」',
-        note: '抗性 ' + ((target && target.resist) || 0) + ' · 判定线 ' + E.checkDC(S, c) + ' · 成功率 ' + Math.round(E.successRate(S, c) * 100) + '%',
+        note: '抗性 ' + ((target && target.resist) || 0) + ' · 判定线 ' + E.checkDC(S, c) + ' · 成功率 ' + Math.round(E.successRate(S, c) * 100) + '%' +
+              '<br>失败：' + E.foldRisk(S, c).join(' · '),
         ok: gate.ok, why: gate.why, color: p.color, verb: p.verb,
       };
     });

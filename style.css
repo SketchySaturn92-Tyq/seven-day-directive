@@ -318,6 +318,12 @@ body{
 .card-target{font-size:11px;color:#d6e6f2;margin-top:5px;display:flex;justify-content:space-between;gap:4px}
 .card-target .zone{color:var(--ink3);font-size:10px}
 .card-rate{margin-top:4px;font-size:10.5px;color:var(--ink3);display:flex;align-items:center;gap:5px}
+/* 失败代价。卡面窄，用最小字号并允许折行。
+   这一行承担的是「这张牌值不值得冒险」，所以给一点警示色。 */
+.card-risk{
+  margin-top:3px;font-size:9px;line-height:1.35;color:#c9a0a0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
 .rate-bar{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
 .rate-fill{height:100%;border-radius:3px}
 .card-act{margin-top:6px;display:flex;gap:4px}

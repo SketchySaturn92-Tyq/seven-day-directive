@@ -498,6 +498,27 @@
     return clamp((21 - checkDC(s, card, boost, fuelPower)) / 20, 0.05, 0.95);
   }
 
+  /* 折牌失败要赔多少钱。体魄在这里起作用：扛得住的人，善后便宜。
+     这个函数是唯一的口径 —— fold() 真扣钱、界面上显示代价，都走它，
+     免得两处各写一遍公式，改一处忘一处。
+     体魄原来几乎只写不读（判定线用的是另外四个属性），
+     花 30 信用点买伤药也就没有下文；现在它是实打实的减损。 */
+  function failLoss(s, card) {
+    const raw = 8 + (card.tier || 1) * 4;
+    const cut = Math.min(Math.floor(raw / 2), Math.floor((s.stats.vitality || 0) / 2));
+    return Math.min(s.money, Math.max(2, raw - cut));
+  }
+
+  /* 折这张牌要是失败，会付出什么。界面上原来只写成功率，
+     玩家得先失败一次才知道代价 —— 而「先看后果，再决定要不要冒险」
+     正是这游戏最核心的判断。 */
+  function foldRisk(s, card) {
+    const out = ['体魄 -1', '善后 ' + failLoss(s, card)];
+    if ((card.tier || 1) >= 2) out.push('罪痕 +1');
+    out.push('崩盘忠诚 -1');
+    return out;
+  }
+
   function roll(s, card, boost, fuelPower) {
     const dc = checkDC(s, card, boost, fuelPower);
     const r = 1 + rnd(20);
@@ -633,7 +654,7 @@
       res.lines.push(path.verb + '「' + target.name + '」失败。');
       s.stats.vitality = clamp(s.stats.vitality - 1, 0, C.statCap);
       if (card.tier >= 2) s.tracks.sin = clamp(s.tracks.sin + 1, 0, C.trackCap);
-      const loss = Math.min(s.money, 8 + card.tier * 4);
+      const loss = failLoss(s, card);
       s.money -= loss;
       res.lines.push('体魄 -1，善后花掉 ' + loss + ' 信用点。');
       if (out.fumble) {
@@ -1234,7 +1255,7 @@
     resolveStory, pickStory, approve, isApproved, guideFalls, pickRelationEvent,
     stageOf, districtOpen, openDistricts, STAGE_AT, evPass, evWeight, pickEvent, applyEffectPublic, grantCard, cardsLeft, handPathCount, checkCardSources, drawCard,
     pathOf, tierOf, assetOf, districtOf, label, npcOf, npcIdOf, NPCS,
-    checkDC, successRate, canFold, trackLine, checkEnd,
+    checkDC, successRate, canFold, foldRisk, failLoss, trackLine, checkEnd,
     boostCost, statName, trackName,
     BOOST_COST, BOOST_VAL, CHIP_PER, CHIP_CAP,
     get rng() { return R; },

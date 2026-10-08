@@ -459,6 +459,9 @@
             '<span class="zone">' + esc(dist ? dist.name : '—') + '</span></div>' +
           '<div class="card-rate"><span style="color:' + rc + '">' + rate + '%</span>' +
             '<span class="rate-bar"><span class="rate-fill" style="width:' + rate + '%;background:' + rc + '"></span></span></div>' +
+          /* 失败会付出什么。原来卡面只有成功率，玩家得先失败一次才知道
+             代价是什么 —— 而「先看后果再决定要不要冒险」正是这游戏的核心判断。 */
+          '<div class="card-risk" title="失败代价">败 ' + esc(E.foldRisk(S, c).join(' · ')) + '</div>' +
           '<div class="card-act">' +
             '<button class="btn btn-primary" data-drag="' + c.uid + '">投放</button>' +
             '<button class="btn btn-ghost" data-swap="' + c.uid + '">换</button>' +
